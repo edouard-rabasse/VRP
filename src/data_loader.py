@@ -2,6 +2,8 @@ from PIL import Image
 from torchvision import datasets, transforms
 from torch.utils.data import random_split, DataLoader
 from src.preprocessing import get_transform
+import torch
+from torch.utils.data import TensorDataset
 
 
 
@@ -42,7 +44,7 @@ def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=4):
     """
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
 
-def load_data(data_path, batch_size=32, transform=None,train_ratio=0.8, image_size=(284, 284)):
+def load_data(data_path, batch_size=32, transform=None,train_ratio=0.8, image_size=(284, 284),num_workers=4):
     """Load the dataset and return the DataLoader for training and testing.
     Args:
         data_path (str): Path to the dataset.
@@ -57,6 +59,25 @@ def load_data(data_path, batch_size=32, transform=None,train_ratio=0.8, image_si
     
     dataset = get_dataset(data_path, transform, image_size=image_size)
     train_dataset, test_dataset = split_dataset(dataset, train_ratio=train_ratio)
-    train_loader = get_dataloader(train_dataset, batch_size=batch_size)
-    test_loader = get_dataloader(test_dataset, batch_size=batch_size, shuffle=False)
+    train_loader = get_dataloader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    test_loader = get_dataloader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
     return train_loader, test_loader
+
+
+def precompute_deit(model, dataloader, device='cpu'):
+    model.eval()
+    model.to(device)
+    list_outputs = []
+    list_labels = []
+
+    with torch.no_grad():
+        for inputs, labels in dataloader:
+            inputs = inputs.to(device)
+            features = model.forward_features(inputs)
+            list_outputs.append(features)
+            list_labels.append(labels)
+
+    outputs = torch.cat(list_outputs, dim=0)
+    labels = torch.cat(list_labels, dim=0)
+
+    return TensorDataset(outputs, labels)    

@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from tqdm import tqdm
+print("[DEBUG] Loaded: VisualScoringModel.py")
 
 class VisualScoringModel(nn.Module):
     def __init__(self,input_shape=(1, 84, 84)):
@@ -19,7 +20,7 @@ class VisualScoringModel(nn.Module):
             self.flattened_size = out.view(1, -1).shape[1]
 
         self.fc1 = nn.Linear(self.flattened_size, 1024)
-        self.fc2 = nn.Linear(1024, 4)
+        self.fc2 = nn.Linear(1024, 2)
 
         torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity='leaky_relu')
         torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity='leaky_relu')
@@ -70,6 +71,11 @@ def train_model(
 ):
     # Send model to device
     model.to(device)
+    model.train()
+    print("Training with parameters:")
+    print(f"  - Device: {device}")
+    print(f"  - Learning rate: {learning_rate}")
+    print(f"  - Number of epochs: {num_epochs}")
 
     # Optimizer, scheduler, and loss function
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -106,4 +112,43 @@ def train_model(
         # Optional: run evaluation on test set
         eval_loss, eval_acc = evaluate_model(model, test_loader, criterion, device)
         print(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%\n")
+
+
+import cv2
+
+class GradCAM:
+    def __init__(self, model, target_layer):
+        self.model = model
+        self.target_layer = target_layer
+        self.gradients = None
+        self.activations = None
+
+        # Register hooks
+        target_layer.register_forward_hook(self.save_activation)
+        target_layer.register_backward_hook(self.save_gradient)
+
+    def save_activation(self, module, input, output):
+        self.activations = output.detach()
+
+    def save_gradient(self, module, grad_input, grad_output):
+        self.gradients = grad_output[0].detach()
+
+    def __call__(self, input_tensor, class_index):
+        self.model.zero_grad()
+        output = self.model(input_tensor)
+        print("Output shape:", output.shape)
+        loss = output[:, class_index].sum()
+        loss.backward()
+
+        # Compute the weights
+        pooled_gradients = self.gradients.mean(dim=[0, 2, 3])  # global average pooling
+        activations = self.activations[0]  # remove batch dimension
+        for i in range(activations.shape[0]):
+            activations[i, :, :] *= pooled_gradients[i]
+
+        heatmap = activations.sum(dim=0).cpu().numpy()
+        heatmap = np.maximum(heatmap, 0)
+        heatmap /= np.max(heatmap) + 1e-8  # normalize
+        return heatmap
+    
 
