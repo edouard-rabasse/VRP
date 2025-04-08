@@ -14,3 +14,6 @@ DOPLRP : generalisation of the VRP (vehicle routing problem).
 To continue (p13)
 
 
+## Grad-CAM : Visual explanations from deep networks via gradient-based localization
+https://arxiv.org/abs/1610.02391
+

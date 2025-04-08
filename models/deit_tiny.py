@@ -42,12 +42,13 @@ def precompute_deit_tiny_features(model, dataloader, device='cpu'):
 
     return TensorDataset(outputs, labels)
 
-def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001):
+def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
     import torch.optim as optim
     # Send model to device
     model.to(device)
 
-    criterion = nn.CrossEntropyLoss()
+    if criterion is None:
+        criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.head.parameters(), lr=learning_rate)
 
     # Lists to track metrics

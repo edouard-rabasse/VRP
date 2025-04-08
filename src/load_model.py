@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import os
+
 
 def load_deit(weights_path,device='cpu'):
     """
@@ -25,4 +27,46 @@ def load_deit(weights_path,device='cpu'):
     model.head.load_state_dict(head_state_dict)
     
     
+    return model
+
+
+def load_model(model_name, device, cfg):
+
+    if model_name == 'VisualScoringModel':
+        from models.VisualScoringModel import VisualScoringModel
+        image_size = cfg.image_size
+        input_shape = (3, image_size[0], image_size[1])
+
+        model = VisualScoringModel(input_shape=input_shape).to(device)
+
+    elif model_name == 'deit_tiny':
+        # from models.deit_tiny import load_deit
+        # model = load_deit(model_name, device, out_features=2)
+        # model.to(device)
+        try:
+            # model = torch.hub.load('facebookresearch/deit:main', 'deit_tiny_patch16_224', pretrained=True)
+            import timm
+
+            model = timm.create_model('deit_tiny_patch16_224', pretrained=True, num_classes=2)
+        except RuntimeError as e:
+            print(f"Error loading model from torch hub: {e}")
+            print("Attempting to load model manually...")
+            # Manual loading code here (if available)
+            raise
+
+# Changing the last layer to have 2 classes
+        in_features = model.head.in_features
+        model.head = nn.Linear(in_features, 2)
+        model.to(device)
+    else:
+        raise ValueError("Unknown model name: {}".format(model_name))
+
+    # Load the model weights
+    if cfg.weight_path is not None:
+        if os.path.exists(cfg.weight_path):
+            print(f"Loading weights from {cfg.weight_path}")
+            model.load_state_dict(torch.load(cfg.weight_path, map_location=device))
+        else:
+            raise FileNotFoundError(f"Weight file not found: {cfg.weight_path}")
+
     return model

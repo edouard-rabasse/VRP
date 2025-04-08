@@ -19,107 +19,15 @@ from models.VisualScoringModel import train_model
 import cv2
 
 from torch.utils.data import DataLoader
+from src.visualization import get_heatmap, show_mask_on_image
+from src.load_model import load_model
+from src.train import train
 
 
-def show_mask_on_image(input_tensor, heatmap):
-    # Resize to match input
-    input_size = input_tensor.shape[2:]
 
-    heatmap_resized = cv2.resize(heatmap, (84, 84))
-    heatmap_resized = (heatmap_resized * 255).astype(np.uint8)
-    colored_heatmap = cv2.applyColorMap(heatmap_resized, cv2.COLORMAP_JET)
 
-    # Overlay on input (grayscale to RGB)
-    input_image = input_tensor[0, 0].cpu().numpy()
-    input_image = cv2.cvtColor((input_image * 255).astype(np.uint8), cv2.COLOR_GRAY2BGR)
 
-    # resize to match input
-    colored_heatmap = cv2.resize(colored_heatmap, (input_size[1], input_size[0]))
 
-    print("Input Image shape:", input_image.shape)
-    print("Heatmap shape:", colored_heatmap.shape)
-
-    overlay = cv2.addWeighted(input_image, 0.5, colored_heatmap, 0.5, 0)
-    return overlay
-
-def get_heatmap(method, model, input_tensor, args):
-    if method == 'gradcam':
-        from models.VisualScoringModel import GradCAM
-        target_layer = getattr(model, args['target_layer'])
-        gradcam = GradCAM(model, target_layer)
-        heatmap = gradcam(input_tensor, class_index=args['class_index'])
-    elif method == 'grad_rollout':
-        from models.vit_explain.grad_rollout import VITAttentionGradRollout
-        grad_rollout = VITAttentionGradRollout(model, discard_ratio=args['discard_ratio'])
-        heatmap = grad_rollout(input_tensor, category_index=args['class_index'])
-    
-    else:
-        raise ValueError("Unknown method: {}".format(method))
-
-    return heatmap
-
-def load_model(model_name, device, cfg):
-
-    if model_name == 'VisualScoringModel':
-        from models.VisualScoringModel import VisualScoringModel
-        image_size = cfg.image_size
-        input_shape = (3, image_size[0], image_size[1])
-
-        model = VisualScoringModel(input_shape=input_shape).to(device)
-
-    elif model_name == 'deit_tiny':
-        # from models.deit_tiny import load_deit
-        # model = load_deit(model_name, device, out_features=2)
-        # model.to(device)
-        try:
-            # model = torch.hub.load('facebookresearch/deit:main', 'deit_tiny_patch16_224', pretrained=True)
-            import timm
-
-            model = timm.create_model('deit_tiny_patch16_224', pretrained=True, num_classes=2)
-        except RuntimeError as e:
-            print(f"Error loading model from torch hub: {e}")
-            print("Attempting to load model manually...")
-            # Manual loading code here (if available)
-            raise
-
-# Changing the last layer to have 2 classes
-        in_features = model.head.in_features
-        model.head = nn.Linear(in_features, 2)
-        model.to(device)
-    else:
-        raise ValueError("Unknown model name: {}".format(model_name))
-
-    # Load the model weights
-    if cfg.weight_path is not None:
-        if os.path.exists(cfg.weight_path):
-            print(f"Loading weights from {cfg.weight_path}")
-            model.load_state_dict(torch.load(cfg.weight_path, map_location=device))
-        else:
-            raise FileNotFoundError(f"Weight file not found: {cfg.weight_path}")
-
-    return model
-
-def train(model_name,model, train_loader, test_loader, num_epochs, device, learning_rate):
-    if model_name == 'VisualScoringModel':
-        train_model(
-            model,
-            train_loader,
-            test_loader,
-            num_epochs=num_epochs,
-            device=device,
-            learning_rate=learning_rate,
-            )
-    elif model_name == 'deit_tiny':
-        # Define your training loop for DEIT here
-        from models.deit_tiny import precompute_deit_tiny_features, train_deit
-        train_features = precompute_deit_tiny_features(model, train_loader, device=device)
-        test_features = precompute_deit_tiny_features(model, test_loader, device=device)
-        train_loader = DataLoader(train_features, batch_size=cfg.batch_size, shuffle=True)
-        test_loader = DataLoader(test_features, batch_size=cfg.batch_size, shuffle=False)
-
-        train_deit(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate)
-
-        
 
 
 if __name__ == "__main__":
@@ -167,6 +75,7 @@ if __name__ == "__main__":
             num_epochs=cfg.MODEL_PARAMS["epochs"],
             device=device,
             learning_rate=cfg.MODEL_PARAMS["learning_rate"],
+            cfg=cfg
         )
 
 
