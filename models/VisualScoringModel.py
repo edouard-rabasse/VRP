@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from tqdm import tqdm
-print("[DEBUG] Loaded: VisualScoringModel.py")
+# print("[DEBUG] Loaded: VisualScoringModel.py")
 
 class VisualScoringModel(nn.Module):
     def __init__(self,input_shape=(1, 84, 84)):
@@ -48,7 +48,7 @@ def evaluate_model(model, data_loader, criterion, device='cpu'):
     total = 0
 
     with torch.no_grad():
-        for inputs, targets in data_loader:
+        for inputs, targets, mask in data_loader:
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
@@ -90,7 +90,7 @@ def train_model(
         correct = 0
         total = 0
 
-        for inputs, targets in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+        for inputs, targets, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
@@ -127,7 +127,7 @@ class GradCAM:
 
         # Register hooks
         target_layer.register_forward_hook(self.save_activation)
-        target_layer.register_backward_hook(self.save_gradient)
+        target_layer.register_full_backward_hook(self.save_gradient)
 
     def save_activation(self, module, input, output):
         self.activations = output.detach()

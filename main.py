@@ -12,7 +12,7 @@ import torch.nn as nn
 # load model
 
 from torchvision import datasets, transforms
-from src.data_loader import load_data
+from src.data_loader_mask import load_data_mask
 
 from models.VisualScoringModel import train_model
 
@@ -44,9 +44,12 @@ if __name__ == "__main__":
     image_size = cfg.image_size
     batch_size = cfg.batch_size
     train_ratio = cfg.train_ratio
-    data_path = cfg.DATA_DIR
+    original_path = cfg.original_path
+    modified_path = cfg.modified_path
+    mask_path = cfg.mask_path
 
     transform = transforms.Compose([
+    transforms.ToPILImage(),
     transforms.Resize(image_size),
     transforms.ToTensor(),
     ])
@@ -56,14 +59,8 @@ if __name__ == "__main__":
         device=device,
         cfg=cfg)
 
-    train_loader, test_loader = load_data(
-    data_path=data_path,
-    batch_size=batch_size,
-    transform=transform,
-    train_ratio=train_ratio,
-    image_size=image_size,
-    num_workers=0,
-    )
+    train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=32, transform=transform, train_ratio=0.8, 
+              image_size=(224, 224), num_workers=4, mask_path=None)
 
     
 
@@ -84,7 +81,7 @@ if __name__ == "__main__":
 
     # test
 
-    train_features, train_labels = next(iter(train_loader))
+    train_features, train_labels, train_mask = next(iter(train_loader))
     print(f"Feature batch shape: {train_features.size()}")
     print(f"Labels batch shape: {train_labels.size()}")
     img = train_features[0].squeeze()

@@ -1,6 +1,7 @@
 # config.py
-DATA_DIR = "./data/test/"
-
+original_path = "MSH/MSH/plots/configuration1/"
+modified_path = "MSH/MSH/plots/configuration5/"
+mask_path = "data/MSH/mask/"
 # --- Parameters ---
 train_ratio = 0.8     # 80% train, 20% test
 batch_size = 32
@@ -16,13 +17,10 @@ weight_path = None
 
 
 
-RAW_DATA_DIR = DATA_DIR + "raw/"
-PROCESSED_DATA_DIR = DATA_DIR + "processed/"
-
 # --- Model Parameters ---
 train = True  # Set to True to train the model
 MODEL_PARAMS = {
-    "learning_rate": 0.001,
+    "learning_rate": 0.0001,
     "batch_size": batch_size,
     "epochs": 10,
 }

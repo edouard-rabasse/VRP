@@ -47,7 +47,7 @@ class VITAttentionGradRollout:
         for name, module in self.model.named_modules():
             if attention_layer_name in name:
                 module.register_forward_hook(self.get_attention)
-                module.register_backward_hook(self.get_attention_gradient)
+                module.register_full_backward_hook(self.get_attention_gradient)
 
         self.attentions = []
         self.attention_gradients = []
@@ -59,6 +59,9 @@ class VITAttentionGradRollout:
         self.attention_gradients.append(grad_input[0].cpu())
 
     def __call__(self, input_tensor, category_index):
+        """
+        returns a mask of the attention on the image patches : np.array
+        """
         self.model.zero_grad()
         output = self.model(input_tensor)
         category_mask = torch.zeros(output.size())

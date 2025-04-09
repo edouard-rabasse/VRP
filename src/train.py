@@ -1,7 +1,16 @@
 from torch.utils.data import DataLoader
-
+import torch
 
 def train(model_name,model, train_loader, test_loader, num_epochs, device, learning_rate,criterion=None,cfg=None):
+    """
+    Trains the model using the specified parameters.
+    Args:
+        model_name (str): The name of the model to train.
+        model (torch.nn.Module): The model to train.
+        train_loader (torch.utils.data.DataLoader): The DataLoader for the training set.
+        test_loader (torch.utils.data.DataLoader): The DataLoader for the test set.
+        num_epochs (int): The number of epochs to train for.
+        device (str): The device to train on ('cpu' or 'cuda')."""
     if model_name == 'VisualScoringModel':
         from models.VisualScoringModel import train_model
         train_model(
@@ -24,3 +33,13 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
         train_deit(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
 
         
+
+def save_model(model, path):
+    """Saves the model to the specified path.
+    Only for pyTorch models.
+    Args:
+        model (torch.nn.Module): The model to save.
+        path (str): The path to save the model to.
+    """
+    torch.save(model.state_dict(), path)
+    print(f"Model saved to {path}")
