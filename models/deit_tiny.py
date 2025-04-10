@@ -30,6 +30,7 @@ def precompute_deit_tiny_features(model, dataloader, device='cpu'):
     model.to(device)
     list_outputs = []
     list_labels = []
+    list_masks = []
 
     with torch.no_grad():
         try:
@@ -38,18 +39,22 @@ def precompute_deit_tiny_features(model, dataloader, device='cpu'):
                 features = model.forward_features(inputs)
                 list_outputs.append(features.cpu())
                 list_labels.append(labels.cpu())
+                
         except Exception as e: # depends on the type of dataloader
             for inputs, labels, masks in dataloader:
                 inputs = inputs.to(device)
                 features = model.forward_features(inputs)
                 list_outputs.append(features)
                 list_labels.append(labels)
+                list_masks.append(masks)
+                outputs = torch.cat(list_outputs, dim=0)
+                labels = torch.cat(list_labels, dim=0)
+                masks = torch.cat(list_masks, dim=0)
+
+                return TensorDataset(outputs, labels, masks)
 
 
-    outputs = torch.cat(list_outputs, dim=0)
-    labels = torch.cat(list_labels, dim=0)
-
-    return TensorDataset(outputs, labels)
+    
 
 def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
     import torch.optim as optim
@@ -69,7 +74,7 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
         model.head.train()
         running_loss, correct_preds, total = 0.0, 0, 0
 
-        for features, labels in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+        for features, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
             features, labels = features.to(device), labels.to(device)
             # Select the CLS token (first token) for classification
             cls_features = features[:, 0, :]
@@ -96,7 +101,7 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
         all_val_preds, all_val_labels = [], []
 
         with torch.no_grad():
-            for features, labels in test_loader:
+            for features, labels, mask in test_loader:
                 features, labels = features.to(device), labels.to(device)
                 cls_features = features[:, 0, :]
                 outputs = model.head(cls_features)

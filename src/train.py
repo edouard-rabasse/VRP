@@ -31,6 +31,13 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
         test_loader = DataLoader(test_features, batch_size=cfg.batch_size, shuffle=False)
 
         train_deit(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
+    elif model_name =="multi_task":
+        from models.MultiTaskVisualModel import train_model_multi_task
+        if cfg.MODEL_PARAMS["lambda_seg"] is not None:
+            lambda_seg = cfg.MODEL_PARAMS["lambda_seg"]
+        else:
+            lambda_seg = 1.0
+        train_model_multi_task(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=lambda_seg)
 
         
 

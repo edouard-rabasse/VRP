@@ -1,10 +1,9 @@
 from torchvision import transforms
 from src.data_loader_mask import CustomDataset
-from tqdm import tqdm
 
 transform = transforms.Compose([
     transforms.ToPILImage(),        # Convert numpy array (from cv2) to PIL Image
-    transforms.Resize((200, 200)),      # Resize both image and mask to 84x84
+    transforms.Resize((84, 84)),      # Resize both image and mask to 84x84
     transforms.ToTensor(),            # Convert to tensor (scales to [0,1])
 ])
 
@@ -12,6 +11,7 @@ transform = transforms.Compose([
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from tqdm import tqdm
 
 class MultiTaskVisualScoringModel(nn.Module):
     def __init__(self, input_shape=(3, 84, 84)):
@@ -79,7 +79,7 @@ class MultiTaskVisualScoringModel(nn.Module):
 import torch
 import torch.nn as nn
 
-def train_model(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=1.0):
+def train_model_multi_task(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=1.0):
     """
     Train the multi-task model.
     Args:
@@ -118,9 +118,6 @@ def train_model(model, train_loader, test_loader, num_epochs, device, learning_r
             optimizer.zero_grad()
             
             clf_logits, seg_logits = model(images)
-            # print shapes
-            # print(f"clf_logits: {clf_logits.shape}, seg_logits: {seg_logits.shape}, masks: {masks.shape}")
-
             loss_cls = criterion_cls(clf_logits, labels)
             loss_seg = criterion_seg(seg_logits, masks)
             loss = loss_cls + lambda_seg * loss_seg
@@ -151,7 +148,7 @@ if __name__ == "__main__":
 
     from src.data_loader_mask import load_data_mask
     train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=2, transform=transform, 
-                                                train_ratio=0.8, image_size=(200, 200), num_workers=4, mask_path=mask_path, num_max=None)
+                                                train_ratio=0.8, image_size=(200, 200), num_workers=4, mask_path=mask_path, num_max=20)
 
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

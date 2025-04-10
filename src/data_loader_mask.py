@@ -39,6 +39,12 @@ class CustomDataset(Dataset):
         return len(self.all_samples)
         
     def __getitem__(self, idx):
+        """
+        size of the outputs : 
+        - image : (batch, 3,resized_height, resized_width) --> need to do a permute(1,2,0).numpy()*255
+        - label : (batch,)
+        - mask : (batch,1, resized_height, resized_width)
+        """
         img_path, label, mask_path = self.all_samples[idx]
         
         # Load image
@@ -53,11 +59,6 @@ class CustomDataset(Dataset):
 
         else:
             mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)/ 255.0
-  
-
-
-        
-
         
         # use transforms
         if self.transform:
@@ -66,6 +67,7 @@ class CustomDataset(Dataset):
         else:   
             image = torch.from_numpy(image).permute(2, 0, 1).float()
             mask = torch.from_numpy(mask).float()
+    
 
         
         return image, torch.tensor(label, dtype=torch.long), mask
@@ -112,7 +114,7 @@ def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=4):
 
 
 def load_data_mask(original_path, modified_path, batch_size=32, transform=None, train_ratio=0.8, 
-              image_size=(284, 284), num_workers=4, mask_path=None):
+              image_size=(284, 284), num_workers=4, mask_path=None, num_max=None):
     """Load the dataset and return the DataLoader for training and testing.
     Args:
         original_path (str): Path to the original images.
@@ -130,6 +132,14 @@ def load_data_mask(original_path, modified_path, batch_size=32, transform=None, 
         transform = get_transform(image_size=image_size)
     
     dataset = CustomDataset(original_path, modified_path, mask_path, transform=transform)
+    if num_max is not None:
+        dataset.all_samples = dataset.all_samples[:num_max]
+        dataset.original_images = dataset.original_images[:num_max]
+        dataset.modified_images = dataset.modified_images[:num_max]
+
+
+
+
     train_dataset, test_dataset = split_dataset(dataset, train_ratio=train_ratio)
     train_loader = get_dataloader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     test_loader = get_dataloader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
@@ -192,4 +202,13 @@ if __name__ == "__main__":
         print("Images shape:", images.shape)
         print("Labels shape:", labels.shape)
         print("Masks shape:", masks.shape)
+        # find the first with label 1
+        for i in range(len(labels)):
+            if labels[i] == 1:
+                print("Found label 1 at index:", i)
+                index = i
+                break
+        print("singular mask shape:", masks[index].shape)
+        cv2.imwrite("output/mask.png", masks[index].permute(1,2,0).numpy()*255)
+        cv2.imwrite("output/image.png", images[index].permute(1, 2, 0).numpy()*255)
         break  # Just to print one instance

@@ -54,10 +54,17 @@ def load_model(model_name, device, cfg):
             # Manual loading code here (if available)
             raise
 
-# Changing the last layer to have 2 classes
+    # Changing the last layer to have 2 classes
         in_features = model.head.in_features
         model.head = nn.Linear(in_features, 2)
         model.to(device)
+        
+    elif model_name == 'multi_task':
+        from models.MultiTaskVisualModel import MultiTaskVisualScoringModel
+        image_size = cfg.image_size
+        input_shape = (3, image_size[0], image_size[1])
+
+        model = MultiTaskVisualScoringModel(input_shape=input_shape).to(device)
     else:
         raise ValueError("Unknown model name: {}".format(model_name))
 

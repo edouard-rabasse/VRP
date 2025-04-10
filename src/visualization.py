@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import torch
 
 
 def resize_heatmap(heatmap, target_size):
@@ -40,6 +41,12 @@ def get_heatmap(method, model, input_tensor, args):
         grad_rollout = VITAttentionGradRollout(model, discard_ratio=args['discard_ratio'])
         heatmap = grad_rollout(input_tensor, category_index=args['class_index'])
     
+    elif method == "multi_task":
+        with torch.no_grad():
+            cls_logits, seg_logits = model(input_tensor)
+            heatmap = seg_logits[0, 0].cpu().numpy()  # Assuming the first channel is the one of interest
+            heatmap = cv2.resize(heatmap, (input_tensor.shape[2], input_tensor.shape[3]))
+        
     else:
         raise ValueError("Unknown method: {}".format(method))
 

@@ -5,6 +5,7 @@ def get_transform(image_size=(284, 284)):
     Andditionally, convert it to a tensor.
     """
     transform = transforms.Compose([
+    transforms.ToPILImage(),        # Convert numpy array (from cv2) to PIL Image
     transforms.Resize(image_size),
     transforms.ToTensor(),
     ])

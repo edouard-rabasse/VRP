@@ -44,7 +44,7 @@ def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=4):
     """
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
 
-def load_data(data_path, batch_size=32, transform=None,train_ratio=0.8, image_size=(284, 284),num_workers=4):
+def load_data(data_path, batch_size=32, transform=None,train_ratio=0.8, image_size=(284, 284),num_workers=4, num_max = 2):
     """Load the dataset and return the DataLoader for training and testing.
     Args:
         data_path (str): Path to the dataset.
@@ -58,6 +58,12 @@ def load_data(data_path, batch_size=32, transform=None,train_ratio=0.8, image_si
         transform = get_transform(image_size=image_size)
     
     dataset = get_dataset(data_path, transform, image_size=image_size)
+    if num_max is not None:
+        dataset.samples = dataset.samples[:num_max]
+        dataset.targets = dataset.targets[:num_max]
+        dataset.imgs = dataset.imgs[:num_max]
+    
+
     train_dataset, test_dataset = split_dataset(dataset, train_ratio=train_ratio)
     train_loader = get_dataloader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     test_loader = get_dataloader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
