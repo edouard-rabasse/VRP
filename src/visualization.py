@@ -30,7 +30,7 @@ def show_mask_on_image(input, heatmap, alpha=0.5):
     if input.shape[0] != 3:
         raise ValueError("[show_mask_on_image]Input tensor must have 3 channels (C, H, W) format.")
     
-    print("inout_shapee:", input.shape)
+    print("input_shape:", input.shape)
     input_size = (input.shape[1], input.shape[2])
 
     heatmap_resized = resize_heatmap(heatmap, (input_size[0], input_size[1]))
