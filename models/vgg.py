@@ -48,7 +48,7 @@ def train_vgg(model, train_loader, test_loader,device='cpu', num_epochs=20, lear
     model.to(device)
     for param in model.parameters():
         param.requires_grad = False
-    for param in model.classifier[4:].parameters():
+    for param in model.classifier[5:].parameters():
         param.requires_grad = True
 
     if criterion is None:

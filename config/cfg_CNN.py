@@ -5,7 +5,7 @@ mask_path = "data/MSH/mask/"
 # --- Parameters ---
 train_ratio = 0.8     # 80% train, 20% test
 batch_size = 8
-image_size = (284, 284)  # Resize all images to this size
+image_size = (224, 224)  # Resize all images to this size
 
 model_name = "VisualScoringModel"  # Name of the model to load
 

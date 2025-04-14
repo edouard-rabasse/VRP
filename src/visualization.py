@@ -10,26 +10,39 @@ def resize_heatmap(heatmap, target_size):
     
     return heatmap_resized
 
-def show_mask_on_image(input_tensor, heatmap, alpha=0.5):
+def show_mask_on_image(input, heatmap, alpha=0.5):
     """
     Overlay the heatmap on the input image.
     ## Args:
-    - input_tensor (torch.Tensor): The input tensor to the model.
+    - input_tensor (torch.Tensor): The input tensor to the model, dimension (N, C, H, W) or (C, H, W).
     - heatmap (numpy.ndarray): The heatmap to overlay.
     - alpha (float): The transparency level for the overlay.
     ## Returns:
     - overlay (numpy.ndarray): The overlayed image.
     """
     # Resize to match input
-    input_size = input_tensor.shape[2:]
+    if len(input.shape) == 4:
+        input = input.squeeze(0)
+    if type(input) == torch.Tensor:
+        input = input.cpu().numpy()
+    
+    # check that it is in the right format,
+    if input.shape[0] != 3:
+        raise ValueError("[show_mask_on_image]Input tensor must have 3 channels (C, H, W) format.")
+    
+    print("inout_shapee:", input.shape)
+    input_size = (input.shape[1], input.shape[2])
 
     heatmap_resized = resize_heatmap(heatmap, (input_size[0], input_size[1]))
     heatmap_resized = (heatmap_resized * 255).astype(np.uint8)
+    print("max over heatmap:", np.max(heatmap_resized))
+    print("max of input:", np.max(input))
     colored_heatmap = cv2.applyColorMap(heatmap_resized, cv2.COLORMAP_JET)
-
+    
     # Overlay on input (grayscale to RGB)
-    input_image = input_tensor[0, 0].cpu().numpy()
-    input_image = cv2.cvtColor((input_image * 255).astype(np.uint8), cv2.COLOR_GRAY2BGR)
+    input_image = input.transpose(1, 2, 0)
+    input_image = (input_image*255).astype(np.uint8)  # Convert to uint8 for OpenCV
+    print("maximum over the whle input:", np.max(input_image))
 
 
     print("Input Image shape:", input_image.shape)
