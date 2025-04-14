@@ -10,11 +10,20 @@ def resize_heatmap(heatmap, target_size):
     
     return heatmap_resized
 
-def show_mask_on_image(input_tensor, heatmap):
+def show_mask_on_image(input_tensor, heatmap, alpha=0.5):
+    """
+    Overlay the heatmap on the input image.
+    ## Args:
+    - input_tensor (torch.Tensor): The input tensor to the model.
+    - heatmap (numpy.ndarray): The heatmap to overlay.
+    - alpha (float): The transparency level for the overlay.
+    ## Returns:
+    - overlay (numpy.ndarray): The overlayed image.
+    """
     # Resize to match input
     input_size = input_tensor.shape[2:]
 
-    heatmap_resized = resize_heatmap(heatmap, (input_size[1], input_size[0]))
+    heatmap_resized = resize_heatmap(heatmap, (input_size[0], input_size[1]))
     heatmap_resized = (heatmap_resized * 255).astype(np.uint8)
     colored_heatmap = cv2.applyColorMap(heatmap_resized, cv2.COLORMAP_JET)
 
@@ -26,10 +35,19 @@ def show_mask_on_image(input_tensor, heatmap):
     print("Input Image shape:", input_image.shape)
     print("Heatmap shape:", colored_heatmap.shape)
 
-    overlay = cv2.addWeighted(input_image, 0.5, colored_heatmap, 0.5, 0)
+    overlay = cv2.addWeighted(input_image, alpha, colored_heatmap, 1-alpha, 0)
     return overlay
 
 def get_heatmap(method, model, input_tensor, args):
+    """
+    Generate a heatmap using the specified method.
+    ## Args:
+    -  method (str): The method to use for generating the heatmap.
+    - model (torch.nn.Module): The model to use for generating the heatmap.
+    - input_tensor (torch.Tensor): The input tensor to the model.
+    -args (dict): Additional arguments for the method.
+    ## Returns:
+    - heatmap (numpy.ndarray): The generated heatmap."""
 
     if method == 'gradcam':
         from models.VisualScoringModel import GradCAM
@@ -46,6 +64,20 @@ def get_heatmap(method, model, input_tensor, args):
             cls_logits, seg_logits = model(input_tensor)
             heatmap = seg_logits[0, 0].cpu().numpy()  # Assuming the first channel is the one of interest
             heatmap = cv2.resize(heatmap, (input_tensor.shape[2], input_tensor.shape[3]))
+            heatmap = heatmap* 255  # Scale to [0, 255]
+    
+    elif method == "grad_cam2":
+        from models.vit_explain.GradCam import GradCAM
+        model.eval()
+        # print devices of model and input_tensor
+        print("Model device:", next(model.parameters()).device)
+        print("Input tensor device:", input_tensor.device)
+        gradcam = GradCAM(model, target_layer=args['target_layer'])
+        heatmap = gradcam(input_tensor, class_index=args['class_index'])
+        heatmap = cv2.resize(heatmap, (input_tensor.shape[2], input_tensor.shape[3]))
+        heatmap = heatmap * 255
+        gradcam.remove_hooks()
+
         
     else:
         raise ValueError("Unknown method: {}".format(method))

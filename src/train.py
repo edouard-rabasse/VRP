@@ -39,6 +39,18 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
             lambda_seg = 1.0
         train_model_multi_task(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=lambda_seg)
 
+    elif model_name == "vgg":
+        print("importing train functions")
+        from models.vgg import train_vgg, precompute_model
+        print("done importing train functions")
+        train_features = precompute_model(model, train_loader, device=device)
+        test_features = precompute_model(model, test_loader, device=device)
+        train_loader = DataLoader(train_features, batch_size=cfg.batch_size, shuffle=True)
+        test_loader = DataLoader(test_features, batch_size=cfg.batch_size, shuffle=False)
+        train_vgg(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
+    else:
+        raise ValueError(f"Unknown model name: {model_name}")
+
         
 
 def save_model(model, path):

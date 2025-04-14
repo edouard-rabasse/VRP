@@ -57,14 +57,17 @@ if __name__ == "__main__":
     ])
 
 
-
+    print("Loading model...")
     model = load_model(
         model_name=cfg.model_name,
         device=device,
         cfg=cfg)
+    print(f"Model {cfg.model_name} loaded.")
 
-    train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=8, transform=transform, train_ratio=0.8, 
-              image_size=(224, 224), num_workers=4, mask_path=None, num_max=None)
+    print("Loading data...")
+    train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=2, transform=transform, train_ratio=0.8, 
+              image_size=(224, 224), num_workers=4, mask_path=cfg.mask_path, num_max=None)
+    print("Data loaded.")
 
     
 
@@ -84,32 +87,26 @@ if __name__ == "__main__":
     # Ensure model is in eval mode
     model.eval()
 
-    # test
+    model.to(device)
+    # extract 1 image from the modified path
+    # print(vars(test_loader.dataset.dataset))
+    # for i in range(len(test_loader.dataset.dataset)):
+    #     print(test_loader.dataset.dataset.modified_images[i])
+    #     if test_loader.dataset.dataset.modified_images[i][1] == 1:
+    #         index = i
+    #         break
+   
 
-    train_features, train_labels, train_mask = next(iter(train_loader))
-    # print(f"Feature batch shape: {train_features.size()}")
-    # print(f"Labels batch shape: {train_labels.size()}")
-    img = train_features[0].squeeze()
-    label = train_labels[0]
-
-    img = img.permute(1, 2, 0).cpu().numpy()
-
-    input_tensor = train_features[0].unsqueeze(0).to(device)  # Add batch dimension
-
-    # Generate heatmap for class 2
-  
-    heatmap = get_heatmap(cfg.method, model, input_tensor, cfg.heatmap_args)
-
-    overlay = show_mask_on_image(input_tensor, heatmap)
-    # print name of the input image
-    # print("Input image name:", train_loader.dataset.imgs[0][0])
-    # print name of the input image
+    modified_path = "MSH/MSH/plots/configuration5/Plot_5.png"
 
     
+    modified_img = cv2.imread(modified_path)
+    modified_img = cv2.cvtColor(modified_img, cv2.COLOR_BGR2RGB)
+    modified_tensor = transform(modified_img).unsqueeze(0).to(device)
 
-    # Save or show the result
+    cv2.imwrite("output/modified.png", modified_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 255)
+    heatmap= get_heatmap(cfg.method, model, modified_tensor, cfg.heatmap_args)
+    print(heatmap.shape)
+
+    overlay = show_mask_on_image(modified_tensor, heatmap, alpha=0.5)
     cv2.imwrite(f"output/{cfg.method}.png", overlay)
-
-
-
-

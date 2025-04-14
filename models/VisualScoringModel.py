@@ -112,8 +112,8 @@ def train_model(
         print(f"Epoch {epoch+1}: Train Loss = {train_loss:.4f}, Train Acc = {train_acc*100:.2f}%")
 
         # Optional: run evaluation on test set
-        eval_loss, eval_acc = evaluate_model(model, test_loader, criterion, device)
-        print(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%\n")
+    eval_loss, eval_acc = evaluate_model(model, test_loader, criterion, device)
+    print(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%\n")
 
 
 import cv2

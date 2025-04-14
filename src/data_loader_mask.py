@@ -34,6 +34,7 @@ class CustomDataset(Dataset):
                 [(path, 0, None) for path in self.original_images] +  # 0=original, no mask
                 [(path, 1, None) for path in self.modified_images]  # 1=modified, no mask
             )
+        self.imgs = self.all_samples
 
     def __len__(self):
         return len(self.all_samples)
@@ -65,8 +66,8 @@ class CustomDataset(Dataset):
             image = self.transform(image)
             mask = self.transform(mask)
         else:   
-            image = torch.from_numpy(image).permute(2, 0, 1).float()
-            mask = torch.from_numpy(mask).float()
+            image = torch.from_numpy(image).unsqueeze(0).float()
+            mask = torch.from_numpy(mask).unsqueeze(0).float()
     
 
         

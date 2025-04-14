@@ -65,6 +65,11 @@ def load_model(model_name, device, cfg):
         input_shape = (3, image_size[0], image_size[1])
 
         model = MultiTaskVisualScoringModel(input_shape=input_shape).to(device)
+
+    elif model_name == 'vgg':
+        from models.vgg import load_vgg
+        model = load_vgg()
+        model.to(device)
     else:
         raise ValueError("Unknown model name: {}".format(model_name))
 
