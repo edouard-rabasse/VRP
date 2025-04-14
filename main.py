@@ -50,10 +50,22 @@ if __name__ == "__main__":
     ## Define the transform to resize the images and convert them to tensors
     ## TODO : use an external transform function
 
-    transform = transforms.Compose([
-    transforms.ToPILImage(),
-    transforms.Resize(image_size),
-    transforms.ToTensor(),
+    transform_train = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize((224, 224)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(15),
+        transforms.ToTensor(),
+        # Normalize with ImageNet's mean and std if using a pretrained model like VGG16
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+# Transform for testing (deterministic)
+    transform_test = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
 
@@ -65,8 +77,18 @@ if __name__ == "__main__":
     print(f"Model {cfg.model_name} loaded.")
 
     print("Loading data...")
-    train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=2, transform=transform, train_ratio=0.8, 
-              image_size=(224, 224), num_workers=4, mask_path=cfg.mask_path, num_max=None)
+    train_loader, test_loader = load_data_mask(
+        original_path,
+        modified_path,
+        batch_size=32,
+        transform_train=transform_train,
+        transform_test=transform_test,
+        train_ratio=0.8,
+        image_size=(224, 224),
+        num_workers=4,
+        mask_path=mask_path,
+        num_max=None
+        )
     print("Data loaded.")
 
     

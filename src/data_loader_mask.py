@@ -10,68 +10,44 @@ import numpy as np
 
 
 class CustomDataset(Dataset):
-    def __init__(self, original_dir, modified_dir, mask_dir=None, transform=None):
+    def __init__(self, samples, transform=None):
+        """
+        Args:
+            samples (list): A list of tuples (img_path, label, mask_path).
+            transform (callable, optional): Transform to apply to the images and masks.
+        """
+        self.all_samples = samples
         self.transform = transform
-        
-        # Collect original and modified image paths
-        self.original_images = [os.path.join(original_dir, f) 
-                               for f in os.listdir(original_dir) 
-                               if f.endswith(('.jpg', '.png'))]
-                               
-        self.modified_images = [os.path.join(modified_dir, f) 
-                              for f in os.listdir(modified_dir) 
-                              if f.endswith(('.jpg', '.png'))]
-        
-        # Combine all samples (originals + modifieds)
-        if mask_dir is not None:
-            self.all_samples = (
-                [(path, 0, None) for path in self.original_images] +  # 0=original, no mask
-                [(path, 1, os.path.join(mask_dir, os.path.basename(path))) 
-                for path in self.modified_images]  # 1=modified, with mask
-            )
-        else:
-            self.all_samples = (
-                [(path, 0, None) for path in self.original_images] +  # 0=original, no mask
-                [(path, 1, None) for path in self.modified_images]  # 1=modified, no mask
-            )
-        self.imgs = self.all_samples
 
     def __len__(self):
         return len(self.all_samples)
-        
+
     def __getitem__(self, idx):
-        """
-        size of the outputs : 
-        - image : (batch, 3,resized_height, resized_width) --> need to do a permute(1,2,0).numpy()*255
-        - label : (batch,)
-        - mask : (batch,1, resized_height, resized_width)
-        """
         img_path, label, mask_path = self.all_samples[idx]
         
-        # Load image
+        # Load the image using cv2
         image = cv2.imread(img_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        
-        # Load mask (zeros for originals or if no mask path)
+        # Load or create mask
         if label == 0 or mask_path is None:
-            mask = np.zeros((image.shape[0],image.shape[1]), dtype=np.float64)
-   
-
+            mask = np.zeros((image.shape[0], image.shape[1]), dtype=np.float64)
         else:
-            mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)/ 255.0
-        
-        # use transforms
+            mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) / 255.0
+
+        # Apply the transform if provided.
+        # Note: Make sure the transform can work on numpy images,
+        # especially if one of the transforms is ToPILImage().
         if self.transform:
             image = self.transform(image)
             mask = self.transform(mask)
-        else:   
-            image = torch.from_numpy(image).unsqueeze(0).float()
+        else:
+            # Ensure image becomes CxHxW (if image is HxWx3)
+            image = torch.from_numpy(image).permute(2, 0, 1).float()
             mask = torch.from_numpy(mask).unsqueeze(0).float()
-    
 
-        
         return image, torch.tensor(label, dtype=torch.long), mask
+
 
 
 def get_dataset(data_path, transform, image_size=(284, 284)):
@@ -114,37 +90,62 @@ def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=4):
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
 
 
-def load_data_mask(original_path, modified_path, batch_size=32, transform=None, train_ratio=0.8, 
-              image_size=(284, 284), num_workers=4, mask_path=None, num_max=None):
-    """Load the dataset and return the DataLoader for training and testing.
-    Args:
-        original_path (str): Path to the original images.
-        modified_path (str): Path to the modified images.
-        batch_size (int): Batch size for the DataLoader.
-        transform (callable): Transform to be applied to the images.
-        train_ratio (float): Ratio of the dataset to use for training.
-        image_size (tuple): Size to resize the images to.
-        num_workers (int): Number of workers for loading data.
-        mask_path (str): Path to the mask images.
-    Returns:
-        DataLoader, DataLoader: The training and testing DataLoaders.
-    """
-    if transform is None:
-        transform = get_transform(image_size=image_size)
+def load_data_mask(
+    original_path,
+    modified_path,
+    batch_size=32,
+    transform_train=None,
+    transform_test=None,
+    train_ratio=0.8,
+    image_size=(284, 284),
+    num_workers=4,
+    mask_path=None,
+    num_max=None
+):
+    # Build the master sample list
+    original_images = [os.path.join(original_path, f)
+                       for f in os.listdir(original_path)
+                       if f.endswith(('.jpg', '.png'))]
     
-    dataset = CustomDataset(original_path, modified_path, mask_path, transform=transform)
+    modified_images = [os.path.join(modified_path, f)
+                       for f in os.listdir(modified_path)
+                       if f.endswith(('.jpg', '.png'))]
+    
+    if mask_path is not None:
+        all_samples = (
+            [(path, 0, None) for path in original_images] +
+            [(path, 1, os.path.join(mask_path, os.path.basename(path)))
+             for path in modified_images]
+        )
+    else:
+        all_samples = (
+            [(path, 0, None) for path in original_images] +
+            [(path, 1, None) for path in modified_images]
+        )
+    
+    # If you want to restrict to a maximum number of samples
     if num_max is not None:
-        dataset.all_samples = dataset.all_samples[:num_max]
-        dataset.original_images = dataset.original_images[:num_max]
-        dataset.modified_images = dataset.modified_images[:num_max]
-
-
-
-
-    train_dataset, test_dataset = split_dataset(dataset, train_ratio=train_ratio)
-    train_loader = get_dataloader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-    test_loader = get_dataloader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        all_samples = all_samples[:num_max]
+    
+    # Shuffle the samples
+    np.random.shuffle(all_samples)
+    
+    # Split the sample list according to train_ratio
+    train_size = int(train_ratio * len(all_samples))
+    train_samples = all_samples[:train_size]
+    test_samples  = all_samples[train_size:]
+    
+    # Create separate dataset instances with different transforms
+    train_dataset = CustomDataset(train_samples, transform=transform_train)
+    test_dataset = CustomDataset(test_samples, transform=transform_test)
+    
+    # Build DataLoaders
+    train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                              shuffle=True, num_workers=num_workers)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size,
+                             shuffle=False, num_workers=num_workers)
     return train_loader, test_loader
+
 
 
 def precompute_deit(model, dataloader, device='cpu'):
@@ -180,36 +181,42 @@ if __name__ == "__main__":
     modified_path = 'MSH/MSH/plots/configuration5'
     mask_path = 'data/MSH/mask'
     
-    transform = transforms.Compose([
+    transform_train = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize((284, 284)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(15),
+        transforms.ToTensor(),
+        # Normalize with ImageNet's mean and std if using a pretrained model like VGG16
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+# Transform for testing (deterministic)
+    transform_test = transforms.Compose([
         transforms.ToPILImage(),
         transforms.Resize((284, 284)),
         transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
     train_loader, test_loader = load_data_mask(
         original_path=original_path,
         modified_path=modified_path,
         batch_size=32,
-        transform=transform,
+        transform_train=transform_train,
+        transform_test=transform_test,
         train_ratio=0.8,
         image_size=(284, 284),
         num_workers=4,
-        mask_path=mask_path
+        mask_path=mask_path,
+        num_max=None
     )
-    dataset = CustomDataset(original_path, modified_path, mask_path, transform=transform)
-    print(type(dataset[0]))
-    print(dataset[0][0].shape)  # Image shape
-    for images, labels, masks in train_loader:
-        print("Images shape:", images.shape)
-        print("Labels shape:", labels.shape)
-        print("Masks shape:", masks.shape)
-        # find the first with label 1
-        for i in range(len(labels)):
-            if labels[i] == 1:
-                print("Found label 1 at index:", i)
-                index = i
-                break
-        print("singular mask shape:", masks[index].shape)
-        cv2.imwrite("output/mask.png", masks[index].permute(1,2,0).numpy()*255)
-        cv2.imwrite("output/image.png", images[index].permute(1, 2, 0).numpy()*255)
-        break  # Just to print one instance
+
+    for samples in train_loader:
+        print("sample size", samples.shape)
+        print(vars(samples))
+    
+        # print("singular mask shape:", masks[index].shape)
+        # cv2.imwrite("output/mask.png", masks[index].permute(1,2,0).numpy()*255)
+        # cv2.imwrite("output/image.png", images[index].permute(1, 2, 0).numpy()*255)
+        # break  # Just to print one instance
