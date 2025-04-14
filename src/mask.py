@@ -61,6 +61,6 @@ def get_mask(original_image, modified_image):
 if __name__ == "__main__":
     process_image_pairs(
         original_dir="MSH/MSH/plots/configuration1",
-        modified_dir="MSH/MSH/plots/configuration5",
+        modified_dir="MSH/MSH/plots/configuration7",
         output_dir="data/MSH/mask"
     )
