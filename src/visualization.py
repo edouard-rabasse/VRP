@@ -27,8 +27,10 @@ def show_mask_on_image(input, heatmap, alpha=0.5):
         input = input.cpu().numpy()
     
     # check that it is in the right format,
-    if input.shape[0] != 3:
+    if len(input.shape) != 3:
         raise ValueError("[show_mask_on_image]Input tensor must have 3 channels (C, H, W) format.")
+    if input.shape[0] ==1:
+        input = np.repeat(input, 3, axis=0)
     
     # print("input_shape:", input.shape)
     input_size = (input.shape[1], input.shape[2])
@@ -61,6 +63,7 @@ def get_heatmap(method, model, input_tensor, args,device='cpu'):
     -args (dict): Additional arguments for the method.
     ## Returns:
     - heatmap (numpy.ndarray): The generated heatmap."""
+    input_tensor = input_tensor.to(device)
 
     if method == 'gradcam':
         from models.VisualScoringModel import GradCAM
@@ -70,30 +73,27 @@ def get_heatmap(method, model, input_tensor, args,device='cpu'):
     elif method == 'grad_rollout':
         from models.vit_explain.grad_rollout import VITAttentionGradRollout
         grad_rollout = VITAttentionGradRollout(model, discard_ratio=args['discard_ratio'])
-        input_tensor = input_tensor.to(device)
+  
         heatmap = grad_rollout(input_tensor, category_index=args['class_index'])
         print("Grad Rollout heatmap shape:", heatmap.shape)
     
     elif method == "multi_task":
         with torch.no_grad():
-            input_tensor = input_tensor.to(device)
             model.eval()
             cls_logits, seg_logits = model(input_tensor)
-            heatmap = seg_logits[0, 0].cpu().numpy()  # Assuming the first channel is the one of interest
+            print("Segmentation logits shape:", seg_logits.shape)
+            heatmap = seg_logits[0, 0]  # Assuming the first channel is the one of interest
+            # apply softmax to the heatmap
+            heatmap = torch.nn.functional.softmax(heatmap, dim=0).cpu().numpy()
+
             heatmap = cv2.resize(heatmap, (input_tensor.shape[2], input_tensor.shape[3]))
             heatmap = heatmap* 255  # Scale to [0, 255]
     
-    elif method == "grad_cam2":
-        from models.vit_explain.GradCam import GradCAM
-        model.eval()
-        # # print devices of model and input_tensor
-        # print("Model device:", next(model.parameters()).device)
-        # print("Input tensor device:", input_tensor.device)
-        gradcam = GradCAM(model, target_layer=args['target_layer'])
+    elif method == "grad_cam_vgg":
+        from models.VisualScoringModel import GradCAM
+        target_layer = model.features[29]  # Assuming the last layer is the target layer
+        gradcam = GradCAM(model, target_layer)
         heatmap = gradcam(input_tensor, class_index=args['class_index'])
-        heatmap = cv2.resize(heatmap, (input_tensor.shape[2], input_tensor.shape[3]))
-        heatmap = heatmap * 255
-        gradcam.remove_hooks()
 
         
     else:

@@ -18,7 +18,7 @@ weight_path = None
 
 
 # --- Model Parameters ---
-train = False  # Set to True to train the model
+train = True  # Set to True to train the model
 MODEL_PARAMS = {
     "learning_rate": 0.0001,
     "batch_size": batch_size,

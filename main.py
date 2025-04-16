@@ -93,7 +93,6 @@ if __name__ == "__main__":
 
     # Ensure model is in eval mode
     model.eval()
-
     model.to(device)
     # extract 1 image from the modified path
     # print(vars(test_loader.dataset.dataset))
@@ -129,7 +128,15 @@ if __name__ == "__main__":
 
         tensor = denormalize(modified_tensor.squeeze(0).cpu())
 
-        overlay = show_mask_on_image(tensor, heatmap, alpha=0.5)
+        mask_pth = f"{mask_path}Plot_{plot_number}.png"
+        mask = cv2.imread(mask_pth, cv2.IMREAD_GRAYSCALE)
+        mask = cv2.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=cv2.INTER_LINEAR)
+        mask = mask_transform(size=image_size)(mask)
+        print(mask.shape)
+        print(mask.cpu().numpy().shape)
+
+
+        overlay = show_mask_on_image(mask, heatmap, alpha=0.5)
         cv2.imwrite(f"output/{cfg.method}_{plot_number}.png", overlay)
         del modified_img, modified_tensor
         del heatmap, tensor, overlay

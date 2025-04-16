@@ -9,6 +9,9 @@ from tqdm import tqdm
 def load_vgg():
     model = models.vgg16(weights='DEFAULT')
     model.classifier[6] = nn.Linear(4096, 2)  # Change the last layer to have 2 classes
+    for m in model.modules():
+        if isinstance(m, nn.ReLU):
+            m.inplace = False
     return model
 
 
