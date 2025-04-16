@@ -30,12 +30,12 @@ class CustomDataset(Dataset):
                                     for f in os.listdir(modified_dir)
                                     if f.lower().endswith(('.jpg', '.png'))]
             if mask_dir is not None:
-                self.all_samples = ([(path, 0, None) for path in self.original_images] +
+                self.all_samples = ([(path, 0, None) for path in self.modified_images] +
                                     [(path, 1, os.path.join(mask_dir, os.path.basename(path)))
-                                     for path in self.modified_images])
+                                     for path in self.original_images])
             else:
-                self.all_samples = ([(path, 0, None) for path in self.original_images] +
-                                    [(path, 1, None) for path in self.modified_images])
+                self.all_samples = ([(path, 0, None) for path in self.modified_images] +
+                                    [(path, 1, None) for path in self.original_images])
         self.imgs = self.all_samples  # for backward compatibility
 
     def __len__(self):

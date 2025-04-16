@@ -64,14 +64,14 @@ if __name__ == "__main__":
     train_loader, test_loader = load_data_mask(
         original_path=original_path,
         modified_path=modified_path,
-        batch_size=32,
+        batch_size=batch_size,
         image_transform_train=image_transform_train(size=image_size),
         image_transform_test=image_transform_test(size=image_size),
         mask_transform_train=mask_transform(size=image_size),
         mask_transform_test=mask_transform(size=image_size),
         train_ratio=train_ratio,
         image_size=image_size,
-        num_workers=2,
+        num_workers=1,
         mask_path=mask_path
     )
     print("Data loaded.")
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     
     plot_numbers = range(1, 15)  # Adjust the range as needed
     for plot_number in plot_numbers:
-        img_path = f"{modified_path}Plot_{plot_number}.png"
+        img_path = f"{original_path}Plot_{plot_number}.png"
         
 
 
@@ -114,6 +114,9 @@ if __name__ == "__main__":
         modified_img = cv2.imread(img_path)
         # modified_img = cv2.cvtColor(modified_img, cv2.COLOR_BGR2RGB)
         modified_tensor = image_transform_test(image_size)(modified_img).unsqueeze(0)
+        # cls, seg = model(modified_tensor.to(device))
+        # print(seg.shape)
+
         # with torch.no_grad():
         #     modified_tensor = modified_tensor.to(device)
         #     pred = model(modified_tensor)
@@ -121,7 +124,7 @@ if __name__ == "__main__":
         # print(f"Prediction: {pred}")
 
         # cv2.imwrite("output/modified.png", modified_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 255)
-        heatmap= get_heatmap(cfg.method, model, modified_tensor, cfg.heatmap_args)
+        heatmap= get_heatmap(cfg.method, model, modified_tensor, cfg.heatmap_args, device=device)
         
 
         tensor = denormalize(modified_tensor.squeeze(0).cpu())

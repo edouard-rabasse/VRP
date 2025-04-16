@@ -51,7 +51,7 @@ def show_mask_on_image(input, heatmap, alpha=0.5):
     overlay = cv2.addWeighted(input_image, alpha, colored_heatmap, 1-alpha, 0)
     return overlay
 
-def get_heatmap(method, model, input_tensor, args):
+def get_heatmap(method, model, input_tensor, args,device='cpu'):
     """
     Generate a heatmap using the specified method.
     ## Args:
@@ -70,11 +70,14 @@ def get_heatmap(method, model, input_tensor, args):
     elif method == 'grad_rollout':
         from models.vit_explain.grad_rollout import VITAttentionGradRollout
         grad_rollout = VITAttentionGradRollout(model, discard_ratio=args['discard_ratio'])
+        input_tensor = input_tensor.to(device)
         heatmap = grad_rollout(input_tensor, category_index=args['class_index'])
         print("Grad Rollout heatmap shape:", heatmap.shape)
     
     elif method == "multi_task":
         with torch.no_grad():
+            input_tensor = input_tensor.to(device)
+            model.eval()
             cls_logits, seg_logits = model(input_tensor)
             heatmap = seg_logits[0, 0].cpu().numpy()  # Assuming the first channel is the one of interest
             heatmap = cv2.resize(heatmap, (input_tensor.shape[2], input_tensor.shape[3]))

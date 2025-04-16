@@ -1,6 +1,6 @@
 # config.py
 original_path = "MSH/MSH/plots/configuration1/"
-modified_path = "MSH/MSH/plots/configuration3/"
+modified_path = "MSH/MSH/plots/configuration4/"
 mask_path = "data/MSH/mask/"
 
 # --- Parameters ---
