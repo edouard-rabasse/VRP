@@ -140,6 +140,32 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
         
         print(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} " 
               f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
+    # evaluate on test set
+    test_cls_loss = 0.0
+    test_seg_loss = 0.0
+    test_loss = 0.0
+    correct = 0
+    total = 0
+    for images, labels, masks in test_loader:
+        images = images.to(device)
+        labels = labels.to(device)
+        masks = masks.to(device).float()
+        
+        with torch.no_grad():
+            clf_logits, seg_logits = model(images)
+            loss_cls = criterion_cls(clf_logits, labels)
+            loss_seg = criterion_seg(seg_logits, masks)
+            loss = loss_cls + lambda_seg * loss_seg
+        
+        preds = torch.argmax(clf_logits, dim=1)
+        correct += (preds == labels).sum().item()
+        total += labels.size(0)
+        test_loss = loss.item() * images.size(0)
+        test_cls_loss = loss_cls.item() * images.size(0)
+        test_seg_loss = loss_seg.item() * images.size(0)
+    print(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
+
+
     return model, optimizer, scheduler
 
 if __name__ == "__main__":
@@ -156,7 +182,7 @@ if __name__ == "__main__":
     model.to(device)
 
     # Train for, say, 10 epochs and use a lambda weight of 1.0 for segmentation loss.
-    model, optimizer, scheduler = train_model(model, train_loader, test_loader,
+    model, optimizer, scheduler = train_model_multi_task(model, train_loader, test_loader,
                                                 num_epochs=20,
                                                 device=device,
                                                 learning_rate=1e-3,

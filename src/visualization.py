@@ -30,23 +30,23 @@ def show_mask_on_image(input, heatmap, alpha=0.5):
     if input.shape[0] != 3:
         raise ValueError("[show_mask_on_image]Input tensor must have 3 channels (C, H, W) format.")
     
-    print("input_shape:", input.shape)
+    # print("input_shape:", input.shape)
     input_size = (input.shape[1], input.shape[2])
 
     heatmap_resized = resize_heatmap(heatmap, (input_size[0], input_size[1]))
     heatmap_resized = (heatmap_resized * 255).astype(np.uint8)
-    print("max over heatmap:", np.max(heatmap_resized))
-    print("max of input:", np.max(input))
+    # print("max over heatmap:", np.max(heatmap_resized))
+    # print("max of input:", np.max(input))
     colored_heatmap = cv2.applyColorMap(heatmap_resized, cv2.COLORMAP_JET)
     
     # Overlay on input (grayscale to RGB)
     input_image = input.transpose(1, 2, 0)
     input_image = (input_image*255).astype(np.uint8)  # Convert to uint8 for OpenCV
-    print("maximum over the whle input:", np.max(input_image))
+    # print("maximum over the whle input:", np.max(input_image))
 
 
-    print("Input Image shape:", input_image.shape)
-    print("Heatmap shape:", colored_heatmap.shape)
+    # print("Input Image shape:", input_image.shape)
+    # print("Heatmap shape:", colored_heatmap.shape)
 
     overlay = cv2.addWeighted(input_image, alpha, colored_heatmap, 1-alpha, 0)
     return overlay
@@ -71,6 +71,7 @@ def get_heatmap(method, model, input_tensor, args):
         from models.vit_explain.grad_rollout import VITAttentionGradRollout
         grad_rollout = VITAttentionGradRollout(model, discard_ratio=args['discard_ratio'])
         heatmap = grad_rollout(input_tensor, category_index=args['class_index'])
+        print("Grad Rollout heatmap shape:", heatmap.shape)
     
     elif method == "multi_task":
         with torch.no_grad():
@@ -82,9 +83,9 @@ def get_heatmap(method, model, input_tensor, args):
     elif method == "grad_cam2":
         from models.vit_explain.GradCam import GradCAM
         model.eval()
-        # print devices of model and input_tensor
-        print("Model device:", next(model.parameters()).device)
-        print("Input tensor device:", input_tensor.device)
+        # # print devices of model and input_tensor
+        # print("Model device:", next(model.parameters()).device)
+        # print("Input tensor device:", input_tensor.device)
         gradcam = GradCAM(model, target_layer=args['target_layer'])
         heatmap = gradcam(input_tensor, class_index=args['class_index'])
         heatmap = cv2.resize(heatmap, (input_tensor.shape[2], input_tensor.shape[3]))
@@ -94,6 +95,11 @@ def get_heatmap(method, model, input_tensor, args):
         
     else:
         raise ValueError("Unknown method: {}".format(method))
+
+    
+    thresh = np.percentile(heatmap, 95)  # Threshold for heatmap
+    print("Threshold for heatmap:", thresh)
+    heatmap = np.clip(heatmap, thresh, 1)  # Clip values to [0, thresh]
 
     return heatmap
 

@@ -25,10 +25,14 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
     elif model_name == 'deit_tiny':
         # Define your training loop for DEIT here
         from models.deit_tiny import precompute_deit_tiny_features, train_deit
+        print("starting precompute")
         train_features = precompute_deit_tiny_features(model, train_loader, device=device)
         test_features = precompute_deit_tiny_features(model, test_loader, device=device)
+        print("done precompute")
         train_loader = DataLoader(train_features, batch_size=cfg.batch_size, shuffle=True)
         test_loader = DataLoader(test_features, batch_size=cfg.batch_size, shuffle=False)
+
+        print("starting train")
 
         train_deit(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
     elif model_name =="multi_task":

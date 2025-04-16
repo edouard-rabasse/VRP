@@ -41,6 +41,7 @@ def image_transform_train(size=(224,224), mean=mean, std=std):
         transforms.ToPILImage(),
         transforms.Resize(size),
         transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(10),  # Random rotation for augmentation
         transforms.ToTensor(),
         transforms.Normalize(mean=mean,
                             std=std),

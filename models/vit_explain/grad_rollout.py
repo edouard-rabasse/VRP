@@ -62,6 +62,8 @@ class VITAttentionGradRollout:
         """
         returns a mask of the attention on the image patches : np.array
         """
+        self.attentions = []
+        self.attention_gradients = []
         self.model.zero_grad()
         output = self.model(input_tensor)
         category_mask = torch.zeros(output.size())
@@ -70,6 +72,9 @@ class VITAttentionGradRollout:
         output = output.cpu()
         loss = (output*category_mask).sum()
         loss.backward()
+
+        # empty caches
+        torch.cuda.empty_cache()
 
         return grad_rollout(self.attentions, self.attention_gradients,
             self.discard_ratio)

@@ -43,3 +43,12 @@ Using Fully COnvolutional Network
 Plus pour photoshop. FCN VGG-16
 With skip connection. Plus axé sur les photos -> Un peu HS
 
+## Quality analysis for the VRP solutions using computer vision techniques
+https://www.researchgate.net/publication/320010264_Quality_analysis_for_the_VRP_solutions_using_computer_vision_techniques
+C'est pas les graphes qu'on a. C'est plutôt en utilisant les coordonnées parallèles pour un nombre de caractéristiques. On a ensuite une distinction visuelle entre les solutions optimales et les mauvaises.
+--> A explorer ?
+
+## Image Splicing Localization Using a Multi Task Fully COnvolutional Network
+https://ar5iv.labs.arxiv.org/html/1709.02016#:~:text=localization%20output%20in%20certain%20cases,finer%20localization%20than%20the%20SFCN
+
+Uses a modified version of VGG-16, but they add batch normalization and class weighting.

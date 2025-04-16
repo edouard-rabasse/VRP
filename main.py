@@ -79,7 +79,7 @@ if __name__ == "__main__":
     
 
     if cfg.train:
-        from src.train import train
+        from src.train_functions import train
         train(model_name=cfg.model_name,
             model=model,
             train_loader=train_loader,
@@ -103,19 +103,31 @@ if __name__ == "__main__":
     #         index = i
     #         break
    
-
-    modified_path = "MSH/MSH/plots/configuration5/Plot_5.png"
-
     
-    modified_img = cv2.imread(modified_path)
-    modified_img = cv2.cvtColor(modified_img, cv2.COLOR_BGR2RGB)
-    modified_tensor = image_transform_test(image_size)(modified_img).unsqueeze(0).to(device)
+    plot_numbers = range(1, 15)  # Adjust the range as needed
+    for plot_number in plot_numbers:
+        img_path = f"{modified_path}Plot_{plot_number}.png"
+        
 
-    cv2.imwrite("output/modified.png", modified_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 255)
-    heatmap= get_heatmap(cfg.method, model, modified_tensor, cfg.heatmap_args)
-    print(heatmap.shape)
 
-    tensor = denormalize(modified_tensor.squeeze(0).cpu())
 
-    overlay = show_mask_on_image(tensor, heatmap, alpha=0.5)
-    cv2.imwrite(f"output/{cfg.method}.png", overlay)
+        modified_img = cv2.imread(img_path)
+        # modified_img = cv2.cvtColor(modified_img, cv2.COLOR_BGR2RGB)
+        modified_tensor = image_transform_test(image_size)(modified_img).unsqueeze(0)
+        # with torch.no_grad():
+        #     modified_tensor = modified_tensor.to(device)
+        #     pred = model(modified_tensor)
+        # pred = torch.argmax(pred, dim=1).item()
+        # print(f"Prediction: {pred}")
+
+        # cv2.imwrite("output/modified.png", modified_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 255)
+        heatmap= get_heatmap(cfg.method, model, modified_tensor, cfg.heatmap_args)
+        
+
+        tensor = denormalize(modified_tensor.squeeze(0).cpu())
+
+        overlay = show_mask_on_image(tensor, heatmap, alpha=0.5)
+        cv2.imwrite(f"output/{cfg.method}_{plot_number}.png", overlay)
+        del modified_img, modified_tensor
+        del heatmap, tensor, overlay
+        torch.cuda.empty_cache()

@@ -59,8 +59,15 @@ def get_mask(original_image, modified_image):
 # Usage
 
 if __name__ == "__main__":
-    process_image_pairs(
-        original_dir="MSH/MSH/plots/configuration1",
-        modified_dir="MSH/MSH/plots/configuration7",
-        output_dir="data/MSH/mask"
-    )
+    import sys
+    if len(sys.argv) >= 2:
+        numeros = [sys.argv[1]]
+    else:
+        numeros = range(2,8)
+    for numero in numeros:
+        # Call the function with the specified directories
+        process_image_pairs(
+            original_dir="MSH/MSH/plots/configuration1",
+            modified_dir=f"MSH/MSH/plots/configuration{numero}",
+            output_dir=f"data/MSH/mask{numero}"
+        )

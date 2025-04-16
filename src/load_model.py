@@ -31,7 +31,7 @@ def load_deit(weights_path,device='cpu'):
 
 
 def load_model(model_name, device, cfg):
-
+    
     if model_name == 'VisualScoringModel':
         from models.VisualScoringModel import VisualScoringModel
         image_size = cfg.image_size
