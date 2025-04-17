@@ -5,6 +5,8 @@ import torch
 from torch.utils.data import Dataset, DataLoader, random_split, TensorDataset
 from torchvision import datasets, transforms
 from PIL import Image
+import random
+import torchvision.transforms.functional as TF
 
 class CustomDataset(Dataset):
     def __init__(self, original_dir=None, modified_dir=None, mask_dir=None,
@@ -45,24 +47,36 @@ class CustomDataset(Dataset):
         img_path, label, mask_path = self.all_samples[idx]
         
         # Load image using cv2 and convert to RGB.
-        img = cv2.imread(img_path)
+        img = Image.open(img_path).convert("RGB")
         if img is None:
             raise ValueError(f"Unable to load image at {img_path}")
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Load mask: if none provided or label indicates original, create a mask of zeros.
         if label == 1 or mask_path is None:
-            mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+            mask = np.zeros((img.size[0], img.size[1]), dtype=np.uint8)
+            mask = Image.new("L", img.size, 0)
         else:
-            mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
-            if mask is None:
-                mask = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
+            mask = Image.open(mask_path).convert("L")  # Convert to grayscale
 
-        # Apply image transform (expects a NumPy array)
+
+        
+        # random transforms
+        if random.random() > 0.5:
+            img, mask = TF.hflip(img), TF.hflip(mask)
+        if random.random() > 0.5:
+            img, mask = TF.vflip(img), TF.vflip(mask)
+        angles = [0, 90, 180, 270]
+        angle = random.choice(angles)
+        img = TF.rotate(img, angle)
+        mask = TF.rotate(mask, angle)
+
+        # Apply image transform (expects a PIL array)
         if self.image_transform:
             image = self.image_transform(img)
         else:
-            image = torch.from_numpy(img).permute(2, 0, 1).float()
+            # to tensor
+            image = transforms.ToTensor()(img)
         del img  # Free memory
 
         # Apply mask transform: here we use a simple transform without normalization that expects a single channel.
@@ -178,7 +192,7 @@ if __name__ == "__main__":
     
     # Define transforms for images and masks.
     image_transform_train = transforms.Compose([
-        transforms.ToPILImage(),
+        # transforms.ToPILImage(),
         transforms.Resize((224, 224)),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
@@ -186,7 +200,7 @@ if __name__ == "__main__":
                              std=[0.229, 0.224, 0.225]),
     ])
     image_transform_test = transforms.Compose([
-        transforms.ToPILImage(),
+        # transforms.ToPILImage(),
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -194,7 +208,7 @@ if __name__ == "__main__":
     ])
     # For the mask, we usually only need resizing and conversion to tensor.
     mask_transform = transforms.Compose([
-        transforms.ToPILImage(),
+        # transforms.ToPILImage(),
         transforms.Resize((224, 224)),
         transforms.ToTensor()  # no normalization, retains a single channel
     ])
@@ -221,6 +235,7 @@ if __name__ == "__main__":
         print("Labels shape:", labels.shape)
         print("Masks shape:", masks.shape)      # Expected: [batch, 1, 224, 224]
         # Optionally, save one image and mask.
-        cv2.imwrite("output/image.png", images[0].permute(1, 2, 0).numpy() * 255)
+        
+        cv2.imwrite("output/image.png", images[0].permute(1, 2, 0).numpy()[:,:,::-1] * 255)
         cv2.imwrite("output/mask.png", masks[0].permute(1, 2, 0).numpy() * 255)
         break
