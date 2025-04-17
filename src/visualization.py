@@ -75,7 +75,7 @@ def get_heatmap(method, model, input_tensor, args,device='cpu'):
         grad_rollout = VITAttentionGradRollout(model, discard_ratio=args['discard_ratio'])
   
         heatmap = grad_rollout(input_tensor, category_index=args['class_index'])
-        print("Grad Rollout heatmap shape:", heatmap.shape)
+        # print("Grad Rollout heatmap shape:", heatmap.shape)
     
     elif method == "multi_task":
         with torch.no_grad():
@@ -101,7 +101,7 @@ def get_heatmap(method, model, input_tensor, args,device='cpu'):
 
     
     thresh = np.percentile(heatmap, 95)  # Threshold for heatmap
-    print("Threshold for heatmap:", thresh)
+    # print("Threshold for heatmap:", thresh)
     heatmap = np.clip(heatmap, thresh, 1)  # Clip values to [thresh,1]
     # normalize the heatmap to [0, 1]
     heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-8)

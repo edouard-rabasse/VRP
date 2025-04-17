@@ -170,20 +170,22 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
 
 if __name__ == "__main__":
     # Assuming your directory paths are defined:
-    original_path, modified_path, mask_path = "MSH/MSH/plots/configuration1", "MSH/MSH/plots/configuration5", "data/MSH/mask"
+    original_path, modified_path, mask_path = "MSH/MSH/plots/configuration1", "MSH/MSH/plots/configuration5", "data/MSH/mask5"
+
+    from src.transform import image_transform_train, image_transform_test, mask_transform
 
     from src.data_loader_mask import load_data_mask
-    train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=2, transform=transform, 
-                                                train_ratio=0.8, image_size=(200, 200), num_workers=4, mask_path=mask_path, num_max=20)
+    train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=2, 
+                                                train_ratio=0.8, image_size=(84,84), num_workers=4, mask_path=mask_path, num_max=20, image_transform_test=image_transform_test(size=(84,84)), image_transform_train=image_transform_train(size=(84,84)), mask_transform_train=mask_transform(size=(84,84)))
 
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = MultiTaskVisualScoringModel(input_shape=(3,200,200))
+    model = MultiTaskVisualScoringModel(input_shape=(3,84,84))
     model.to(device)
 
     # Train for, say, 10 epochs and use a lambda weight of 1.0 for segmentation loss.
     model, optimizer, scheduler = train_model_multi_task(model, train_loader, test_loader,
-                                                num_epochs=20,
+                                                num_epochs=10,
                                                 device=device,
                                                 learning_rate=1e-3,
                                                 lambda_seg=1)

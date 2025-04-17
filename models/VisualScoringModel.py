@@ -154,3 +154,18 @@ class GradCAM:
         return heatmap
     
 
+
+if __name__ == "__main__":
+    # Example usage
+    model = VisualScoringModel()
+    grad_cam = GradCAM(model, model.conv3)
+
+    from src.data_loader_mask import load_data_mask
+    train_loader, test_loader = load_data_mask("MSH/MSH/plots/configuration1", "MSH/MSH/plots/configuration3", batch_size=2,  
+                                            train_ratio=0.8, image_size=(84, 84), num_workers=4, mask_path="data/MSH/mask3", num_max=20)
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    train_model(model, train_loader, test_loader, num_epochs=10, device=device)
+
+    

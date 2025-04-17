@@ -108,7 +108,6 @@ if __name__ == "__main__":
     
     test_adresses = os.listdir(test_modified_path)
     test_adresses = [x for x in test_adresses if x.endswith('.png')]
-    print(test_adresses)
 
     for adress in test_adresses:
         img_path = f"{test_modified_path}{adress}"

@@ -194,7 +194,7 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
 
 if __name__ == "__main__":
     # Assuming your directory paths are defined:
-    original_path, modified_path, mask_path = "MSH/MSH/plots/configuration1", "MSH/MSH/plots/configuration5", "data/MSH/mask"
+    original_path, modified_path, mask_path = "MSH/MSH/plots/configuration1", "MSH/MSH/plots/configuration3", "data/MSH/mask3"
 
     from src.data_loader_mask import load_data_mask
     train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=2, transform=transform, 
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = MultiTaskVisualScoringModel(input_shape=(3,200,200))
+    model = MultiTaskVGG(input_shape=(3,200,200))
     model.to(device)
 
     # Train for, say, 10 epochs and use a lambda weight of 1.0 for segmentation loss.
