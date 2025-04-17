@@ -45,14 +45,14 @@ class CustomDataset(Dataset):
         img_path, label, mask_path = self.all_samples[idx]
         
         # Load image using cv2 and convert to RGB.
-        image = cv2.imread(img_path)
-        if image is None:
+        img = cv2.imread(img_path)
+        if img is None:
             raise ValueError(f"Unable to load image at {img_path}")
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Load mask: if none provided or label indicates original, create a mask of zeros.
-        if label == 0 or mask_path is None:
-            mask = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
+        if label == 1 or mask_path is None:
+            mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
         else:
             mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
             if mask is None:
@@ -60,17 +60,19 @@ class CustomDataset(Dataset):
 
         # Apply image transform (expects a NumPy array)
         if self.image_transform:
-            image = self.image_transform(image)
+            image = self.image_transform(img)
         else:
-            image = torch.from_numpy(image).permute(2, 0, 1).float()
+            image = torch.from_numpy(img).permute(2, 0, 1).float()
+        del img  # Free memory
 
         # Apply mask transform: here we use a simple transform without normalization that expects a single channel.
         if self.mask_transform:
-            mask = self.mask_transform(mask)
+            mask_tensor = self.mask_transform(mask)
         else:
-            mask = torch.from_numpy(mask).unsqueeze(0).float()
+            mask_tensor = torch.from_numpy(mask).unsqueeze(0).float()
+        del mask  # Free memory
         
-        return image, torch.tensor(label, dtype=torch.long), mask
+        return image, torch.tensor(label, dtype=torch.long), mask_tensor
 
 def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=4):
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
@@ -133,10 +135,46 @@ def load_data_mask(
 
 # Example usage:
 
+def load_data_train_test(train_original_path,
+                         test_original_path,
+                         train_modified_path,
+                         test_modified_path,
+                         mask_path_train=None,
+                         mask_path_test=None,
+                         batch_size=32,
+                         image_transform_train=None,
+                        image_transform_test=None,
+                        mask_transform_train=None,
+                        mask_transform_test=None,
+                        image_size=(224, 224),
+                        num_workers=4,
+                        num_max=None
+                        ):
+    train_set = CustomDataset(
+        original_dir=train_original_path,
+        modified_dir=train_modified_path,
+        mask_dir=mask_path_train,
+        image_transform=image_transform_train,
+        mask_transform=mask_transform_train)
+    test_set = CustomDataset(
+        original_dir=test_original_path,
+        modified_dir=test_modified_path,
+        mask_dir=mask_path_test,
+        image_transform=image_transform_test,
+        mask_transform=mask_transform_test)
+    
+    train_loader = get_dataloader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    test_loader = get_dataloader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    return train_loader, test_loader
+    
+
 if __name__ == "__main__":
-    original_path = 'MSH/MSH/plots/configuration3'
-    modified_path = 'MSH/MSH/plots/configuration5'
-    mask_path = 'data/MSH/mask'
+    train_original_path = 'data/train/configuration1'
+    train_modified_path = 'data/train/configuration2'
+    test_original_path = 'data/test/configuration1'
+    test_modified_path = 'data/test/configuration2'
+    train_mask_path = 'data/mask/train/mask2'
+    test_mask_path = 'data/mask/test/mask2'
     
     # Define transforms for images and masks.
     image_transform_train = transforms.Compose([
@@ -161,18 +199,20 @@ if __name__ == "__main__":
         transforms.ToTensor()  # no normalization, retains a single channel
     ])
     
-    train_loader, test_loader = load_data_mask(
-        original_path=original_path,
-        modified_path=modified_path,
+    train_loader, test_loader = load_data_train_test(
+        train_original_path=train_original_path,
+        test_original_path=test_modified_path,
+        train_modified_path=test_modified_path,
+        test_modified_path=test_modified_path,
         batch_size=32,
         image_transform_train=image_transform_train,
         image_transform_test=image_transform_test,
         mask_transform_train=mask_transform,
         mask_transform_test=mask_transform,
-        train_ratio=0.8,
         image_size=(224, 224),
         num_workers=4,
-        mask_path=mask_path
+        mask_path_train=train_mask_path,
+        mask_path_test=test_mask_path,
     )
     
     # Test one batch to check outputs.

@@ -1,7 +1,5 @@
 # config.py
-original_path = "MSH/MSH/plots/configuration1/"
-modified_path = "MSH/MSH/plots/configuration3/"
-mask_path = "data/MSH/mask/"
+from data.config_data import *
 # --- Parameters ---
 train_ratio = 0.8     # 80% train, 20% test
 batch_size = 8

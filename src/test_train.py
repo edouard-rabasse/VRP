@@ -1,0 +1,60 @@
+# this scripts takes two folders and divides it into train and test sets
+
+import os
+import shutil
+from sklearn.model_selection import train_test_split
+
+def split_dataset(
+    src_dir: str,
+    dst_dir: str,
+    train_ratio: float = 0.8,
+    random_state: int = 42
+):
+    """
+    Splits images in src_dir/<class> into train/test sets and copies them
+    into dst_dir/train/<class> and dst_dir/test/<class>.
+
+    :param src_dir: root folder containing one subfolder per class
+    :param dst_dir: where to create `train/` and `test/` subfolders
+    :param train_ratio: fraction of images to put in the training set
+    :param random_state: seed for reproducibility
+    """
+    # find all class subdirectories
+    classes = [
+        d for d in os.listdir(src_dir)
+        if os.path.isdir(os.path.join(src_dir, d))
+    ]
+
+    for cls in classes:
+        class_src = os.path.join(src_dir, cls)
+        images = [
+            f for f in os.listdir(class_src)
+            if os.path.isfile(os.path.join(class_src, f))
+        ]
+        print (f"Found {len(images)} images in class '{cls}'")
+        # split into train/test
+        train_imgs, test_imgs = train_test_split(
+            images,
+            train_size=train_ratio,
+            random_state=random_state,
+            shuffle=True
+        )
+
+        for subset, filenames in (("train", train_imgs), ("test", test_imgs)):
+            subset_dir = os.path.join(dst_dir, subset, cls)
+            os.makedirs(subset_dir, exist_ok=True)
+            for fname in filenames:
+                src_path = os.path.join(class_src, fname)
+                dst_path = os.path.join(subset_dir, fname)
+                shutil.copy2(src_path, dst_path)
+
+if __name__ == "__main__":
+    # Example usage:
+    # your original data in "./data/" with subfolders label0/, label1/, etc.
+    # will be split into "./splits/train/..." and "./splits/test/..."
+    split_dataset(
+        src_dir="data/MSH/",
+        dst_dir="data/mask/",
+        train_ratio=0.75,      # e.g. 75% train, 25% test
+        random_state=123
+    )

@@ -38,7 +38,10 @@ def process_image_pairs(original_dir, modified_dir, output_dir, img_extensions=(
                 continue
                 
             # Compute mask
-            mask = get_mask_pixelised(original, modified, pixel_size=pixel_size)
+            if pixel_size == 1:
+                mask = get_mask(original, modified)
+            else:
+                mask = get_mask_pixelised(original, modified, pixel_size=pixel_size)
             
             # Save mask preserving original filename
             output_path = os.path.join(output_dir, filename)
@@ -89,6 +92,6 @@ if __name__ == "__main__":
             original_dir="MSH/MSH/plots/configuration1",
             modified_dir=f"MSH/MSH/plots/configuration{numero}",
             output_dir=f"data/MSH/mask{numero}",
-            pixel_size=50
+            pixel_size=1
 
         )

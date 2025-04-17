@@ -12,7 +12,7 @@ import torch.nn as nn
 # load model
 
 from torchvision import transforms
-from src.data_loader_mask import load_data_mask
+from src.data_loader_mask import load_data_train_test
 
 
 import cv2
@@ -43,13 +43,14 @@ if __name__ == "__main__":
     image_size = cfg.image_size
     batch_size = cfg.batch_size
     train_ratio = cfg.train_ratio
-    original_path = cfg.original_path
-    modified_path = cfg.modified_path
-    mask_path = cfg.mask_path
+    train_original_path = cfg.train_original_path
+    test_original_path = cfg.test_original_path
+    train_modified_path = cfg.train_modified_path
+    test_modified_path = cfg.test_modified_path
+    train_mask_path = cfg.train_mask_path
+    test_mask_path = cfg.test_mask_path
 
     ## Define the transform to resize the images and convert them to tensors
-    ## TODO : use an external transform function
-    
 
     print("Loading model...")
     model = load_model(
@@ -61,18 +62,20 @@ if __name__ == "__main__":
     print(type(image_transform_train(size=image_size)))
 
     print("Loading data...")
-    train_loader, test_loader = load_data_mask(
-        original_path=original_path,
-        modified_path=modified_path,
+    train_loader, test_loader = load_data_train_test(
+        train_original_path=train_original_path,
+        test_original_path=test_original_path,
+        train_modified_path=train_modified_path,
+        test_modified_path=test_modified_path,
+        mask_path_train=train_mask_path,
+        mask_path_test=test_mask_path,
         batch_size=batch_size,
         image_transform_train=image_transform_train(size=image_size),
         image_transform_test=image_transform_test(size=image_size),
         mask_transform_train=mask_transform(size=image_size),
         mask_transform_test=mask_transform(size=image_size),
-        train_ratio=train_ratio,
         image_size=image_size,
-        num_workers=1,
-        mask_path=mask_path
+        num_workers=0
     )
     print("Data loaded.")
 
@@ -103,9 +106,12 @@ if __name__ == "__main__":
     #         break
    
     
-    plot_numbers = range(1, 15)  # Adjust the range as needed
-    for plot_number in plot_numbers:
-        img_path = f"{original_path}Plot_{plot_number}.png"
+    test_adresses = os.listdir(test_modified_path)
+    test_adresses = [x for x in test_adresses if x.endswith('.png')]
+    print(test_adresses)
+
+    for adress in test_adresses:
+        img_path = f"{test_modified_path}{adress}"
         
 
 
@@ -116,11 +122,13 @@ if __name__ == "__main__":
         # cls, seg = model(modified_tensor.to(device))
         # print(seg.shape)
 
-        # with torch.no_grad():
-        #     modified_tensor = modified_tensor.to(device)
-        #     pred = model(modified_tensor)
-        # pred = torch.argmax(pred, dim=1).item()
-        # print(f"Prediction: {pred}")
+        with torch.no_grad():
+            modified_tensor = modified_tensor.to(device)
+            pred = model(modified_tensor)
+        proba = torch.nn.Softmax(dim=1)(pred)
+        pred = torch.argmax(pred, dim=1).item()
+        print(f"Prediction: {pred}")
+        print("proba", proba)
 
         # cv2.imwrite("output/modified.png", modified_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 255)
         heatmap= get_heatmap(cfg.method, model, modified_tensor, cfg.heatmap_args, device=device)
@@ -128,16 +136,16 @@ if __name__ == "__main__":
 
         tensor = denormalize(modified_tensor.squeeze(0).cpu())
 
-        mask_pth = f"{mask_path}Plot_{plot_number}.png"
+        mask_pth = f"{test_mask_path}{adress}"
         mask = cv2.imread(mask_pth, cv2.IMREAD_GRAYSCALE)
         mask = cv2.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=cv2.INTER_LINEAR)
         mask = mask_transform(size=image_size)(mask)
-        print(mask.shape)
-        print(mask.cpu().numpy().shape)
+
 
 
         overlay = show_mask_on_image(mask, heatmap, alpha=0.5)
-        cv2.imwrite(f"output/{cfg.method}_{plot_number}.png", overlay)
+        cv2.imwrite(f"output/{cfg.method}/{adress}", overlay)
+        print("saved")
         del modified_img, modified_tensor
         del heatmap, tensor, overlay
         torch.cuda.empty_cache()

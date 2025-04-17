@@ -81,13 +81,13 @@ def get_heatmap(method, model, input_tensor, args,device='cpu'):
         with torch.no_grad():
             model.eval()
             cls_logits, seg_logits = model(input_tensor)
-            print("Segmentation logits shape:", seg_logits.shape)
             heatmap = seg_logits[0, 0]  # Assuming the first channel is the one of interest
             # apply softmax to the heatmap
             heatmap = torch.nn.functional.softmax(heatmap, dim=0).cpu().numpy()
+            
 
             heatmap = cv2.resize(heatmap, (input_tensor.shape[2], input_tensor.shape[3]))
-            heatmap = heatmap* 255  # Scale to [0, 255]
+            # heatmap = heatmap* 255  # Scale to [0, 255]
     
     elif method == "grad_cam_vgg":
         from models.VisualScoringModel import GradCAM
@@ -102,7 +102,9 @@ def get_heatmap(method, model, input_tensor, args,device='cpu'):
     
     thresh = np.percentile(heatmap, 95)  # Threshold for heatmap
     print("Threshold for heatmap:", thresh)
-    heatmap = np.clip(heatmap, thresh, 1)  # Clip values to [0, thresh]
+    heatmap = np.clip(heatmap, thresh, 1)  # Clip values to [thresh,1]
+    # normalize the heatmap to [0, 1]
+    heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-8)
 
     return heatmap
 
