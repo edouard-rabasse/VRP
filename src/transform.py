@@ -38,7 +38,7 @@ def image_transform_train(size=(224,224), mean=mean, std=std):
         torch.Tensor: Transformed image tensor.
     """
     return transforms.Compose([
-        transforms.ToPILImage(),
+        # transforms.ToPILImage(),
         transforms.Resize(size),
         # transforms.RandomHorizontalFlip(),
         # transforms.RandomRotation(10),  # Random rotation for augmentation
@@ -56,7 +56,7 @@ def image_transform_test(size=(224,224), mean=mean, std=std):
         torch.Tensor: Transformed image tensor.
     """
     return transforms.Compose([
-        transforms.ToPILImage(),
+        # transforms.ToPILImage(),
         transforms.Resize(size),
         transforms.ToTensor(),
         transforms.Normalize(mean=mean,
@@ -72,7 +72,7 @@ def mask_transform(size=(224,224)):
         torch.Tensor: Transformed mask tensor.
     """
     return transforms.Compose([
-        transforms.ToPILImage(),
+        # transforms.ToPILImage(),
         transforms.Resize(size),
         transforms.ToTensor()  # no normalization, retains a single channel
     ])
