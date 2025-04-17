@@ -15,7 +15,6 @@ from torchvision import transforms
 from src.data_loader_mask import load_data_train_test
 
 
-from PIL import Image
 import cv2
 from src.visualization import get_heatmap, show_mask_on_image
 from src.load_model import load_model
@@ -116,7 +115,7 @@ if __name__ == "__main__":
 
 
 
-        modified_img = Image.open(img_path).convert("RGB")
+        modified_img = cv2.imread(img_path)
         # modified_img = cv2.cvtColor(modified_img, cv2.COLOR_BGR2RGB)
         modified_tensor = image_transform_test(image_size)(modified_img).unsqueeze(0)
         # cls, seg = model(modified_tensor.to(device))
@@ -137,19 +136,13 @@ if __name__ == "__main__":
         tensor = denormalize(modified_tensor.squeeze(0).cpu())
 
         mask_pth = f"{test_mask_path}{adress}"
-        mask = Image.open(mask_pth).convert("L")
-        # resize mask to the same size as the image
-        mask = torchvision.transforms.functional.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=transforms.InterpolationMode.NEAREST)
-        # mask = cv2.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=cv2.INTER_LINEAR)
+        mask = cv2.imread(mask_pth, cv2.IMREAD_GRAYSCALE)
+        mask = cv2.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=cv2.INTER_LINEAR)
         mask = mask_transform(size=image_size)(mask)
 
 
 
         overlay = show_mask_on_image(mask, heatmap, alpha=0.5)
-
-        # write the overlay to disk
-        from torchvision.utils import save_image
-        # save_image(overlay, f"output/{cfg.method}/{adress}", normalize=True, scale_each=True)
         cv2.imwrite(f"output/{cfg.method}/{adress}", overlay)
         print("saved")
         del modified_img, modified_tensor

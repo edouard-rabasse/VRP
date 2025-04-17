@@ -2,7 +2,7 @@
 from data.config_data import *
 # --- Parameters ---
 train_ratio = 0.8     # 80% train, 20% test
-batch_size = 8
+batch_size = 16
 image_size = (224, 224)  # Resize all images to this size
 
 model_name = "deit_tiny"  # Name of the model to load
