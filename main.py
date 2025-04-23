@@ -54,13 +54,14 @@ if __name__ == "__main__":
     ## Define the transform to resize the images and convert them to tensors
 
     print("Loading model...")
+
+    
     model = load_model(
         model_name=cfg.model_name,
         device=device,
         cfg=cfg)
     print(f"Model {cfg.model_name} loaded.")
 
-    print(type(image_transform_train(size=image_size)))
 
     print("Loading data...")
     train_loader, test_loader = load_data_train_test(
@@ -79,7 +80,9 @@ if __name__ == "__main__":
         num_workers=0
     )
     print("Data loaded.")
-
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    
     
 
     if cfg.train:
@@ -93,6 +96,11 @@ if __name__ == "__main__":
             learning_rate=cfg.MODEL_PARAMS["learning_rate"],
             cfg=cfg
         )
+    if cfg.save_model:
+        print(f"Saving model to {cfg.weight_path}...")
+        from src.load_model import save_model
+        save_model(model, cfg.weight_path)
+        print("Model saved.")
 
 
     # Ensure model is in eval mode
@@ -104,14 +112,15 @@ if __name__ == "__main__":
     #     print(test_loader.dataset.dataset.modified_images[i])
     #     if test_loader.dataset.dataset.modified_images[i][1] == 1:
     #         index = i
-    #         break
-   
+    #         break7
+
     
     test_adresses = os.listdir(test_modified_path)
     test_adresses = [x for x in test_adresses if x.endswith('.png')]
 
     for adress in test_adresses:
-        img_path = f"{test_modified_path}{adress}"
+        # break
+        img_path = f"{test_original_path}{adress}"
         
 
 

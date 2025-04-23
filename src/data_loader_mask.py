@@ -10,7 +10,7 @@ import torchvision.transforms.functional as TF
 
 class CustomDataset(Dataset):
     def __init__(self, original_dir=None, modified_dir=None, mask_dir=None,
-                 image_transform=None, mask_transform=None, samples=None):
+                 image_transform=None, mask_transform=None, samples=None, augment=False):
         """
         Args:
             original_dir (str): Path to original images.
@@ -39,6 +39,7 @@ class CustomDataset(Dataset):
                 self.all_samples = ([(path, 0, None) for path in self.modified_images] +
                                     [(path, 1, None) for path in self.original_images])
         self.imgs = self.all_samples  # for backward compatibility
+        self.augment = augment
 
     def __len__(self):
         return len(self.all_samples)
@@ -60,16 +61,16 @@ class CustomDataset(Dataset):
             mask = Image.open(mask_path).convert("L")  # Convert to grayscale
 
 
-        
+        if self.augment:
         # random transforms
-        if random.random() > 0.5:
-            img, mask = TF.hflip(img), TF.hflip(mask)
-        if random.random() > 0.5:
-            img, mask = TF.vflip(img), TF.vflip(mask)
-        angles = [0, 90, 180, 270]
-        angle = random.choice(angles)
-        img = TF.rotate(img, angle)
-        mask = TF.rotate(mask, angle)
+            if random.random() > 0.5:
+                img, mask = TF.hflip(img), TF.hflip(mask)
+            if random.random() > 0.5:
+                img, mask = TF.vflip(img), TF.vflip(mask)
+            angles = [0, 90, 180, 270]
+            angle = random.choice(angles)
+            # img = TF.rotate(img, angle)
+            # mask = TF.rotate(mask, angle)
 
         # Apply image transform (expects a PIL array)
         if self.image_transform:
@@ -169,15 +170,17 @@ def load_data_train_test(train_original_path,
         modified_dir=train_modified_path,
         mask_dir=mask_path_train,
         image_transform=image_transform_train,
-        mask_transform=mask_transform_train)
+        mask_transform=mask_transform_train,
+        augment=True)
     test_set = CustomDataset(
         original_dir=test_original_path,
         modified_dir=test_modified_path,
         mask_dir=mask_path_test,
         image_transform=image_transform_test,
-        mask_transform=mask_transform_test)
+        mask_transform=mask_transform_test,
+        augment=False)
     
-    train_loader = get_dataloader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    train_loader = get_dataloader(train_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
     test_loader = get_dataloader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
     return train_loader, test_loader
     

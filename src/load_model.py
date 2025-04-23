@@ -74,7 +74,7 @@ def load_model(model_name, device, cfg):
         raise ValueError("Unknown model name: {}".format(model_name))
 
     # Load the model weights
-    if cfg.weight_path is not None:
+    if cfg.load_model :
         if os.path.exists(cfg.weight_path):
             print(f"Loading weights from {cfg.weight_path}")
             model.load_state_dict(torch.load(cfg.weight_path, map_location=device))
@@ -82,3 +82,13 @@ def load_model(model_name, device, cfg):
             raise FileNotFoundError(f"Weight file not found: {cfg.weight_path}")
 
     return model
+
+def save_model(model, path):
+    """
+    Save the model state dictionary to the specified path.
+    
+    Parameters:
+        model (torch.nn.Module): The model to save.
+        path (str): The path where the model will be saved.
+    """
+    torch.save(model.state_dict(), path)

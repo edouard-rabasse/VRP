@@ -1,7 +1,5 @@
-# config.py
-original_path = "MSH/MSH/plots/configuration1/"
-modified_path = "MSH/MSH/plots/configuration3/"
-mask_path = "data/MSH/mask3/"
+
+from data.config_data import *
 # --- Parameters ---
 train_ratio = 0.8     # 80% train, 20% test
 batch_size = 8
@@ -10,7 +8,9 @@ image_size = (224, 224)  # Resize all images to this size
 model_name = "VisualScoringModel"  # Name of the model to load
 
 # --- Paths ---
+load_model = False 
 weight_path = None
+save_model = False
 
 
 

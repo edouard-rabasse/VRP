@@ -24,17 +24,21 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
             )
     elif model_name == 'deit_tiny':
         # Define your training loop for DEIT here
-        from models.deit_tiny import precompute_deit_tiny_features, train_deit
-        print("starting precompute")
-        train_features = precompute_deit_tiny_features(model, train_loader, device=device)
-        test_features = precompute_deit_tiny_features(model, test_loader, device=device)
-        print("done precompute")
-        train_loader = DataLoader(train_features, batch_size=cfg.batch_size, shuffle=True)
-        test_loader = DataLoader(test_features, batch_size=cfg.batch_size, shuffle=False)
+        from models.deit_tiny import precompute_deit_tiny_features, train_deit, train_deit_no_precompute
+        # print("starting precompute")
+        # train_features = precompute_deit_tiny_features(model, train_loader, device=device)
+        # test_features = precompute_deit_tiny_features(model, test_loader, device=device)
+        
+        # train_loader = DataLoader(train_features, batch_size=cfg.batch_size, shuffle=True)
+        # test_loader = DataLoader(test_features, batch_size=cfg.batch_size, shuffle=False)
 
-        print("starting train")
+        # print("done precompute")
+        # print("starting train")
+        # train_deit(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
 
-        train_deit(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
+
+        train_deit_no_precompute(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
+        # return train_loader # TODO: remove this line, just for debugging
     elif model_name =="multi_task":
         from models.MultiTaskVisualModel import train_model_multi_task
         if cfg.MODEL_PARAMS["lambda_seg"] is not None:

@@ -6,6 +6,8 @@ masque avec juste les arêtes à enlever. -> les prédire.
 tester si c'est plus simple.
 code de couleur sur le masque.
 
+- autres métriques
+
 
 proba sur les arêtes
 arêtes voisines 

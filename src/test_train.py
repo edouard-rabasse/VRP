@@ -53,8 +53,8 @@ if __name__ == "__main__":
     # your original data in "./data/" with subfolders label0/, label1/, etc.
     # will be split into "./splits/train/..." and "./splits/test/..."
     split_dataset(
-        src_dir="data/MSH/",
-        dst_dir="data/mask/",
+        src_dir="data/MSH/mask_removed_color",
+        dst_dir="data/mask_removed_color/",
         train_ratio=0.75,      # e.g. 75% train, 25% test
         random_state=123
     )

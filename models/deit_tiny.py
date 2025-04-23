@@ -19,9 +19,14 @@ def load_deit(model_name, device, out_features=2):
         # Changing the last layer to have 2 classes
         in_features = model.head.in_features
         model.head = nn.Linear(in_features, 2)
+        for param in model.parameters():
+            param.requires_grad = False
+        for param in model.head.parameters():
+            param.requires_grad = True
     else:
         raise ValueError("Unknown model name: {}".format(model_name))
     return model
+
 
 
 
@@ -36,22 +41,27 @@ def precompute_deit_tiny_features(model, dataloader, device='cpu'):
         try:
             for inputs, labels in dataloader:
                 inputs = inputs.to(device)
-                features = model.forward_features(inputs)
-                list_outputs.append(features.cpu())
+                inputs = model.forward_features(inputs)
+                list_outputs.append(inputs.cpu())
                 list_labels.append(labels.cpu())
+            outputs = torch.cat(list_outputs, dim=0)
+            labels = torch.cat(list_labels, dim=0)
+                
+            return TensorDataset(outputs, labels)
                 
         except Exception as e: # depends on the type of dataloader
             for inputs, labels, masks in dataloader:
                 inputs = inputs.to(device)
-                features = model.forward_features(inputs)
-                list_outputs.append(features)
+                inputs = model.forward_features(inputs)
+                list_outputs.append(inputs)
                 list_labels.append(labels)
                 list_masks.append(masks)
-                outputs = torch.cat(list_outputs, dim=0)
-                labels = torch.cat(list_labels, dim=0)
-                masks = torch.cat(list_masks, dim=0)
+                
+            outputs = torch.cat(list_outputs, dim=0)
+            labels = torch.cat(list_labels, dim=0)
+            masks = torch.cat(list_masks, dim=0)
 
-                return TensorDataset(outputs, labels, masks)
+            return TensorDataset(outputs, labels, masks)
 
 
     
@@ -60,6 +70,9 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
     import torch.optim as optim
     # Send model to device
     model.to(device)
+    model.eval()
+    
+    model.head.train()
 
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
@@ -71,13 +84,12 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
     # Training loop
     for epoch in range(num_epochs):
         # === Training Phase ===
-        model.head.train()
         running_loss, correct_preds, total = 0.0, 0, 0
 
-        for features, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
-            features, labels = features.to(device), labels.to(device)
+        for inputs, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+            inputs, labels = inputs.to(device), labels.to(device)
             # Select the CLS token (first token) for classification
-            cls_features = features[:, 0, :]
+            cls_features = inputs[:, 0, :]
 
             optimizer.zero_grad()
             outputs = model.head(cls_features)
@@ -101,14 +113,15 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
         all_val_preds, all_val_labels = [], []
 
         with torch.no_grad():
-            for features, labels, mask in test_loader:
-                features, labels = features.to(device), labels.to(device)
-                cls_features = features[:, 0, :]
+            for inputs, labels, mask in test_loader:
+                inputs, labels = inputs.to(device), labels.to(device)
+                cls_features = inputs[:, 0, :]
                 outputs = model.head(cls_features)
                 loss = criterion(outputs, labels)
 
                 val_running_loss += loss.item() * labels.size(0)
                 preds = torch.argmax(outputs, dim=1)
+                # print(preds, labels)
                 val_correct += torch.sum(preds == labels).item()
                 val_total += labels.size(0)
 
@@ -127,6 +140,71 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
         print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
             f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
 
+def train_deit_no_precompute(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
+    import torch.optim as optim
+    # Send model to device
+    model.to(device)
+    model.eval()
+    
+    model.head.train()
+
+    if criterion is None:
+        criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.head.parameters(), lr=learning_rate)
+
+    # Lists to track metrics
+    train_losses, val_losses = [], []
+    train_accuracies, val_accuracies = [], []
+    # Training loop
+    for epoch in range(num_epochs):
+        # === Training Phase ===
+        running_loss, correct_preds, total = 0.0, 0, 0
+
+        for inputs, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+            inputs, labels = inputs.to(device), labels.to(device)
+            # Select the CLS token (first token) for classification
+
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item() * labels.size(0)
+            preds = torch.argmax(outputs, dim=1)
+            correct_preds += torch.sum(preds == labels).item()
+            total += labels.size(0)
+
+        train_loss = running_loss / total
+        train_acc = correct_preds / total
+        train_losses.append(train_loss)
+        train_accuracies.append(train_acc)
+
+        # === Validation Phase ===
+        model.eval()
+        val_running_loss, val_correct, val_total = 0.0, 0, 0
+        all_val_preds, all_val_labels = [], []
+
+        with torch.no_grad():
+            for inputs, labels, masks in test_loader:
+                inputs, labels = inputs.to(device), labels.to(device)
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+
+                val_running_loss += loss.item() * labels.size(0)
+                preds = torch.argmax(outputs, dim=1)
+                # print(preds, labels)
+                val_correct += torch.sum(preds == labels).item()
+                val_total += labels.size(0)
+
+                all_val_preds.append(preds.cpu())
+                all_val_labels.append(labels.cpu())
+
+        val_loss = val_running_loss / val_total
+        val_acc = val_correct / val_total
+        val_losses.append(val_loss)
+        print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
+        f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
 
 def train_deit_mask(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
     import torch.optim as optim
@@ -146,10 +224,10 @@ def train_deit_mask(model, train_loader, test_loader,device='cpu', num_epochs=20
         model.head.train()
         running_loss, correct_preds, total = 0.0, 0, 0
 
-        for features, labels in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
-            features, labels = features.to(device), labels.to(device)
+        for inputs, labels in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+            inputs, labels = inputs.to(device), labels.to(device)
             # Select the CLS token (first token) for classification
-            cls_features = features[:, 0, :]
+            cls_features = inputs[:, 0, :]
 
             optimizer.zero_grad()
             outputs = model.head(cls_features)
@@ -173,9 +251,9 @@ def train_deit_mask(model, train_loader, test_loader,device='cpu', num_epochs=20
         all_val_preds, all_val_labels = [], []
 
         with torch.no_grad():
-            for features, labels in test_loader:
-                features, labels = features.to(device), labels.to(device)
-                cls_features = features[:, 0, :]
+            for inputs, labels in test_loader:
+                inputs, labels = inputs.to(device), labels.to(device)
+                cls_features = inputs[:, 0, :]
                 outputs = model.head(cls_features)
                 loss = criterion(outputs, labels)
 

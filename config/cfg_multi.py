@@ -8,8 +8,9 @@ image_size = (284, 284)  # Resize all images to this size
 model_name = "multi_task"  # Name of the model to load
 
 # --- Paths ---
-weight_path = None
-
+load_model = False 
+model_path = "checkpoints/multi_task_model.pth"  # Path to save the model weights
+save_model = False
 
 
 
@@ -18,10 +19,10 @@ weight_path = None
 # --- Model Parameters ---
 train = True  # Set to True to train the model
 MODEL_PARAMS = {
-    "learning_rate": 0.0001,
+    "learning_rate": 0.001,
     "batch_size": batch_size,
     "epochs": 20,
-    "lambda_seg" : 1.0
+    "lambda_seg" : 0.2
 }
 LAMBDA_VISUAL = 0.5  # Poids du score visuel dans la fonction objective composite
 

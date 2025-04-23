@@ -1,15 +1,17 @@
 # config.py
 # config.py
-from .data.config_data import *
+from data.config_data import *
 # --- Parameters ---
 train_ratio = 0.8     # 80% train, 20% test
-batch_size = 16
+batch_size = 8
 image_size = (224, 224)  # Resize all images to this size
 
 model_name = "vgg"  # Name of the model to load
 
 # --- Paths ---
+load_model = False 
 weight_path = None
+save_model = False  # Set to True to save the model after training
 
 
 
