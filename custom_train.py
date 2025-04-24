@@ -45,7 +45,7 @@ print(loader.dataset[0][0].shape)
 # Training loop
 for epoch in range(10):
     print(torch.cuda.memory_summary())
-    for images, labels, masks in tqdm(loader, desc=f"Epoch {epoch+1}/10"):
+    for images, labels, masks in tqdm(loader, desc=f"Epoch {epoch+1}/10", leave=True):
         print("before images")
         print(torch.cuda.memory_summary())
         images = images.to(device)

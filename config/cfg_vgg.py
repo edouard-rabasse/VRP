@@ -5,13 +5,14 @@ from data.config_data import *
 train_ratio = 0.8     # 80% train, 20% test
 batch_size = 8
 image_size = (224, 224)  # Resize all images to this size
+mask_shape = (10, 10)  # Resize all masks to this size
 
 model_name = "vgg"  # Name of the model to load
 
 # --- Paths ---
 load_model = False 
-weight_path = None
-save_model = False  # Set to True to save the model after training
+weight_path = "checkpoints/vgg_model.pth"  # Path to save the model weights
+save_model = True  # Set to True to save the model after training
 
 
 

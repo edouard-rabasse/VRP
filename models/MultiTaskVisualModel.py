@@ -14,7 +14,7 @@ import torch.nn.functional as F
 from tqdm import tqdm
 
 class MultiTaskVisualScoringModel(nn.Module):
-    def __init__(self, input_shape=(3, 84, 84)):
+    def __init__(self, input_shape=(3, 84, 84), mask_shape=(84, 84)):
         """
         Args:
             input_shape: The shape of the input image. For example, (3, 84, 84)
@@ -48,7 +48,7 @@ class MultiTaskVisualScoringModel(nn.Module):
         # We take the conv3 feature map (shape [N, 64, 7, 7]) and upsample to the desired segmentation size (84x84)
         # size of the segmentation
         self.segmentation_head = nn.Sequential(
-            nn.Upsample(size=(input_shape[1],input_shape[2]), mode='bilinear', align_corners=False),
+            nn.Upsample(size=mask_shape, mode='bilinear', align_corners=False),
             nn.Conv2d(64, 1, kernel_size=3, padding=1)  # output 1-channel mask
         )
         
@@ -101,7 +101,9 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
     
     # Loss functions: classification and segmentation
     criterion_cls = nn.CrossEntropyLoss()        # expects (logits, target labels)
-    criterion_seg = nn.BCEWithLogitsLoss()         # for pixel-wise mask prediction
+    criterion_seg = nn.BCEWithLogitsLoss(reduction="none")         # for pixel-wise mask prediction
+    results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate"]
+
     
     for epoch in range(num_epochs):
         running_loss = 0.0
@@ -110,7 +112,7 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
         correct = 0
         total = 0
         
-        for images, labels, masks in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+        for images, labels, masks in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
             images = images.to(device)               # shape: [N, 3, H, W] (e.g., 84x84)
             labels = labels.to(device)               # shape: [N]
             masks = masks.to(device).float()         # shape: [N, 1, H, W]
@@ -119,7 +121,15 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
             
             clf_logits, seg_logits = model(images)
             loss_cls = criterion_cls(clf_logits, labels)
-            loss_seg = criterion_seg(seg_logits, masks)
+            loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
+
+            # vecteur booléen : 1 si l'image a au moins un pixel positif
+            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()  # shape (N,)
+
+            # on pèse chaque carte de perte par mask_present
+            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() \
+                    / (mask_present.sum() + 1e-6)      # moyenne sur les images « valides »
+
             loss = loss_cls + lambda_seg * loss_seg
             
             loss.backward()
@@ -140,6 +150,8 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
         
         print(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} " 
               f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
+        results.append(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} "
+              f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
     # evaluate on test set
     test_cls_loss = 0.0
     test_seg_loss = 0.0
@@ -154,7 +166,17 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
         with torch.no_grad():
             clf_logits, seg_logits = model(images)
             loss_cls = criterion_cls(clf_logits, labels)
-            loss_seg = criterion_seg(seg_logits, masks)
+            # loss_seg = criterion_seg(seg_logits, masks)
+            # sortie du critère sans réduction : (N,1,H,W)
+            loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
+
+            # vecteur booléen : 1 si l'image a au moins un pixel positif
+            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()  # shape (N,)
+
+            # on pèse chaque carte de perte par mask_present
+            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() \
+                    / (mask_present.sum() + 1e-6)      # moyenne sur les images « valides »
+
             loss = loss_cls + lambda_seg * loss_seg
         
         preds = torch.argmax(clf_logits, dim=1)
@@ -164,9 +186,10 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
         test_cls_loss = loss_cls.item() * images.size(0)
         test_seg_loss = loss_seg.item() * images.size(0)
     print(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
+    results.append(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
 
 
-    return model, optimizer, scheduler
+    return results
 
 if __name__ == "__main__":
     # Assuming your directory paths are defined:

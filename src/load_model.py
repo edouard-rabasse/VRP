@@ -63,12 +63,17 @@ def load_model(model_name, device, cfg):
         from models.MultiTaskVisualModel import MultiTaskVisualScoringModel
         image_size = cfg.image_size
         input_shape = (3, image_size[0], image_size[1])
+        mask_shape = (10,10)
 
-        model = MultiTaskVisualScoringModel(input_shape=input_shape).to(device)
+        model = MultiTaskVisualScoringModel(input_shape=input_shape,mask_shape = mask_shape).to(device)
 
     elif model_name == 'vgg':
         from models.vgg import load_vgg
         model = load_vgg()
+        model.to(device)
+    elif model_name == 'MFCN':
+        from models.MFCN import MultiTaskVGG
+        model = MultiTaskVGG(mask_shape=cfg.mask_shape)
         model.to(device)
     else:
         raise ValueError("Unknown model name: {}".format(model_name))

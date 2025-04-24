@@ -54,7 +54,7 @@ class CustomDataset(Dataset):
         # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Load mask: if none provided or label indicates original, create a mask of zeros.
-        if label == 1 or mask_path is None:
+        if label == 0 or mask_path is None:
             mask = np.zeros((img.size[0], img.size[1]), dtype=np.uint8)
             mask = Image.new("L", img.size, 0)
         else:
@@ -84,8 +84,12 @@ class CustomDataset(Dataset):
         if self.mask_transform:
             mask_tensor = self.mask_transform(mask)
         else:
-            mask_tensor = torch.from_numpy(mask).unsqueeze(0).float()
+            mask_tensor = transforms.ToTensor()(mask)
         del mask  # Free memory
+
+        # check if mask_tensor is None
+        if mask_tensor is None:
+            raise ValueError(f"Mask tensor is None for image at {img_path}")
         
         return image, torch.tensor(label, dtype=torch.long), mask_tensor
 

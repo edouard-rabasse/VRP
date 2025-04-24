@@ -4,13 +4,14 @@ from data.config_data import *
 train_ratio = 0.8     # 80% train, 20% test
 batch_size = 8
 image_size = (224, 224)  # Resize all images to this size
+mask_shape = (10, 10)  # Resize all masks to this size
 
 model_name = "VisualScoringModel"  # Name of the model to load
 
 # --- Paths ---
 load_model = False 
-weight_path = None
-save_model = False
+weight_path = "checkpoints/VisualScoringModel_model.pth"  # Path to save the model weights
+save_model = True
 
 
 
@@ -20,9 +21,9 @@ save_model = False
 # --- Model Parameters ---
 train = True  # Set to True to train the model
 MODEL_PARAMS = {
-    "learning_rate": 0.001,
+    "learning_rate": 0.0001,
     "batch_size": batch_size,
-    "epochs": 10,
+    "epochs": 20,
 }
 LAMBDA_VISUAL = 0.5  # Poids du score visuel dans la fonction objective composite
 

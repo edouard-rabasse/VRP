@@ -1,5 +1,6 @@
 import torch
 from torchvision import transforms
+import torch.nn.functional as F
 
 size = 224
 mean = [0.485, 0.456, 0.406]
@@ -71,8 +72,18 @@ def mask_transform(size=(224,224)):
     Returns:
         torch.Tensor: Transformed mask tensor.
     """
+    def max_pool_resize(img: torch.Tensor) -> torch.Tensor:
+        """
+        img : Tensor uint8 [C, H, W] (PILToTensor ne normalise pas)
+        """
+        img = img.float()                         # adaptive_pool attend float
+        img = F.adaptive_max_pool2d(img, size)
+        # --- re-binarisation pour le cas mono-canal ---
+        if img.size(0) == 1:
+            img = (img > 0).float()
+        return img
+
     return transforms.Compose([
-        # transforms.ToPILImage(),
-        transforms.Resize(size),
-        transforms.ToTensor()  # no normalization, retains a single channel
+        transforms.PILToTensor(),     # 0-255, uint8, shape (C,H,W)
+        transforms.Lambda(max_pool_resize)
     ])

@@ -23,7 +23,8 @@ class MultiTaskVGG(nn.Module):
                  num_classes=2,         # e.g., original vs. modified
                  seg_out_channels=1,    # e.g., 1 for binary segmentation
                  pretrained=True,
-                 input_size=(224, 224)  # Input image size for upsampling the segmentation
+                 input_size=(224, 224),
+                 mask_shape=(10,10)  # Input image size for upsampling the segmentation
                 ):
         super(MultiTaskVGG, self).__init__()
 
@@ -32,6 +33,8 @@ class MultiTaskVGG(nn.Module):
         
         # 2. Keep only the 'features' part of VGG as your encoder (shared feature extractor)
         self.features = vgg.features  # [N, 512, H_out, W_out] after the last conv + pooling
+
+        self.features.requires_grad_(False)  # Freeze the feature extractor
         
         # 3. Keep the avgpool from VGG (this is a nn.AdaptiveAvgPool2d((7,7)) by default)
         self.avgpool = vgg.avgpool
@@ -66,7 +69,7 @@ class MultiTaskVGG(nn.Module):
             # Another upsampling might be needed:
             nn.Conv2d(128, 64, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Upsample(size=input_size, mode='bilinear', align_corners=False),
+            nn.Upsample(size=mask_shape, mode='bilinear', align_corners=False),
 
             # Final conv to get the correct number of segmentation channels (1 for binary)
             nn.Conv2d(64, seg_out_channels, kernel_size=3, padding=1)
@@ -125,7 +128,7 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
     
     # Loss functions: classification and segmentation
     criterion_cls = nn.CrossEntropyLoss()        # expects (logits, target labels)
-    criterion_seg = nn.BCEWithLogitsLoss()         # for pixel-wise mask prediction
+    criterion_seg = nn.BCEWithLogitsLoss(reduction='none')         # for pixel-wise mask prediction
     
     for epoch in range(num_epochs):
         running_loss = 0.0
@@ -133,20 +136,40 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
         running_seg_loss = 0.0
         correct = 0
         total = 0
+        results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate, {lambda_seg} lambda_seg"]
         
-        for images, labels, masks in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+        for images, labels, masks in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
             images = images.to(device)               # shape: [N, 3, H, W] (e.g., 84x84)
             labels = labels.to(device)               # shape: [N]
             masks = masks.to(device).float()         # shape: [N, 1, H, W]
             
             optimizer.zero_grad()
             
+            with torch.no_grad():                       # aucun grad sur features
+                feats = model.features(images)
+            pooled   = model.avgpool(feats)
+            clf_logits = model.classifier(torch.flatten(pooled,1))
+            loss_cls  = criterion_cls(clf_logits, labels)
+            loss_cls.backward()                         # <- petit backward
+
+            # ---- pass 2 : segmentation (optionnel) ------------------------------
+            optimizer.zero_grad()
+            seg_logits = model.segmentation_head(feats.detach())  
+            loss_seg   = criterion_seg(seg_logits, masks)
             clf_logits, seg_logits = model(images)
-            loss_cls = criterion_cls(clf_logits, labels)
-            loss_seg = criterion_seg(seg_logits, masks)
+            # loss_seg = criterion_seg(seg_logits, masks)
+            # sortie du critère sans réduction : (N,1,H,W)
+            loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
+
+            # vecteur booléen : 1 si l'image a au moins un pixel positif
+            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()  # shape (N,)
+
+            # on pèse chaque carte de perte par mask_present
+            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() \
+                    / (mask_present.sum() + 1e-6)      # moyenne sur les images « valides »
+
             loss = loss_cls + lambda_seg * loss_seg
-            
-            loss.backward()
+            (loss_seg * lambda_seg).backward()
             optimizer.step()
             
             running_loss += loss.item() * images.size(0)
@@ -164,6 +187,8 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
         
         print(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} " 
               f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
+        results.append(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} "
+              f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
     # evaluate on test set
     test_cls_loss = 0.0
     test_seg_loss = 0.0
@@ -179,6 +204,15 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
             clf_logits, seg_logits = model(images)
             loss_cls = criterion_cls(clf_logits, labels)
             loss_seg = criterion_seg(seg_logits, masks)
+
+            loss_seg_map = criterion_seg(seg_logits, masks)
+
+            # vecteur booléen : 1 si l'image a au moins un pixel positif
+            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()  # shape (N,)
+
+            # on pèse chaque carte de perte par mask_present
+            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() \
+                    / (mask_present.sum() + 1e-6)
             loss = loss_cls + lambda_seg * loss_seg
         
         preds = torch.argmax(clf_logits, dim=1)
@@ -188,31 +222,63 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
         test_cls_loss = loss_cls.item() * images.size(0)
         test_seg_loss = loss_seg.item() * images.size(0)
     print(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
+    results.append(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
 
 
-    return model, optimizer, scheduler
+    return results
 
 if __name__ == "__main__":
     # Assuming your directory paths are defined:
     original_path, modified_path, mask_path = "MSH/MSH/plots/configuration1", "MSH/MSH/plots/configuration3", "data/MSH/mask3"
 
-    from src.data_loader_mask import load_data_mask
-    train_loader, test_loader = load_data_mask(original_path, modified_path, batch_size=2, transform=transform, 
-                                                train_ratio=0.8, image_size=(200, 200), num_workers=4, mask_path=mask_path, num_max=20)
+
+    train_original_path = "data/train/configuration1"
+    test_original_path = "data/test/configuration1"
+    train_modified_path = "data/train/configuration3"
+    test_modified_path = "data/test/configuration3"
+    train_mask_path = "data/mask_removed/configuration3"
+    test_mask_path = "data/mask_removed/configuration3"
+    image_size = (224,224)
+
+    ## Define the transform to resize the images and convert them to tensors
+
+
+    from src.data_loader_mask import load_data_train_test
+    from src.transform import image_transform_train, image_transform_test, mask_transform
+
+
+    print("Loading data...")
+    train_loader, test_loader = load_data_train_test(
+        train_original_path=train_original_path,
+        test_original_path=test_original_path,
+        train_modified_path=train_modified_path,
+        test_modified_path=test_modified_path,
+        mask_path_train=train_mask_path,
+        mask_path_test=test_mask_path,
+        image_transform_train=image_transform_train(size=image_size),
+        image_transform_test=image_transform_test(size=image_size),
+        mask_transform_train=mask_transform(size=image_size),
+        mask_transform_test=mask_transform(size=image_size),
+        batch_size=1,
+        num_workers=0
+    )
 
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = MultiTaskVGG(input_shape=(3,200,200))
+    model = MultiTaskVGG()
     model.to(device)
 
     # Train for, say, 10 epochs and use a lambda weight of 1.0 for segmentation loss.
     model, optimizer, scheduler = train_model_multi_task(model, train_loader, test_loader,
-                                                num_epochs=20,
+                                                num_epochs=50,
                                                 device=device,
                                                 learning_rate=1e-3,
-                                                lambda_seg=1)
+                                                lambda_seg=0.1)
     # print results
     print("Training completed.")
+
+
+
 
     # test the model on test set and save an image of the overlay
 

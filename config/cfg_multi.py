@@ -4,13 +4,14 @@ from data.config_data import *
 train_ratio = 0.8     # 80% train, 20% test
 batch_size = 8
 image_size = (284, 284)  # Resize all images to this size
+mask_shape = (10, 10)  # Resize all masks to this size
 
 model_name = "multi_task"  # Name of the model to load
 
 # --- Paths ---
 load_model = False 
-model_path = "checkpoints/multi_task_model.pth"  # Path to save the model weights
-save_model = False
+weight_path = "checkpoints/multi_task_model.pth"  # Path to save the model weights
+save_model = True
 
 
 
@@ -19,7 +20,7 @@ save_model = False
 # --- Model Parameters ---
 train = True  # Set to True to train the model
 MODEL_PARAMS = {
-    "learning_rate": 0.001,
+    "learning_rate": 5e-4,
     "batch_size": batch_size,
     "epochs": 20,
     "lambda_seg" : 0.2

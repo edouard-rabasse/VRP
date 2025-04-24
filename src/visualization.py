@@ -6,7 +6,7 @@ import torch
 def resize_heatmap(heatmap, target_size):
     """Resize the heatmap to match the target size."""
     heatmap_resized = cv2.resize(heatmap, target_size)
-    heatmap_resized = (heatmap_resized - np.min(heatmap_resized)) / (np.max(heatmap_resized) - np.min(heatmap_resized))
+    heatmap_resized = (heatmap_resized - np.min(heatmap_resized)) / (np.max(heatmap_resized) - np.min(heatmap_resized)+1e-8)
     
     return heatmap_resized
 
@@ -92,6 +92,8 @@ def get_heatmap(method, model, input_tensor, args,device='cpu'):
     elif method == "grad_cam_vgg":
         from models.VisualScoringModel import GradCAM
         target_layer = model.features[29]  # Assuming the last layer is the target layer
+        # target_layer = model.block5.conv3  # Assuming the last layer is the target layer
+        
         gradcam = GradCAM(model, target_layer)
         heatmap = gradcam(input_tensor, class_index=args['class_index'])
 

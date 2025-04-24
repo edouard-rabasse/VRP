@@ -29,9 +29,9 @@ def precompute_model(model, dataloader, device='cpu'):
             inputs = inputs.to(device)
             outputs = model.features(inputs)
             outputs = model.avgpool(outputs)
-            all_outputs.append(outputs)
-            all_labels.append(labels)
-            all_masks.append(masks)
+            all_outputs.append(outputs.cpu().detach())
+            all_labels.append(labels.cpu())
+            all_masks.append(masks.cpu())
 
     all_outputs = torch.cat(all_outputs, dim=0)
     all_labels = torch.cat(all_labels, dim=0)
@@ -57,6 +57,7 @@ def train_vgg(model, train_loader, test_loader,device='cpu', num_epochs=20, lear
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.classifier.parameters(), lr=learning_rate)
+    results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate"]
 
     # Lists to track metrics
     train_losses, val_losses = [], []
@@ -67,7 +68,7 @@ def train_vgg(model, train_loader, test_loader,device='cpu', num_epochs=20, lear
         model.classifier.train()
         running_loss, correct_preds, total = 0.0, 0, 0
 
-        for features, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+        for features, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
             features, labels = features.to(device), labels.to(device)
             # Select the CLS token (first token) for classification
             cls_features = cls_features = torch.flatten(features, start_dim=1)
@@ -122,4 +123,9 @@ def train_vgg(model, train_loader, test_loader,device='cpu', num_epochs=20, lear
 
         print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
             f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
-
+        results.append(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
+            f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
+    # reactivate gradients
+    for param in model.parameters():
+        param.requires_grad = True
+    return results

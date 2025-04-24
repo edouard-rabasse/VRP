@@ -1,5 +1,4 @@
 ## from https://github.com/jacobgil/vit-explain
-print("[DEBUG] Loading grad_rollout.py")
 
 import torch
 from PIL import Image

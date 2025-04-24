@@ -13,7 +13,7 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
         device (str): The device to train on ('cpu' or 'cuda')."""
     if model_name == 'VisualScoringModel':
         from models.VisualScoringModel import train_model
-        train_model(
+        results = train_model(
             model,
             train_loader,
             test_loader,
@@ -37,7 +37,7 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
         # train_deit(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
 
 
-        train_deit_no_precompute(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
+        results = train_deit_no_precompute(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
         # return train_loader # TODO: remove this line, just for debugging
     elif model_name =="multi_task":
         from models.MultiTaskVisualModel import train_model_multi_task
@@ -45,7 +45,7 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
             lambda_seg = cfg.MODEL_PARAMS["lambda_seg"]
         else:
             lambda_seg = 1.0
-        train_model_multi_task(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=lambda_seg)
+        results = train_model_multi_task(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=lambda_seg)
 
     elif model_name == "vgg":
         print("importing train functions")
@@ -55,9 +55,17 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
         test_features = precompute_model(model, test_loader, device=device)
         train_loader = DataLoader(train_features, batch_size=cfg.batch_size, shuffle=True)
         test_loader = DataLoader(test_features, batch_size=cfg.batch_size, shuffle=False)
-        train_vgg(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
+        resuls = train_vgg(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
+    
+    elif model_name == "MFCN":
+        from models.MFCN import train_model_multi_task
+        results = train_model_multi_task(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=1.0)
+
+
     else:
         raise ValueError(f"Unknown model name: {model_name}")
+    
+    return results
 
         
 

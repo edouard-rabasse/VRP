@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from tqdm import tqdm
-# print("[DEBUG] Loaded: VisualScoringModel.py")
 
 class VisualScoringModel(nn.Module):
     def __init__(self,input_shape=(1, 84, 84)):
@@ -83,6 +82,7 @@ def train_model(
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
+    results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate"]
 
     for epoch in range(num_epochs):
         model.train()
@@ -90,7 +90,7 @@ def train_model(
         correct = 0
         total = 0
 
-        for inputs, targets, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+        for inputs, targets, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
@@ -110,10 +110,13 @@ def train_model(
         train_loss = running_loss / total
         train_acc = correct / total
         print(f"Epoch {epoch+1}: Train Loss = {train_loss:.4f}, Train Acc = {train_acc*100:.2f}%")
+        results.append(f"Epoch {epoch+1}: Train Loss = {train_loss:.4f}, Train Acc = {train_acc*100:.2f}%")
 
         # Optional: run evaluation on test set
     eval_loss, eval_acc = evaluate_model(model, test_loader, criterion, device)
     print(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%\n")
+    results.append(f"Test Loss = {eval_loss:.4f}, Test Acc = {eval_acc*100:.2f}%")
+    return results
 
 
 import cv2
@@ -130,17 +133,21 @@ class GradCAM:
         target_layer.register_full_backward_hook(self.save_gradient)
 
     def save_activation(self, module, input, output):
+    
         self.activations = output.detach()
+        # output.retain_grad()
 
     def save_gradient(self, module, grad_input, grad_output):
+        # print("backward hook called")
         self.gradients = grad_output[0].detach()
 
     def __call__(self, input_tensor, class_index):
         self.model.zero_grad()
         output = self.model(input_tensor)
-        print("Output shape:", output.shape)
         loss = output[:, class_index].sum()
         loss.backward()
+
+        assert self.gradients is not None, "Hook never called: bad layer or requires_grad=False"
 
         # Compute the weights
         pooled_gradients = self.gradients.mean(dim=[0, 2, 3])  # global average pooling

@@ -74,8 +74,8 @@ if __name__ == "__main__":
         batch_size=batch_size,
         image_transform_train=image_transform_train(size=image_size),
         image_transform_test=image_transform_test(size=image_size),
-        mask_transform_train=mask_transform(size=image_size),
-        mask_transform_test=mask_transform(size=image_size),
+        mask_transform_train=mask_transform(size=cfg.mask_shape),
+        mask_transform_test=mask_transform(size=cfg.mask_shape),
         image_size=image_size,
         num_workers=0
     )
@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     if cfg.train:
         from src.train_functions import train
-        train(model_name=cfg.model_name,
+        results = train(model_name=cfg.model_name,
             model=model,
             train_loader=train_loader,
             test_loader=test_loader,
@@ -96,6 +96,12 @@ if __name__ == "__main__":
             learning_rate=cfg.MODEL_PARAMS["learning_rate"],
             cfg=cfg
         )
+        # save results to a file
+        try:
+            f = open(f"results/{cfg.method}.txt", "x") 
+        except FileExistsError:
+            f = open(f"results/{cfg.method}.txt", "w")
+        f.writelines('\n'.join(results))
     if cfg.save_model:
         print(f"Saving model to {cfg.weight_path}...")
         from src.load_model import save_model
@@ -131,13 +137,13 @@ if __name__ == "__main__":
         # cls, seg = model(modified_tensor.to(device))
         # print(seg.shape)
 
-        with torch.no_grad():
-            modified_tensor = modified_tensor.to(device)
-            pred = model(modified_tensor)
-        proba = torch.nn.Softmax(dim=1)(pred)
-        pred = torch.argmax(pred, dim=1).item()
-        print(f"Prediction: {pred}")
-        print("proba", proba)
+        # with torch.no_grad():
+        #     modified_tensor = modified_tensor.to(device)
+        #     pred = model(modified_tensor)
+        # proba = torch.nn.Softmax(dim=1)(pred)
+        # pred = torch.argmax(pred, dim=1).item()
+        # print(f"Prediction: {pred}")
+        # print("proba", proba)
 
         # cv2.imwrite("output/modified.png", modified_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 255)
         heatmap= get_heatmap(cfg.method, model, modified_tensor, cfg.heatmap_args, device=device)
@@ -159,8 +165,11 @@ if __name__ == "__main__":
         # write the overlay to disk
         from torchvision.utils import save_image
         # save_image(overlay, f"output/{cfg.method}/{adress}", normalize=True, scale_each=True)
-        cv2.imwrite(f"output/{cfg.method}/{adress}", overlay)
-        print("saved")
+        # create the directory if it doesn't exist
+        if not os.path.exists(f"output/{cfg.method}_{cfg.model_name}"):
+            os.makedirs(f"output/{cfg.method}_{cfg.model_name}")
+        cv2.imwrite(f"output/{cfg.method}_{cfg.model_name}/{adress}", overlay)
+        # print("saved")
         del modified_img, modified_tensor
         del heatmap, tensor, overlay
         torch.cuda.empty_cache()
