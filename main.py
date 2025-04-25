@@ -18,7 +18,7 @@ from src.data_loader_mask import load_data_train_test
 from PIL import Image
 import cv2
 from src.visualization import get_heatmap, show_mask_on_image
-from src.load_model import load_model
+from src.models import load_model
 from src.transform import image_transform_train, image_transform_test, mask_transform, denormalize
 
 
@@ -116,7 +116,6 @@ if __name__ == "__main__":
 
     # Ensure model is in eval mode
     model.eval()
-    model.to(device)
     # extract 1 image from the modified path
     # print(vars(test_loader.dataset.dataset))
     # for i in range(len(test_loader.dataset.dataset)):
@@ -163,7 +162,8 @@ if __name__ == "__main__":
         # mask = cv2.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=cv2.INTER_LINEAR)
         mask = mask_transform(size=image_size)(mask)
 
-
+        print("mask shape", mask.shape)
+        print("heatmap shape", heatmap.shape)
 
         overlay = show_mask_on_image(mask, heatmap, alpha=0.5)
 

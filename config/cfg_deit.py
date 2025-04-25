@@ -9,7 +9,7 @@ mask_shape = (10, 10)  # Resize all masks to this size
 model_name = "deit_tiny"  # Name of the model to load
 
 # --- Paths ---
-load_model = False  # Set to True to load the model from a path
+load_model = True  # Set to True to load the model from a path
 weight_path = "checkpoints/deit_tiny_model.pth"  # Path to save the model weights
 
 save_model = True  # Set to True to save the model after training
@@ -19,7 +19,7 @@ save_model = True  # Set to True to save the model after training
 
 
 # --- Model Parameters ---
-train = True  # Set to True to train the model
+train = False  # Set to True to train the model
 MODEL_PARAMS = {
     "learning_rate": 1e-4,
     "batch_size": batch_size,

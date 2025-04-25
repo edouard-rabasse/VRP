@@ -1,5 +1,5 @@
 # trainers/__init__.py
-import trainers
+import src.trainers as trainers
     
 def train(model_name, model, train_loader, test_loader,
           num_epochs, device, learning_rate, *,

@@ -9,9 +9,9 @@ mask_shape = (10, 10)  # Resize all masks to this size
 model_name = "cnn"  # Name of the model to load
 
 # --- Paths ---
-load_model = False 
+load_model = True 
 weight_path = "checkpoints/CNNModel_model.pth"  # Path to save the model weights
-save_model = True
+save_model = False
 
 
 

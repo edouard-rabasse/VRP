@@ -33,14 +33,14 @@ def load_deit(weights_path,device='cpu'):
 def load_model(model_name, device, cfg):
     
     if model_name == 'cnn':
-        from models.VisualScoringModel import VisualScoringModel
+        from src.models.VisualScoringModel import VisualScoringModel
         image_size = cfg.image_size
         input_shape = (3, image_size[0], image_size[1])
 
         model = VisualScoringModel(input_shape=input_shape).to(device)
 
     elif model_name == 'deit_tiny':
-        # from models.deit_tiny import load_deit
+        # from src.models.deit_tiny import load_deit
         # model = load_deit(model_name, device, out_features=2)
         # model.to(device)
         try:
@@ -60,7 +60,7 @@ def load_model(model_name, device, cfg):
         model.to(device)
         
     elif model_name == 'multi_task':
-        from models.MultiTaskVisualModel import MultiTaskVisualScoringModel
+        from src.models.MultiTaskVisualModel import MultiTaskVisualScoringModel
         image_size = cfg.image_size
         input_shape = (3, image_size[0], image_size[1])
         mask_shape = (10,10)
@@ -68,11 +68,11 @@ def load_model(model_name, device, cfg):
         model = MultiTaskVisualScoringModel(input_shape=input_shape,mask_shape = mask_shape).to(device)
 
     elif model_name == 'vgg':
-        from models.vgg import load_vgg
+        from src.models.vgg import load_vgg
         model = load_vgg()
         model.to(device)
     elif model_name == 'MFCN':
-        from models.MFCN import MultiTaskVGG
+        from src.models.MFCN import MultiTaskVGG
         model = MultiTaskVGG(mask_shape=cfg.mask_shape)
         model.to(device)
     else:
