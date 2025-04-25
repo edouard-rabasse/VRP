@@ -7,10 +7,12 @@ from tqdm import tqdm
 class VisualScoringModel(nn.Module):
     def __init__(self,input_shape=(1, 84, 84)):
         super(VisualScoringModel, self).__init__()
+        # intermediary_kernel = [8, 4, 3]
+        intermediary_kernel = [30, 20, 5]
 
-        self.conv1 = nn.Conv2d(input_shape[0], 32, 8, stride=4)
-        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-        self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
+        self.conv1 = nn.Conv2d(input_shape[0], 32, intermediary_kernel[0], stride=5)
+        self.conv2 = nn.Conv2d(32, 64, intermediary_kernel[1], stride=2)
+        self.conv3 = nn.Conv2d(64, 64, intermediary_kernel[2], stride=1)
         # The output shape after conv3 is [N, 64, 7, 7]
 
         with torch.no_grad():
@@ -111,6 +113,10 @@ def train_model(
         train_acc = correct / total
         print(f"Epoch {epoch+1}: Train Loss = {train_loss:.4f}, Train Acc = {train_acc*100:.2f}%")
         results.append(f"Epoch {epoch+1}: Train Loss = {train_loss:.4f}, Train Acc = {train_acc*100:.2f}%")
+        if epoch % 5 == 0:
+            eval_loss, eval_acc = evaluate_model(model, test_loader, criterion, device)
+            print(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%")
+            results.append(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%")
 
         # Optional: run evaluation on test set
     eval_loss, eval_acc = evaluate_model(model, test_loader, criterion, device)

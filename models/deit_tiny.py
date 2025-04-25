@@ -17,19 +17,19 @@ def load_deit(model_name, device, out_features=2):
 
         # Changing the last layer to have 2 classes
         in_features = model.head.in_features
-        # model.head = nn.Linear(in_features, 2)
         model.head = nn.Sequential(
-            nn.Linear(in_features, in_features),
-            nn.ReLU(),
-            nn.Linear(in_features, out_features)
+            nn.Dropout(0.1),
+            nn.Linear(in_features, 2)
         )
-        # [DEBUG]
-        # for param in model.parameters():
-        #     param.requires_grad = False
-        # for param in model.head.parameters():
-        #     param.requires_grad = True
+        nn.init.xavier_uniform_(model.head.weight); nn.init.zeros_(model.head.bias)
+        
+        for param in model.parameters():
+            param.requires_grad = False
+        for param in model.head.parameters():
+            param.requires_grad = True
     else:
         raise ValueError("Unknown model name: {}".format(model_name))
+    print(model.head)
     return model
 
 
@@ -126,7 +126,6 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
 
                 val_running_loss += loss.item() * labels.size(0)
                 preds = torch.argmax(outputs, dim=1)
-                # print(preds, labels)
                 val_correct += torch.sum(preds == labels).item()
                 val_total += labels.size(0)
 
@@ -148,13 +147,20 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
 def train_deit_no_precompute(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
     import torch.optim as optim
     # Send model to device
-    model.to(device)
-    model.eval()     
-    model.head.train()
+    model.to(device)   
+    
 
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.head.parameters(), lr=learning_rate)
+    # for p in model.blocks[-1].parameters(): p.requires_grad_(True)
+    # head_params  = [p for n,p in model.named_parameters() if n.startswith('head')]
+    # block_params = list(model.blocks[-1].parameters())
+    # optimizer = optim.AdamW([
+    #     {'params': head_params,  'lr': 3e-4},
+    #     {'params': block_params,'lr': 1e-5}
+    # ], weight_decay=1e-4)
+
 
     from timm.scheduler import CosineLRScheduler
     num_steps  = num_epochs * len(train_loader)
@@ -178,10 +184,8 @@ def train_deit_no_precompute(model, train_loader, test_loader,device='cpu', num_
         running_loss, correct_preds, total = 0.0, 0, 0
         i = 0
 
-        
-
         for inputs, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
-            model.head.train() # [DEBUG]
+            model.train()
             inputs, labels = inputs.to(device), labels.to(device)
             # Select the CLS token (first token) for classification
 
@@ -191,7 +195,7 @@ def train_deit_no_precompute(model, train_loader, test_loader,device='cpu', num_
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-            scheduler.step(epoch*len(train_loader) + i)
+            scheduler.step(i)
             i+=1
 
             running_loss += loss.item() * labels.size(0)

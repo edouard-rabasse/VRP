@@ -184,7 +184,7 @@ def load_data_train_test(train_original_path,
         mask_transform=mask_transform_test,
         augment=False)
     
-    train_loader = get_dataloader(train_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    train_loader = get_dataloader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     test_loader = get_dataloader(test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
     return train_loader, test_loader
     

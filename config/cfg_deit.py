@@ -23,7 +23,7 @@ train = True  # Set to True to train the model
 MODEL_PARAMS = {
     "learning_rate": 1e-4,
     "batch_size": batch_size,
-    "epochs": 50,
+    "epochs": 100,
 }
 LAMBDA_VISUAL = 0.5  # Poids du score visuel dans la fonction objective composite
 

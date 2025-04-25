@@ -1,47 +1,49 @@
-import torch.nn as nn
 import torch
+from sklearn.metrics import confusion_matrix
+import numpy as np
 
-def evaluate_model_cls(model, test_loader, device="cpu"):
+def get_confusion_matrix(model, test_loader, device="cuda"):
     """
-    prints metrics for the classification model
-    F1 score, accuracy, precision, recall
-    confusion matrix"""
-    from sklearn.metrics import classification_report, confusion_matrix
-    import numpy as np
+    Calcule la matrice de confusion pour `model` sur `test_loader`.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        Réseau déjà chargé et, si besoin, envoyé sur `device`.
+    test_loader : torch.utils.data.DataLoader
+        DataLoader de validation / test (batch, label, _).
+    device : str, optional
+        "cuda" ou "cpu" (par défaut "cuda").
+
+    Returns
+    -------
+    numpy.ndarray
+        Matrice de confusion (shape : [n_classes, n_classes]).
+    """
     model.eval()
-    all_preds = []
-    all_labels = []
-    
+    all_preds, all_targets = [], []
+
     with torch.no_grad():
-        for images, labels, masks in test_loader:
-            images = images.to(device)
-            labels = labels.to(device)
+        for batch in test_loader:
+            # la plupart de vos DataLoader renvoient (image, label, mask)
+            images, labels = batch[0].to(device), batch[1].to(device)
+
             outputs = model(images)
-            _, preds = torch.max(outputs, 1)
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
-    
-    # Convert to numpy arrays for sklearn functions
-    all_preds = np.array(all_preds)
-    all_labels = np.array(all_labels)
-    
-    # Print classification report
-    print(classification_report(all_labels, all_preds))
-    
-    # Print confusion matrix
-    cm = confusion_matrix(all_labels, all_preds)
-    print("Confusion Matrix:")
-    print(cm)
 
-def evaluate_seg_cls(model, test_loader,method, device="cpu"):
-    """
-    prints metrics for the segmentation model, using heatmap
-    TODO : WIP
-    """
-    from .visualization import get_heatmap
-    from sklearn.metrics import classification_report, confusion_matrix
-    for images, labels, masks in test_loader:
-        heatmap = get_heatmap(method, model, input_tensor=images, args=None, device=device)
-        print(heatmap.shape)
-    
+            # si le modèle renvoie un tuple / liste → on garde le 1er
+            if isinstance(outputs, (tuple, list)):
+                outputs = outputs[0]
 
+            preds = torch.argmax(outputs, dim=1)
+            all_preds.append(preds.cpu())
+            all_targets.append(labels.cpu())
+
+    # concatène les batches en un seul vecteur
+    y_pred   = torch.cat(all_preds).numpy()
+    y_true   = torch.cat(all_targets).numpy()
+
+    return confusion_matrix(y_true, y_pred)
+
+# --- Exemple d'utilisation ------------------------------------
+# cm = get_confusion_matrix(model, test_loader, device="cuda")
+# print(cm)

@@ -52,3 +52,7 @@ C'est pas les graphes qu'on a. C'est plutôt en utilisant les coordonnées paral
 https://ar5iv.labs.arxiv.org/html/1709.02016#:~:text=localization%20output%20in%20certain%20cases,finer%20localization%20than%20the%20SFCN
 
 Uses a modified version of VGG-16, but they add batch normalization and class weighting.
+
+## Classification of urban morphology with deep learning: Application on urban vitality
+https://www.sciencedirect.com/science/article/pii/S0198971521001137
+For classification of road networks.

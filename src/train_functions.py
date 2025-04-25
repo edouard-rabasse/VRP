@@ -55,7 +55,7 @@ def train(model_name,model, train_loader, test_loader, num_epochs, device, learn
         test_features = precompute_model(model, test_loader, device=device)
         train_loader = DataLoader(train_features, batch_size=cfg.batch_size, shuffle=True)
         test_loader = DataLoader(test_features, batch_size=cfg.batch_size, shuffle=False)
-        resuls = train_vgg(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
+        results = train_vgg(model, train_loader, test_loader, device=device, num_epochs=num_epochs, learning_rate=learning_rate, criterion=criterion)
     
     elif model_name == "MFCN":
         from models.MFCN import train_model_multi_task

@@ -97,10 +97,15 @@ if __name__ == "__main__":
             cfg=cfg
         )
         # save results to a file
+        from src.evaluation import get_confusion_matrix
+        matrix = get_confusion_matrix(model, test_loader, device=device)
+        results.append(f"Confusion matrix: \n {matrix}")
+
+        
         try:
-            f = open(f"results/{cfg.method}.txt", "x") 
+            f = open(f"results/{cfg.model_name}_{cfg.cfg_number}.txt", "x") 
         except FileExistsError:
-            f = open(f"results/{cfg.method}.txt", "w")
+            f = open(f"results/{cfg.model_name}_{cfg.cfg_number}.txt", "w")
         f.writelines('\n'.join(results))
     if cfg.save_model:
         print(f"Saving model to {cfg.weight_path}...")
