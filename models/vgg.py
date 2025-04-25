@@ -45,12 +45,13 @@ def precompute_model(model, dataloader, device='cpu'):
 
     
 
-def train_vgg(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
+def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None,cfg=None):
     import torch.optim as optim
     # Send model to device
     model.to(device)
     for param in model.parameters():
         param.requires_grad = False
+    
     for param in model.classifier[5:].parameters():
         param.requires_grad = True
 

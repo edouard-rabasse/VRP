@@ -144,7 +144,7 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
         print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
             f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
 
-def train_deit_no_precompute(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
+def train_deit_no_precompute(model, train_loader, test_loader,*,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None,cfg=None):
     import torch.optim as optim
     # Send model to device
     model.to(device)   
@@ -236,7 +236,7 @@ def train_deit_no_precompute(model, train_loader, test_loader,device='cpu', num_
         results.append(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
     return results
 
-def train_deit_mask(model, train_loader, test_loader,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
+def train_deit_mask(model, train_loader, test_loader,*,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None):
     import torch.optim as optim
     # Send model to device
     model.to(device)

@@ -70,6 +70,9 @@ def train_model(
     device: str = 'cpu',
     learning_rate: float = 1e-3,
     criterion: nn.Module = None,
+    cfg=None,*,
+    gamma: float = 0.5,
+    step_size: int = 5,
     ):
     # Send model to device
     model.to(device)
@@ -81,7 +84,7 @@ def train_model(
 
     # Optimizer, scheduler, and loss function
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
     results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate"]

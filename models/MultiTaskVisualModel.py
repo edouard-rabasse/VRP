@@ -79,7 +79,7 @@ class MultiTaskVisualScoringModel(nn.Module):
 import torch
 import torch.nn as nn
 
-def train_model_multi_task(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=1.0):
+def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, device, learning_rate, lambda_seg=1.0,cfg=None,criterion=None):
     """
     Train the multi-task model.
     Args:

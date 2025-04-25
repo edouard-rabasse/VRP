@@ -64,26 +64,23 @@ def image_transform_test(size=(224,224), mean=mean, std=std):
                             std=std),
     ])
 
-def mask_transform(size=(224,224)):
-    """
-    Transform for masks.
-    Args:
-        mask (numpy array): Input mask.
-    Returns:
-        torch.Tensor: Transformed mask tensor.
-    """
-    def max_pool_resize(img: torch.Tensor) -> torch.Tensor:
-        """
-        img : Tensor uint8 [C, H, W] (PILToTensor ne normalise pas)
-        """
-        img = img.float()                         # adaptive_pool attend float
-        img = F.adaptive_max_pool2d(img, size)
-        # --- re-binarisation pour le cas mono-canal ---
-        if img.size(0) == 1:
-            img = (img > 0).float()
-        return img
 
+
+class MaxPoolResize:
+    def __init__(self, size=(10,10)):
+        self.size = size
+
+    def __call__(self, mask):
+        # mask: Tensor[C,H,W]
+        mask = mask.float()
+        mask = F.adaptive_max_pool2d(mask, self.size)
+        # --- re-binarisation pour le cas mono-canal ---
+        if mask.size(0) == 1:
+            mask = (mask > 0).float()
+        return mask
+
+def mask_transform(size):
     return transforms.Compose([
-        transforms.PILToTensor(),     # 0-255, uint8, shape (C,H,W)
-        transforms.Lambda(max_pool_resize)
+        transforms.ToTensor(),
+        MaxPoolResize(size)
     ])

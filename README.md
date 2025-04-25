@@ -7,7 +7,7 @@ From a dataset of optimal routes and modified routes, train a vision model that 
 - automatiser, fichier de log, 
 - hyperparamètres, augmentation de données,
 - automatiser la heatmap pour des batches.
-- faire un mutli avec VGG
+- faire un multi avec VGG
 - 
 
 Ideas : 

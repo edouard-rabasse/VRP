@@ -106,7 +106,7 @@ class MultiTaskVGG(nn.Module):
 
 
 
-def train_model_multi_task(model, train_loader, test_loader, num_epochs, device, learning_rate, lambda_seg=1.0):
+def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, device, learning_rate, lambda_seg=1.0, cfg=None):
     """
     Train the multi-task model.
     Args:
@@ -124,7 +124,7 @@ def train_model_multi_task(model, train_loader, test_loader, num_epochs, device,
     model.train()
     
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     
     # Loss functions: classification and segmentation
     criterion_cls = nn.CrossEntropyLoss()        # expects (logits, target labels)

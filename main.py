@@ -77,7 +77,7 @@ if __name__ == "__main__":
         mask_transform_train=mask_transform(size=cfg.mask_shape),
         mask_transform_test=mask_transform(size=cfg.mask_shape),
         image_size=image_size,
-        num_workers=0
+        num_workers=os.cpu_count()
     )
     print("Data loaded.")
     torch.backends.cudnn.deterministic = True
