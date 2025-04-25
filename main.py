@@ -138,18 +138,6 @@ if __name__ == "__main__":
         modified_img = Image.open(img_path).convert("RGB")
         # modified_img = cv2.cvtColor(modified_img, cv2.COLOR_BGR2RGB)
         modified_tensor = image_transform_test(image_size)(modified_img).unsqueeze(0)
-        # cls, seg = model(modified_tensor.to(device))
-        # print(seg.shape)
-
-        # with torch.no_grad():
-        #     modified_tensor = modified_tensor.to(device)
-        #     pred = model(modified_tensor)
-        # proba = torch.nn.Softmax(dim=1)(pred)
-        # pred = torch.argmax(pred, dim=1).item()
-        # print(f"Prediction: {pred}")
-        # print("proba", proba)
-
-        # cv2.imwrite("output/modified.png", modified_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 255)
         heatmap= get_heatmap(cfg.method, model, modified_tensor, cfg.heatmap_args, device=device)
         
 
@@ -157,20 +145,15 @@ if __name__ == "__main__":
 
         mask_pth = f"{test_mask_path}{adress}"
         mask = Image.open(mask_pth).convert("L")
-        # resize mask to the same size as the image
+
         mask = torchvision.transforms.functional.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=transforms.InterpolationMode.NEAREST)
-        # mask = cv2.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=cv2.INTER_LINEAR)
         mask = mask_transform(size=image_size)(mask)
 
         print("mask shape", mask.shape)
         print("heatmap shape", heatmap.shape)
 
         overlay = show_mask_on_image(mask, heatmap, alpha=0.5)
-
-        # write the overlay to disk
-        from torchvision.utils import save_image
-        # save_image(overlay, f"output/{cfg.method}/{adress}", normalize=True, scale_each=True)
-        # create the directory if it doesn't exist
+        
         if not os.path.exists(f"output/{cfg.method}_{cfg.model_name}"):
             os.makedirs(f"output/{cfg.method}_{cfg.model_name}")
         cv2.imwrite(f"output/{cfg.method}_{cfg.model_name}/{adress}", overlay)
