@@ -24,4 +24,5 @@ GNN
 GAN, matrices d'adjacence.
 plus de rotations.
 
-
+## TODO :
+Clean pour les hyperparamètres.

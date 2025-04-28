@@ -19,7 +19,7 @@ save_model = True  # Set to True to save the model after training
 
 
 # --- Model Parameters ---
-train = False  # Set to True to train the model
+train = True  # Set to True to train the model
 MODEL_PARAMS = {
     "learning_rate": 1e-4,
     "batch_size": batch_size,

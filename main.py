@@ -149,9 +149,6 @@ if __name__ == "__main__":
         mask = torchvision.transforms.functional.resize(mask, (tensor.shape[2], tensor.shape[1]), interpolation=transforms.InterpolationMode.NEAREST)
         mask = mask_transform(size=image_size)(mask)
 
-        print("mask shape", mask.shape)
-        print("heatmap shape", heatmap.shape)
-
         overlay = show_mask_on_image(mask, heatmap, alpha=0.5)
         
         if not os.path.exists(f"output/{cfg.method}_{cfg.model_name}"):
