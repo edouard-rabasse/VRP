@@ -123,6 +123,7 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
     """
     model.to(device)
     model.train()
+    metrics = []  # list to collect metrics per epoch
     
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
@@ -186,10 +187,14 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
         epoch_seg_loss = running_seg_loss / total
         epoch_acc = correct / total
         
-        print(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} " 
-              f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
-        results.append(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} "
-              f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
+        # Record training metrics
+        metrics.append({
+            'epoch': epoch+1,
+            'train_loss': epoch_loss,
+            'train_acc': epoch_acc,
+            'cls_loss': epoch_cls_loss,
+            'seg_loss': epoch_seg_loss
+        })
     # evaluate on test set
     test_cls_loss = 0.0
     test_seg_loss = 0.0
@@ -222,11 +227,15 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
         test_loss = loss.item() * images.size(0)
         test_cls_loss = loss_cls.item() * images.size(0)
         test_seg_loss = loss_seg.item() * images.size(0)
-    print(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
-    results.append(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
+    # Record test metrics
+    metrics.append({
+        'test_loss': test_loss,
+        'test_acc': correct/total,
+        'test_cls_loss': test_cls_loss/total,
+        'test_seg_loss': test_seg_loss/total
+    })
 
-
-    return results
+    return metrics
 
 if __name__ == "__main__":
     # Assuming your directory paths are defined:

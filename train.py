@@ -22,14 +22,16 @@ def main(cfg: DictConfig):
     print(f"[Train] Loaded model: {cfg.model.name}")
 
     # ── data loaders ────────────────────────────────────────────────────────
+    # Determine batch size: model-specific override or global default
+    bs = cfg.batch_size
+    if hasattr(cfg.model.params, 'batch_size'):
+        bs = cfg.model.params.batch_size
     train_loader, test_loader = load_data_train_test(
         train_original_path=cfg.data.train_original_path,
         test_original_path =cfg.data.test_original_path,
         train_modified_path=cfg.data.train_modified_path,
         test_modified_path =cfg.data.test_modified_path,
-        mask_path_train    =cfg.data.train_mask_path,
-        mask_path_test     =cfg.data.test_mask_path,
-        batch_size         =cfg.batch_size,
+        batch_size         =bs,
         image_transform_train = image_transform_train(tuple(cfg.image_size)),
         image_transform_test  = image_transform_test(tuple(cfg.image_size)),
         mask_transform_train  = mask_transform(tuple(cfg.mask_shape)),
@@ -45,9 +47,9 @@ def main(cfg: DictConfig):
         model         =model,
         train_loader  =train_loader,
         test_loader   =test_loader,
-        num_epochs    =cfg.model_params.epochs,
+        num_epochs    =cfg.model.params.epochs,
         device        =device,
-        learning_rate =cfg.model_params.learning_rate,
+        learning_rate =cfg.model.params.learning_rate,
         cfg           =cfg
     )
     # confusion
@@ -56,7 +58,7 @@ def main(cfg: DictConfig):
 
     # save results
     os.makedirs("results", exist_ok=True)
-    out = f"results/{cfg.model.name}_{cfg.data.cfg_number}.txt"
+    out = f"results/{cfg.model.name}_{cfg.data.cfg_number}_{cfg.model.params.learning_rate}.txt"
     with open(out, "w") as f:
         f.write("\n".join(results))
     print(f"[Train] Results written to {out}")

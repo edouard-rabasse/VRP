@@ -58,7 +58,7 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.classifier.parameters(), lr=learning_rate)
-    results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate"]
+    metrics = []  # collect per-epoch metrics
 
     # Lists to track metrics
     train_losses, val_losses = [], []
@@ -123,9 +123,16 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
 
         print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
             f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
-        results.append(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
-            f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
+        
+        # record epoch metrics
+        metrics.append({
+            'epoch': epoch+1,
+            'train_loss': train_loss,
+            'train_acc': train_acc,
+            'val_loss': val_loss,
+            'val_acc': val_acc
+        })
     # reactivate gradients
     for param in model.parameters():
         param.requires_grad = True
-    return results
+    return metrics

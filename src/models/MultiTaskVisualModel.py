@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
+from src.models.VisualScoringModel import evaluate_model
 
 class MultiTaskVisualScoringModel(nn.Module):
     def __init__(self, input_shape=(3, 84, 84), mask_shape=(84, 84)):
@@ -81,115 +82,39 @@ import torch.nn as nn
 
 def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, device, learning_rate, lambda_seg=1.0,cfg=None,criterion=None):
     """
-    Train the multi-task model.
-    Args:
-        model: the multi-task model.
-        train_loader: DataLoader for training.
-        test_loader: DataLoader for testing (evaluation).
-        num_epochs: Number of epochs to train.
-        device: 'cpu' or 'cuda'.
-        learning_rate: learning rate for optimizer.
-        lambda_seg: weight for the segmentation loss.
-    Returns:
-        model, optimizer, scheduler after training.
+    Train the multi-task model and return metrics per epoch.
     """
     model.to(device)
-    model.train()
-    
+    metrics = []
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
-    
-    # Loss functions: classification and segmentation
-    criterion_cls = nn.CrossEntropyLoss()        # expects (logits, target labels)
-    criterion_seg = nn.BCEWithLogitsLoss(reduction="none")         # for pixel-wise mask prediction
-    results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate"]
+    criterion_cls = nn.CrossEntropyLoss()
+    criterion_seg = nn.BCEWithLogitsLoss(reduction="none")
 
-    
     for epoch in range(num_epochs):
-        running_loss = 0.0
-        running_cls_loss = 0.0
-        running_seg_loss = 0.0
-        correct = 0
-        total = 0
-        
+        model.train()
+        running_loss = running_cls_loss = running_seg_loss = 0.0
+        correct = total = 0
         for images, labels, masks in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
-            images = images.to(device)               # shape: [N, 3, H, W] (e.g., 84x84)
-            labels = labels.to(device)               # shape: [N]
-            masks = masks.to(device).float()         # shape: [N, 1, H, W]
-            
+            images, labels, masks = images.to(device), labels.to(device), masks.to(device).float()
             optimizer.zero_grad()
-            
             clf_logits, seg_logits = model(images)
             loss_cls = criterion_cls(clf_logits, labels)
-            loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
-
-            # vecteur booléen : 1 si l'image a au moins un pixel positif
-            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()  # shape (N,)
-
-            # on pèse chaque carte de perte par mask_present
-            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() \
-                    / (mask_present.sum() + 1e-6)      # moyenne sur les images « valides »
-
+            loss_seg_map = criterion_seg(seg_logits, masks)
+            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()
+            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() / (mask_present.sum() + 1e-6)
             loss = loss_cls + lambda_seg * loss_seg
-            
-            loss.backward()
-            optimizer.step()
-            
+            loss.backward(); optimizer.step()
             running_loss += loss.item() * images.size(0)
             running_cls_loss += loss_cls.item() * images.size(0)
             running_seg_loss += loss_seg.item() * images.size(0)
-            preds = torch.argmax(clf_logits, dim=1)
-            correct += (preds == labels).sum().item()
-            total += labels.size(0)
-        
+            preds = torch.argmax(clf_logits, dim=1); correct += (preds==labels).sum().item(); total += labels.size(0)
         scheduler.step()
-        epoch_loss = running_loss / total
-        epoch_cls_loss = running_cls_loss / total
-        epoch_seg_loss = running_seg_loss / total
-        epoch_acc = correct / total
-        
-        print(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} " 
-              f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
-        results.append(f"Epoch {epoch+1}/{num_epochs}: Total Loss: {epoch_loss:.4f} "
-              f"(Cls: {epoch_cls_loss:.4f}, Seg: {epoch_seg_loss:.4f}), Acc: {epoch_acc*100:.2f}%")
-    # evaluate on test set
-    test_cls_loss = 0.0
-    test_seg_loss = 0.0
-    test_loss = 0.0
-    correct = 0
-    total = 0
-    for images, labels, masks in test_loader:
-        images = images.to(device)
-        labels = labels.to(device)
-        masks = masks.to(device).float()
-        
-        with torch.no_grad():
-            clf_logits, seg_logits = model(images)
-            loss_cls = criterion_cls(clf_logits, labels)
-            # loss_seg = criterion_seg(seg_logits, masks)
-            # sortie du critère sans réduction : (N,1,H,W)
-            loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
-
-            # vecteur booléen : 1 si l'image a au moins un pixel positif
-            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()  # shape (N,)
-
-            # on pèse chaque carte de perte par mask_present
-            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() \
-                    / (mask_present.sum() + 1e-6)      # moyenne sur les images « valides »
-
-            loss = loss_cls + lambda_seg * loss_seg
-        
-        preds = torch.argmax(clf_logits, dim=1)
-        correct += (preds == labels).sum().item()
-        total += labels.size(0)
-        test_loss = loss.item() * images.size(0)
-        test_cls_loss = loss_cls.item() * images.size(0)
-        test_seg_loss = loss_seg.item() * images.size(0)
-    print(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
-    results.append(f"Test Loss: {test_loss:.4f} (Cls: {test_cls_loss:.4f}, Seg: {test_seg_loss:.4f}), Acc: {correct/total*100:.2f}%")
-
-
-    return results
+        train_loss = running_loss/total; train_acc = correct/total
+        # evaluation on test set
+        test_loss, test_acc = evaluate_model(model, test_loader, criterion_cls, device)
+        metrics.append({ 'epoch': epoch+1, 'train_loss': train_loss, 'train_acc': train_acc, 'test_loss': test_loss, 'test_acc': test_acc })
+    return metrics
 
 if __name__ == "__main__":
     # Assuming your directory paths are defined:
