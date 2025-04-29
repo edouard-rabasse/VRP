@@ -3,7 +3,7 @@ defaults:
   - _self_            
   - /heatmap: multi_task 
 
-name: deit_tiny
+name: MFCN
 load: ${..load_model}  # load model from checkpoint
 save: ${..save_model}  # save model to checkpoint
 

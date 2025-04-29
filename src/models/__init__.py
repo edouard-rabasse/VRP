@@ -27,7 +27,7 @@ def _load_multi_task(cfgm, device):
     H, W = cfgm.image_size
     model = MultiTaskVisualScoringModel(
         input_shape=(3, H, W),
-        mask_shape=cfgm.mask_shape
+        mask_shape=tuple(cfgm.mask_shape)
     )
     return model
 
@@ -35,7 +35,7 @@ def _load_vgg(cfgm, device):
     return load_vgg()
 
 def _load_MFCN(cfgm, device):
-    return MultiTaskVGG(mask_shape=cfgm.mask_shape)
+    return MultiTaskVGG(mask_shape=tuple(cfgm.mask_shape))
 
 def _load_resnet(cfgm, device):
     return ResNetScoringModel(

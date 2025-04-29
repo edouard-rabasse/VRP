@@ -21,3 +21,4 @@ Using masks as labels and have a model that predicts the mask of the modified ro
 
 Bosser sur la modification des images : plus de contraste, grossir les traits...
 
+TODO : uniformiser avec des hydra.utils.instatiate

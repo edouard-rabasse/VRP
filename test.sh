@@ -10,7 +10,6 @@
 # 1. Modules
 # -----------------------------------------------------------------------------
 module load python/3.11            # même version que pour requirements.txt
-# Si tu as besoin de NumPy / SciPy compilés par Compute Canada :
 module load scipy-stack/2023b
 
 # -----------------------------------------------------------------------------

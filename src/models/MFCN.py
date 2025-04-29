@@ -17,6 +17,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
+from torchvision.models.vgg import VGG16_BN_Weights
 
 class MultiTaskVGG(nn.Module):
     def __init__(self, 
@@ -29,7 +30,7 @@ class MultiTaskVGG(nn.Module):
         super(MultiTaskVGG, self).__init__()
 
         # 1. Load pretrained VGG16 with batch normalization
-        vgg = models.vgg16_bn(pretrained=pretrained)
+        vgg = models.vgg16_bn(weights=VGG16_BN_Weights.DEFAULT)
         
         # 2. Keep only the 'features' part of VGG as your encoder (shared feature extractor)
         self.features = vgg.features  # [N, 512, H_out, W_out] after the last conv + pooling
