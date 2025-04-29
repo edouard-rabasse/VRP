@@ -18,13 +18,13 @@ def train(model_name, model, train_loader, test_loader,
         device (str): The device to train on ('cpu' or 'cuda')."""
 
     # Initialize Weights & Biases run
-    if cfg is not None:
-        # convert OmegaConf to plain python dict
-        wandb_config = OmegaConf.to_container(cfg, resolve=True)
-    else:
-        wandb_config = {}
-    project = wandb_config.pop('project_name', None) or 'default_project'
-    wandb.init(project=project, config=wandb_config)
+    # if cfg is not None:
+    #     # convert OmegaConf to plain python dict
+    #     wandb_config = OmegaConf.to_container(cfg, resolve=True)
+    # else:
+    #     wandb_config = {}
+    # project = wandb_config.pop('project_name', None) or 'default_project'
+    wandb.init(project="VRP", name=cfg.experiment_name)
     wandb.run.name = f"{model_name}_{wandb.run.id}"
     # Watch model for gradients and parameters
     wandb.watch(model)

@@ -83,9 +83,8 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
         criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.head.parameters(), lr=learning_rate)
 
-    # Lists to track metrics
-    train_losses, val_losses = [], []
-    train_accuracies, val_accuracies = [], []
+    # Initialize metrics list
+    metrics = []
     # Training loop
     for epoch in range(num_epochs):
         # === Training Phase ===
@@ -109,8 +108,6 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
 
         train_loss = running_loss / total
         train_acc = correct_preds / total
-        train_losses.append(train_loss)
-        train_accuracies.append(train_acc)
 
         # === Validation Phase ===
         model.head.eval()
@@ -134,15 +131,17 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
 
         val_loss = val_running_loss / val_total
         val_acc = val_correct / val_total
-        val_losses.append(val_loss)
-        val_accuracies.append(val_acc)
 
-        # Compute the F1-score on the validation set (binary average for 2 classes)
-        all_val_preds = torch.cat(all_val_preds).numpy()
-        all_val_labels = torch.cat(all_val_labels).numpy()
+        print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
+        metrics.append({
+            'epoch': epoch+1,
+            'train_loss': train_loss,
+            'train_acc': train_acc,
+            'val_loss': val_loss,
+            'val_acc': val_acc
+        })
 
-        print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
-            f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
+    return metrics
 
 def train_deit_no_precompute(model, train_loader, test_loader,*,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None,cfg=None):
     import torch.optim as optim
@@ -250,9 +249,8 @@ def train_deit_mask(model, train_loader, test_loader,*,device='cpu', num_epochs=
         criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.head.parameters(), lr=learning_rate)
 
-    # Lists to track metrics
-    train_losses, val_losses = [], []
-    train_accuracies, val_accuracies = [], []
+    # Initialize metrics list
+    metrics_mask = []
     # Training loop
     for epoch in range(num_epochs):
         # === Training Phase ===
@@ -277,8 +275,6 @@ def train_deit_mask(model, train_loader, test_loader,*,device='cpu', num_epochs=
 
         train_loss = running_loss / total
         train_acc = correct_preds / total
-        train_losses.append(train_loss)
-        train_accuracies.append(train_acc)
 
         # === Validation Phase ===
         model.head.eval()
@@ -302,12 +298,14 @@ def train_deit_mask(model, train_loader, test_loader,*,device='cpu', num_epochs=
 
         val_loss = val_running_loss / val_total
         val_acc = val_correct / val_total
-        val_losses.append(val_loss)
-        val_accuracies.append(val_acc)
 
-        # Compute the F1-score on the validation set (binary average for 2 classes)
-        all_val_preds = torch.cat(all_val_preds).numpy()
-        all_val_labels = torch.cat(all_val_labels).numpy()
+        print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
+        metrics_mask.append({
+            'epoch': epoch+1,
+            'train_loss': train_loss,
+            'train_acc': train_acc,
+            'val_loss': val_loss,
+            'val_acc': val_acc
+        })
 
-        print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
-            f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
+    return metrics_mask

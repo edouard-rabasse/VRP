@@ -8,3 +8,4 @@ checkpoints/
 results/
 outputs/
 multirun/
+wandb/

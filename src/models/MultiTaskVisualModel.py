@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
-from src.models.VisualScoringModel import evaluate_model
+from src.evaluation import evaluate_model_multi_task as evaluate_model
 
 class MultiTaskVisualScoringModel(nn.Module):
     def __init__(self, input_shape=(3, 84, 84), mask_shape=(84, 84)):
