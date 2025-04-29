@@ -14,7 +14,7 @@ def show_mask_on_image(input, heatmap, alpha=0.5):
     """
     Overlay the heatmap on the input image.
     ## Args:
-    - input_tensor (torch.Tensor): The input tensor to the model, dimension (N, C, H, W) or (C, H, W).
+    - input_tensor (torch.Tensor): The input tensor to the model, dimension (N, C, H, W) or (C, H, W), in RGB format.
     - heatmap (numpy.ndarray): The heatmap to overlay.
     - alpha (float): The transparency level for the overlay.
     ## Returns:
@@ -40,6 +40,7 @@ def show_mask_on_image(input, heatmap, alpha=0.5):
     # print("max over heatmap:", np.max(heatmap_resized))
     # print("max of input:", np.max(input))
     colored_heatmap = cv2.applyColorMap(heatmap_resized, cv2.COLORMAP_JET)
+    colored_heatmap_rgb = cv2.cvtColor(colored_heatmap, cv2.COLOR_BGR2RGB)
     
     # Overlay on input (grayscale to RGB)
     input_image = input.transpose(1, 2, 0)
@@ -50,7 +51,7 @@ def show_mask_on_image(input, heatmap, alpha=0.5):
     # print("Input Image shape:", input_image.shape)
     # print("Heatmap shape:", colored_heatmap.shape)
 
-    overlay = cv2.addWeighted(input_image, alpha, colored_heatmap, 1-alpha, 0)
+    overlay = cv2.addWeighted(input_image, alpha, colored_heatmap_rgb, 1-alpha, 0)
     return overlay
 
 def get_heatmap(method, model, input_tensor, args,device='cpu'):
@@ -67,14 +68,14 @@ def get_heatmap(method, model, input_tensor, args,device='cpu'):
 
     if method == 'gradcam':
         from src.models.VisualScoringModel import GradCAM
-        target_layer = getattr(model, args['target_layer'])
+        target_layer = getattr(model, args.target_layer)
         gradcam = GradCAM(model, target_layer)
-        heatmap = gradcam(input_tensor, class_index=args['class_index'])
+        heatmap = gradcam(input_tensor, class_index=args.class_index)
     elif method == 'grad_rollout':
         from src.models.vit_explain.grad_rollout import VITAttentionGradRollout
-        grad_rollout = VITAttentionGradRollout(model, discard_ratio=args['discard_ratio'])
+        grad_rollout = VITAttentionGradRollout(model, discard_ratio=args.discard_ratio)
   
-        heatmap = grad_rollout(input_tensor, category_index=args['class_index'])
+        heatmap = grad_rollout(input_tensor, category_index=args.class_index)
         # print("Grad Rollout heatmap shape:", heatmap.shape)
     
     elif method == "multi_task":

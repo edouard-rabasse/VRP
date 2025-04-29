@@ -1,0 +1,19 @@
+# Model configuration for a CNN model
+defaults:
+  - _self_            
+  - /heatmap: gradcam
+
+name: cnn
+load: ${..load_model}  # load model from checkpoint
+save: ${..save_model}  # save model to checkpoint
+
+weight_path: checkpoints/CNNModel_model.pth
+image_size: ${image_size}
+mask_shape: ${mask_shape}
+
+
+params:
+  learning_rate: 0.0001
+  batch_size: ${..batch_size}           # duplicated on purpose; you can omit if you prefer
+  epochs: 20
+  lambda_visual: 0.5       # formerly LAMBDA_VISUAL

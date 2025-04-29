@@ -47,7 +47,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         img_path, label, mask_path = self.all_samples[idx]
         
-        # Load image using cv2 and convert to RGB.
+        # Load image and convert to RGB.
         img = Image.open(img_path).convert("RGB")
         if img is None:
             raise ValueError(f"Unable to load image at {img_path}")
@@ -246,3 +246,7 @@ if __name__ == "__main__":
         cv2.imwrite("output/image.png", images[0].permute(1, 2, 0).numpy()[:,:,::-1] * 255)
         cv2.imwrite("output/mask.png", masks[0].permute(1, 2, 0).numpy() * 255)
         break
+    image = Image.open("output/image.png")
+    print(image.size, image.mode)
+    image = Image.open("output/image.png").convert("RGB")
+    print(image.size, image.mode)

@@ -34,7 +34,7 @@ def image_transform_train(size=(224,224), mean=mean, std=std):
     """
     Transform for training images.
     Args:
-        image (PIL Image or numpy array): Input image.
+        image (PIL Image): Input image.
     Returns:
         torch.Tensor: Transformed image tensor.
     """
@@ -52,7 +52,7 @@ def image_transform_test(size=(224,224), mean=mean, std=std):
     """
     Transform for testing images.
     Args:
-        image (PIL Image or numpy array): Input image.
+        image (PIL Image): Input image.
     Returns:
         torch.Tensor: Transformed image tensor.
     """

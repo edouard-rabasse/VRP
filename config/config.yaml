@@ -1,0 +1,24 @@
+# config/cfg_cnn.yaml
+defaults:
+  - data: config7 # ← then merge conf/data/data_config.yaml
+  - model: cnn       # ← then merge conf/model/cnn.yaml
+  - _self_            # ← load THIS file’s keys 
+
+# now your keys are available for interpolation:
+path: data
+cfg_number: 7
+mask: mask_removed
+
+model_params: ${model.params}
+
+load_model: false
+save_model: true
+
+heatmap: ${model.heatmap}  # heatmap method to use
+
+
+train_ratio: 0.8
+batch_size: 8
+image_size: [224, 224]     # YAML has no tuples : use lists
+mask_shape: [10, 10]
+

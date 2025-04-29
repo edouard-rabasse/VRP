@@ -8,13 +8,14 @@ from .VisualScoringModel       import VisualScoringModel
 from .MultiTaskVisualModel     import MultiTaskVisualScoringModel
 from .vgg                      import load_vgg
 from .MFCN                     import MultiTaskVGG
+from .resnet                   import ResNetScoringModel
 
-def _load_cnn(cfg, device):
-    H, W = cfg.image_size
+def _load_cnn(cfgm, device):
+    H, W = cfgm.image_size
     model = VisualScoringModel(input_shape=(3, H, W))
     return model
 
-def _load_deit_tiny(cfg, device):
+def _load_deit_tiny(cfgm, device):
     # timm already handles head replacement when you pass num_classes
     return timm.create_model(
         'deit_tiny_patch16_224',
@@ -22,19 +23,27 @@ def _load_deit_tiny(cfg, device):
         num_classes=2
     )
 
-def _load_multi_task(cfg, device):
-    H, W = cfg.image_size
+def _load_multi_task(cfgm, device):
+    H, W = cfgm.image_size
     model = MultiTaskVisualScoringModel(
         input_shape=(3, H, W),
-        mask_shape=cfg.mask_shape
+        mask_shape=cfgm.mask_shape
     )
     return model
 
-def _load_vgg(cfg, device):
+def _load_vgg(cfgm, device):
     return load_vgg()
 
-def _load_MFCN(cfg, device):
-    return MultiTaskVGG(mask_shape=cfg.mask_shape)
+def _load_MFCN(cfgm, device):
+    return MultiTaskVGG(mask_shape=cfgm.mask_shape)
+
+def _load_resnet(cfgm, device):
+    return ResNetScoringModel(
+        pretrained=True,
+        input_channels=3,
+        kernel_size=cfgm.kernel_size,
+        num_classes=2
+    )
 
 # Registry: map your string names → loader functions
 _MODEL_REGISTRY = {
@@ -43,27 +52,30 @@ _MODEL_REGISTRY = {
     'multi_task'  : _load_multi_task,
     'vgg'         : _load_vgg,
     'MFCN'        : _load_MFCN,
+    'resnet'      : _load_resnet,
+
 }
 
-def load_model(model_name: str, device: torch.device, cfg) -> nn.Module:
+def load_model(model_name: str, device: torch.device, cfgm) -> nn.Module:
     """
     Dispatch to the correct model‐builder, move it to device, then optionally load weights.
+    cfgm : cfg.model
     """
     if model_name not in _MODEL_REGISTRY:
         raise ValueError(f"Unknown model name: {model_name!r}")
 
     # 1) build
-    model = _MODEL_REGISTRY[model_name](cfg, device)
+    model = _MODEL_REGISTRY[model_name](cfgm, device)
 
     # 2) to device
     model = model.to(device)
 
     # 3) optionally load pretrained weights
-    if cfg.load_model:
-        if not os.path.exists(cfg.weight_path):
-            raise FileNotFoundError(f"Weight file not found: {cfg.weight_path}")
-        print(f"Loading weights from {cfg.weight_path}")
-        state = torch.load(cfg.weight_path, map_location=device)
+    if cfgm.load:
+        if not os.path.exists(cfgm.weight_path):
+            raise FileNotFoundError(f"Weight file not found: {cfgm.weight_path}")
+        print(f"Loading weights from {cfgm.weight_path}")
+        state = torch.load(cfgm.weight_path, map_location=device)
         model.load_state_dict(state)
 
     return model

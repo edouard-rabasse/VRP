@@ -17,7 +17,9 @@ class ResNetScoringModel(nn.Module):
     def __init__(self,
                  num_classes: int = 2,
                  input_channels: int = 1,
-                 pretrained: bool = False):
+                 pretrained: bool = False,
+                 *,
+                 kernel_size: int = 7):
         super().__init__()
 
         # ❶ Load a vanilla ResNet-18
@@ -28,7 +30,7 @@ class ResNetScoringModel(nn.Module):
         #     • shrink kernel to 3×3 and stride to 1
         #     • remove the first max-pool so that 84×84 does not collapse
         self.backbone.conv1 = nn.Conv2d(input_channels, 64,
-                                        kernel_size=7, stride=1,
+                                        kernel_size=kernel_size, stride=1,
                                         padding=2, bias=False)
         self.backbone.maxpool = nn.Identity()
 
@@ -92,7 +94,8 @@ def train_model(model,
                 num_epochs: int = 10,
                 device: str = 'cpu',
                 learning_rate: float = 5e-4,
-                criterion: nn.Module | None = None):
+                criterion: nn.Module | None = None,
+                cfg = None):
 
     model.to(device)
     print(f"Training on {device} for {num_epochs} epochs — LR={learning_rate}")

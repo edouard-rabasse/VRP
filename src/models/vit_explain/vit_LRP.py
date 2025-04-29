@@ -1,7 +1,6 @@
 """ Vision Transformer (ViT) in PyTorch
 Hacked together by / Copyright 2020 Ross Wightman
 """
-print("[DEBUG] Loading vit_LRP.py")
 import torch
 import torch.nn as nn
 from einops import rearrange

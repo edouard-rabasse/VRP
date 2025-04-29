@@ -1,0 +1,16 @@
+# Model configuration for a deit_tiny model
+defaults:
+  - _self_            
+  - /heatmap: grad_rollout
+name: deit_tiny
+load: ${..load_model}  # load model from checkpoint
+save: ${..save_model}  # save model to checkpoint
+
+weight_path: checkpoints/deit_tiny_model.pth
+image_size: ${image_size}
+mask_shape: ${mask_shape}
+
+params:
+  learning_rate: 0.0001
+  batch_size: ${..batch_size}           # duplicated on purpose; you can omit if you prefer
+  epochs: 50

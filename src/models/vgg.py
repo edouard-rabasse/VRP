@@ -45,14 +45,14 @@ def precompute_model(model, dataloader, device='cpu'):
 
     
 
-def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None,cfg=None):
+def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None,cfg=None, grad_layer=5):
     import torch.optim as optim
     # Send model to device
     model.to(device)
     for param in model.parameters():
         param.requires_grad = False
     
-    for param in model.classifier[5:].parameters():
+    for param in model.classifier[grad_layer:].parameters():
         param.requires_grad = True
 
     if criterion is None:
@@ -69,13 +69,13 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
         model.classifier.train()
         running_loss, correct_preds, total = 0.0, 0, 0
 
-        for features, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
-            features, labels = features.to(device), labels.to(device)
+        for input, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
+            input, labels = input.to(device), labels.to(device)
             # Select the CLS token (first token) for classification
-            cls_features = cls_features = torch.flatten(features, start_dim=1)
+            # cls_features = torch.flatten(input, start_dim=1)
 
             optimizer.zero_grad()
-            outputs = model.classifier(cls_features)
+            outputs = model(input)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -96,10 +96,9 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
         all_val_preds, all_val_labels = [], []
 
         with torch.no_grad():
-            for features, labels, mask in test_loader:
-                features, labels = features.to(device), labels.to(device)
-                cls_features = torch.flatten(features, start_dim=1)
-                outputs = model.classifier(cls_features)
+            for input, labels, mask in test_loader:
+                input, labels = input.to(device), labels.to(device)
+                outputs = model(input)
                 loss = criterion(outputs, labels)
 
                 val_running_loss += loss.item() * labels.size(0)

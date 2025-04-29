@@ -1,0 +1,5 @@
+method: grad_rollout
+args:
+  class_index: 0
+  target_layer: conv3
+  discard_ratio: 0.9
