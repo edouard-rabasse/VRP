@@ -112,8 +112,8 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
         scheduler.step()
         train_loss = running_loss/total; train_acc = correct/total
         # evaluation on test set
-        test_loss, test_acc = evaluate_model(model, test_loader, criterion_cls, device)
-        metrics.append({ 'epoch': epoch+1, 'train_loss': train_loss, 'train_acc': train_acc, 'test_loss': test_loss, 'test_acc': test_acc })
+        val_loss, val_acc = evaluate_model(model, test_loader, criterion_cls, device)
+        metrics.append({ 'epoch': epoch+1, 'train_loss': train_loss, 'train_acc': train_acc, 'val_loss': val_loss, 'val_acc': val_acc })
     return metrics
 
 if __name__ == "__main__":

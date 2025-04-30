@@ -114,14 +114,14 @@ def train_model(
         # compute metrics
         train_loss = running_loss / total
         train_acc = correct / total
-        test_loss, test_acc = evaluate_model(model, test_loader, criterion, device)
-        print(f"Epoch {epoch+1}: Train Loss={train_loss:.4f}, Train Acc={train_acc*100:.2f}%, Test Loss={test_loss:.4f}, Test Acc={test_acc*100:.2f}%")
+        val_loss, val_acc = evaluate_model(model, test_loader, criterion, device)
+        print(f"Epoch {epoch+1}: Train Loss={train_loss:.4f}, Train Acc={train_acc*100:.2f}%, Test Loss={val_loss:.4f}, Test Acc={val_acc*100:.2f}%")
         metrics.append({
             'epoch': epoch+1,
             'train_loss': train_loss,
             'train_acc': train_acc,
-            'test_loss': test_loss,
-            'test_acc': test_acc
+            'val_loss': val_loss,
+            'val_acc': val_acc
         })
 
     # final return of metrics

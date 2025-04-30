@@ -6,7 +6,7 @@
 #SBATCH --mem=16G
 #SBATCH --time=03:00:00
 #SBATCH --output=%x-%A_%a.log      # log par tâche Array
-#SBATCH --array=1-2               
+#SBATCH --array=3-6               
 #SBATCH --export=ALL,WANDB_API_KEY
 
 # -----------------------------------------------------------------------------
@@ -37,15 +37,21 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 # (assure-toi d'avoir lancé `export WANDB_API_KEY=<ta_cle>` avant sbatch)
 python -m wandb login --relogin "$WANDB_API_KEY"
 
-wandb offline
+python -m wandb online
+
 
 # -----------------------------------------------------------------------------
 # 4. Multirun Hydra selon la tâche Array
 # -----------------------------------------------------------------------------
 # Définit les combinaisons à tester
 declare -a OVERRIDES
-OVERRIDES[1]="model=vgg,multi,cnn model.params.epochs=20,50,100 model.params.batch_size=8,16,32,64"
-OVERRIDES[2]="model=resnet model.params.epochs=20,50,100 model.params.batch_size=8,16,32,64 model.kernel_size=3,5,7,15"
+OVERRIDES[1]="model=vgg model.params.epochs=20,50,100 model.params.batch_size=8,16,32 model.params.learning_rate=0.0001,0.0005,0.001"
+OVERRIDES[2]="model=resnet model.params.epochs=20,50,100 model.params.batch_size=8,16,32,64 model.kernel_size=3,5,7,15 model.params.learning_rate=0.0001,0.0005,0.001"
+OVERRIDES[3]="model=deit_tiny model.params.epochs=20,50,100 model.params.batch_size=8,16,32 model.params.learning_rate=0.0001,0.0005,0.001"
+OVERRIDES[4]="model=multi model.params.epochs=20,50,100 model.params.batch_size=8,16,32 model.params.learning_rate=0.0001,0.0005,0.001"
+OVERRIDES[5]="model=cnn model.params.epochs=20,50,100 model.params.batch_size=8,16,32 model.params.learning_rate=0.0001,0.0005,0.001"
+OVERRIDES[6]="model=MFCN model.params.epochs=20,50,100 model.params.batch_size=8,16,32 model.params.learning_rate=0.0001,0.0005,0.001"
+
 
 # Sélectionne la ligne correspondante à SLURM_ARRAY_TASK_ID
 CMD_OVR="${OVERRIDES[$SLURM_ARRAY_TASK_ID]}"
