@@ -20,7 +20,8 @@ def _load_deit_tiny(cfgm, device):
     return timm.create_model(
         'deit_tiny_patch16_224',
         pretrained=True,
-        num_classes=2
+        num_classes=2,
+        freeze=cfgm.freeze,
     )
 
 def _load_multi_task(cfgm, device):

@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader, TensorDataset
 
 
 
-def load_deit(model_name, device, out_features=2):
+def load_deit(model_name, device, out_features=2, freeze=True):
     if model_name == 'deit_tiny':
         # Load the pretrained DEIT model from Facebook Research
         # This will download the model if not already cached
@@ -22,11 +22,13 @@ def load_deit(model_name, device, out_features=2):
             nn.Linear(in_features, 2)
         )
         nn.init.xavier_uniform_(model.head.weight); nn.init.zeros_(model.head.bias)
-        
-        for param in model.parameters():
-            param.requires_grad = False
-        for param in model.head.parameters():
-            param.requires_grad = True
+
+
+        if freeze:
+            for param in model.parameters():
+                param.requires_grad = False
+            for param in model.head.parameters():
+                param.requires_grad = True
     else:
         raise ValueError("Unknown model name: {}".format(model_name))
     print(model.head)
