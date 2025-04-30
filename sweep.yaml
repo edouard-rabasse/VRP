@@ -1,26 +1,34 @@
 # sweep.yaml
 program: train.py
 
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
+
 # On cherche à maximiser la métrique val_accuracy (à adapter)
 metric:
-  name: val_accuracy
+  name: val_acc
   goal: maximize
 
-method: grid   # ou random, bayes...
+method: bayes   # ou random, bayes...
 
 parameters:
   model.name:
     values: ["vgg", "resnet", "deit_tiny", "multi", "cnn", "MFCN"]
 
-  model_params.epochs:
+  model.params.epochs:
     values: [20, 50, 100]
 
   batch_size:
     values: [8, 16, 32]
 
-  model_params.learning_rate:
+  model.params.learning_rate:
     values: [0.001, 0.0005, 0.00001, 0.000005]
 
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
-  model_params.kernel_size:
+  model.params.kernel_size:
     values: [3, 5, 7, 15]
+  model.params.freeze:
+    values: [True, False]
