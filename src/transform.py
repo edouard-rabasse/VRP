@@ -39,10 +39,10 @@ def image_transform_train(size=(224,224), mean=mean, std=std):
         torch.Tensor: Transformed image tensor.
     """
     return transforms.Compose([
-        transforms.Resize(size),
+        transforms.Resize(size,interpolation=transforms.InterpolationMode.NEAREST_EXACT),
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean,
-                            std=std),
+        # transforms.Normalize(mean=mean,
+                            # std=std),
     ])
 
 def image_transform_test(size=(224,224), mean=mean, std=std):
@@ -54,7 +54,7 @@ def image_transform_test(size=(224,224), mean=mean, std=std):
         torch.Tensor: Transformed image tensor.
     """
     return transforms.Compose([
-        transforms.Resize(size),
+        transforms.Resize(size, interpolation=transforms.InterpolationMode.NEAREST_EXACT),
         transforms.ToTensor(),
         transforms.Normalize(mean=mean,
                             std=std),

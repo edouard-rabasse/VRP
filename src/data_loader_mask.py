@@ -67,10 +67,10 @@ class CustomDataset(Dataset):
                 img, mask = TF.hflip(img), TF.hflip(mask)
             if random.random() > 0.5:
                 img, mask = TF.vflip(img), TF.vflip(mask)
-            angles = [0, 90, 180, 270]
+            angles = [0,5,10,15,20,25,30,35,40,45]
             angle = random.choice(angles)
-            # img = TF.rotate(img, angle)
-            # mask = TF.rotate(mask, angle)
+            img = TF.rotate(img, angle, fill=[255,255,255])
+            mask = TF.rotate(mask, angle)
 
         # Apply image transform (expects a PIL array)
         if self.image_transform:
@@ -200,11 +200,10 @@ if __name__ == "__main__":
     # Define transforms for images and masks.
     image_transform_train = transforms.Compose([
         # transforms.ToPILImage(),
-        transforms.Resize((224, 224)),
-        transforms.RandomHorizontalFlip(),
+        transforms.Resize((224, 224), interpolation=transforms.InterpolationMode.NEAREST_EXACT),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
+        # transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                            #  std=[0.229, 0.224, 0.225]),
     ])
     image_transform_test = transforms.Compose([
         # transforms.ToPILImage(),
@@ -246,7 +245,4 @@ if __name__ == "__main__":
         cv2.imwrite("output/image.png", images[0].permute(1, 2, 0).numpy()[:,:,::-1] * 255)
         cv2.imwrite("output/mask.png", masks[0].permute(1, 2, 0).numpy() * 255)
         break
-    image = Image.open("output/image.png")
-    print(image.size, image.mode)
-    image = Image.open("output/image.png").convert("RGB")
-    print(image.size, image.mode)
+    
