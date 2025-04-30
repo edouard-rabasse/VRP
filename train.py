@@ -7,6 +7,7 @@ from src.transform           import image_transform_train, image_transform_test,
 from src.train_functions     import train
 from src.evaluation          import get_confusion_matrix
 import hydra
+import wandb
 from omegaconf import DictConfig, OmegaConf
 
 
@@ -41,8 +42,21 @@ def main(cfg: DictConfig):
     )
     print(f"[Train] Data loaded: {len(train_loader.dataset)} train / {len(test_loader.dataset)} test")
 
+        # initialise W&B en lui passant tout le cfg Hydra
+    run = wandb.init(
+        project="VRP",
+        name=f"{cfg.experiment_name}",
+        config=OmegaConf.to_container(cfg, resolve=True),
+        reinit=True
+    )
+    # renomme avec l’ID pour plus de lisibilité
+    run.name = f"{cfg.experiment_name}_{run.id}"
+    # log des gradients / poids
+    wandb.watch(model, log="all")
+
+
     
-    results = train(
+    metrics = train(
         model_name    =cfg.model.name,
         model         =model,
         train_loader  =train_loader,
@@ -52,6 +66,12 @@ def main(cfg: DictConfig):
         learning_rate =cfg.model_params.learning_rate,
         cfg           =cfg
     )
+    for epoch_metrics in metrics:
+        wandb.log(epoch_metrics)
+    wandb.finish()
+
+
+
     # confusion
     # cm = get_confusion_matrix(model, test_loader, device=device)
     # results.append(f"\nConfusion matrix:\n{cm}")

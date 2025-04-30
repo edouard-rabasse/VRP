@@ -24,10 +24,12 @@ def train(model_name, model, train_loader, test_loader,
     # else:
     #     wandb_config = {}
     # project = wandb_config.pop('project_name', None) or 'default_project'
-    wandb.init(project="VRP", name=cfg.experiment_name)
-    wandb.run.name = f"{model_name}_{wandb.run.id}"
-    # Watch model for gradients and parameters
-    wandb.watch(model)
+
+
+    # wandb.init(project="VRP", name=cfg.experiment_name)
+    # wandb.run.name = f"{model_name}_{wandb.run.id}"
+    # # Watch model for gradients and parameters
+    # wandb.watch(model)
 
     trainer_fn = trainers.get_trainer(model_name)
 
@@ -40,10 +42,8 @@ def train(model_name, model, train_loader, test_loader,
                          learning_rate=learning_rate,
                          cfg=cfg,
                          **extra)
-    # Log metrics to W&B
-    for epoch_metrics in metrics:
-        wandb.log(epoch_metrics)
-    wandb.finish()
+    
+    
     return metrics
 
 

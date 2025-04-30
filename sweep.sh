@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH --account=def-martin4
+#SBATCH --job-name=vrp-sweep
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=16G
+#SBATCH --time=03:00:00
+#SBATCH --output=wandb-agent-%A_%a.log
+#SBATCH --array=1-6
+#SBATCH --export=ALL,WANDB_API_KEY
+
+module load python/3.11 scipy-stack/2023b opencv/4.10.0
+
+# venv sur nœud
+virtualenv --no-download "$SLURM_TMPDIR/env"
+source "$SLURM_TMPDIR/env/bin/activate"
+pip install --no-index --upgrade pip
+pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
+
+# login W&B
+wandb login --relogin "$WANDB_API_KEY"
+
+# votre sweep ID
+SWEEP_ID=polytechnique-rabasse/VRP/mi2g8yd7
+
+# chaque tâche Array lance un agent
+wandb agent "$SWEEP_ID"
