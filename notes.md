@@ -19,6 +19,7 @@ pixels plus gros.
 Modèle Distances
 stride plus petits ou plus grands.
 calcul canada : bash script.
+
 Avec config 6 ou 7.
 GNN
 GAN, matrices d'adjacence.

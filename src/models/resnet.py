@@ -107,8 +107,8 @@ def train_model(model,
 
     optimizer = torch.optim.AdamW(
         [
-            {"params": head_params,  "lr": 5e-4},   # fine-tune rapide
-            {"params": backbone_new, "lr": 1e-4},   # plus lent
+            {"params": head_params,  "lr": learning_rate},   # fine-tune rapide
+            {"params": backbone_new, "lr": learning_rate/5},   # plus lent
         ],
         weight_decay=1e-4
     )
