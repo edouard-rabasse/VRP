@@ -37,15 +37,16 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 # (assure-toi d'avoir lancé `export WANDB_API_KEY=<ta_cle>` avant sbatch)
 python -m wandb login --relogin "$WANDB_API_KEY"
 
-wandb offline
+python -m wandb online
+
 
 # -----------------------------------------------------------------------------
 # 4. Multirun Hydra selon la tâche Array
 # -----------------------------------------------------------------------------
 # Définit les combinaisons à tester
 declare -a OVERRIDES
-OVERRIDES[1]="model=vgg,multi,cnn model.params.epochs=20,50,100 model.params.batch_size=8,16,32,64"
-OVERRIDES[2]="model=resnet model.params.epochs=20,50,100 model.params.batch_size=8,16,32,64 model.kernel_size=3,5,7,15"
+OVERRIDES[1]="model=vgg,deit_tiny,multi,cnn model.params.epochs=20,50,100 model.params.batch_size=8,16,32 model.params.learning_rate=0.0001,0.0005,0.001"
+OVERRIDES[2]="model=resnet model.params.epochs=20,50,100 model.params.batch_size=8,16,32,64 model.kernel_size=3,5,7,15 model.params.learning_rate=0.0001,0.0005,0.001"
 
 # Sélectionne la ligne correspondante à SLURM_ARRAY_TASK_ID
 CMD_OVR="${OVERRIDES[$SLURM_ARRAY_TASK_ID]}"

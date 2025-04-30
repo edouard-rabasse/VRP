@@ -198,7 +198,7 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
     # evaluate on test set
     test_cls_loss = 0.0
     test_seg_loss = 0.0
-    test_loss = 0.0
+    val_loss = 0.0
     correct = 0
     total = 0
     for images, labels, masks in test_loader:
@@ -224,13 +224,13 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
         preds = torch.argmax(clf_logits, dim=1)
         correct += (preds == labels).sum().item()
         total += labels.size(0)
-        test_loss = loss.item() * images.size(0)
+        val_loss = loss.item() * images.size(0)
         test_cls_loss = loss_cls.item() * images.size(0)
         test_seg_loss = loss_seg.item() * images.size(0)
     # Record test metrics
     metrics.append({
-        'test_loss': test_loss,
-        'test_acc': correct/total,
+        'val_loss': val_loss,
+        'val_acc': correct/total,
         'test_cls_loss': test_cls_loss/total,
         'test_seg_loss': test_seg_loss/total
     })
