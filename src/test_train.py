@@ -52,9 +52,22 @@ if __name__ == "__main__":
     # Example usage:
     # your original data in "./data/" with subfolders label0/, label1/, etc.
     # will be split into "./splits/train/..." and "./splits/test/..."
+    src_dirs = ["mask_removed_color", "mask_removed", "mask_classic"]
+
+    for src_dir in src_dirs:
+
+        split_dataset(
+            src_dir=f"data/MSH/{src_dir}",
+            dst_dir=f"data/{src_dir}/",
+            train_ratio=0.75,      # e.g. 75% train, 25% test
+            random_state=123
+        )
+    
+    src_dir = "MSH/MSH/plots/"
+    dst_dir = "data/"
     split_dataset(
-        src_dir="data/MSH/mask_removed_color",
-        dst_dir="data/mask_removed_color/",
+        src_dir=src_dir,
+        dst_dir=dst_dir,
         train_ratio=0.75,      # e.g. 75% train, 25% test
         random_state=123
     )

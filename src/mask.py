@@ -136,3 +136,20 @@ if __name__ == "__main__":
             colored=True
 
         )
+        process_image_pairs(
+            original_dir="MSH/MSH/plots/configuration1",
+            modified_dir=f"MSH/MSH/plots/configuration{numero}",
+            output_dir=f"data/MSH/mask_removed/mask{numero}",
+            pixel_size=1,
+            method="removed_lines",
+            colored=False
+        )
+
+        process_image_pairs(
+            original_dir="MSH/MSH/plots/configuration1",
+            modified_dir=f"MSH/MSH/plots/configuration{numero}",
+            output_dir=f"data/MSH/mask_classic/mask{numero}",
+            pixel_size=1,
+            method="default",
+            colored=True
+        )    
