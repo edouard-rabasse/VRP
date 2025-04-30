@@ -1,5 +1,7 @@
 # trainers/__init__.py
 import src.trainers as trainers
+import wandb
+from omegaconf import OmegaConf
     
 def train(model_name, model, train_loader, test_loader,
           num_epochs, device, learning_rate, *,
@@ -15,17 +17,34 @@ def train(model_name, model, train_loader, test_loader,
         num_epochs (int): The number of epochs to train for.
         device (str): The device to train on ('cpu' or 'cuda')."""
 
+    # Initialize Weights & Biases run
+    # if cfg is not None:
+    #     # convert OmegaConf to plain python dict
+    #     wandb_config = OmegaConf.to_container(cfg, resolve=True)
+    # else:
+    #     wandb_config = {}
+    # project = wandb_config.pop('project_name', None) or 'default_project'
+    wandb.init(project="VRP", name=cfg.experiment_name)
+    wandb.run.name = f"{model_name}_{wandb.run.id}"
+    # Watch model for gradients and parameters
+    wandb.watch(model)
+
     trainer_fn = trainers.get_trainer(model_name)
 
-    # Common kwargs can now be pushed in one call
-    return trainer_fn(model,
-                      train_loader,
-                      test_loader,
-                      num_epochs=num_epochs,
-                      device=device,
-                      learning_rate=learning_rate,
-                      cfg=cfg,
-                      **extra)
+    # Execute training and capture per-epoch metrics
+    metrics = trainer_fn(model,
+                         train_loader,
+                         test_loader,
+                         num_epochs=num_epochs,
+                         device=device,
+                         learning_rate=learning_rate,
+                         cfg=cfg,
+                         **extra)
+    # Log metrics to W&B
+    for epoch_metrics in metrics:
+        wandb.log(epoch_metrics)
+    wandb.finish()
+    return metrics
 
 
 import torch

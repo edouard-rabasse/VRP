@@ -16,6 +16,8 @@ def main(cfg: DictConfig):
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"[Train] device={device}, CUDA={torch.cuda.is_available()}")
+    
+
 
     # ── build model ──────────────────────────────────────────────────────────
     model = load_model(cfg.model.name, device, cfg.model)
@@ -51,15 +53,15 @@ def main(cfg: DictConfig):
         cfg           =cfg
     )
     # confusion
-    cm = get_confusion_matrix(model, test_loader, device=device)
-    results.append(f"\nConfusion matrix:\n{cm}")
+    # cm = get_confusion_matrix(model, test_loader, device=device)
+    # results.append(f"\nConfusion matrix:\n{cm}")
 
-    # save results
-    os.makedirs("results", exist_ok=True)
-    out = f"results/{cfg.model.name}_{cfg.data.cfg_number}.txt"
-    with open(out, "w") as f:
-        f.write("\n".join(results))
-    print(f"[Train] Results written to {out}")
+    # # save results
+    # os.makedirs("results", exist_ok=True)
+    # out = f"results/{cfg.model.name}_{cfg.data.cfg_number}_{cfg.model.params.learning_rate}.txt"
+    # with open(out, "w") as f:
+    #     f.write("\n".join(results))
+    # print(f"[Train] Results written to {out}")
 
     # ── save model ──────────────────────────────────────────────────────────
     if cfg.save_model:
@@ -69,6 +71,4 @@ def main(cfg: DictConfig):
         print(f"[Train] Model saved at {cfg.model.weight_path}")
 
 if __name__ == "__main__":
-    # config_file = sys.argv[1] if len(sys.argv)>1 else "config/cfg_deit.py"
-    # main(config_file)
     main()

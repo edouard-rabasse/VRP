@@ -114,7 +114,8 @@ def train_model(model,
     )
     scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, 5, gamma=0.1)
     criterion  = criterion or nn.CrossEntropyLoss()
-    history    = []
+    # collect per-epoch metrics
+    metrics     = []
 
     for epoch in range(num_epochs):
         model.train()
@@ -137,18 +138,21 @@ def train_model(model,
             running_loss += loss.item() * inputs.size(0)
 
         scheduler.step()
+        # compute metrics
         train_loss, train_acc = running_loss / total, correct / total
-        if epoch % 5 == 0:
-            test_loss, test_acc = evaluate_model(model, test_loader,
-                                         criterion, device)
-            print(f"TEST:  loss={test_loss:.4f}  acc={test_acc*100:.2f}%")
-            history.append(f"TEST:  loss={test_loss:.4f}  acc={test_acc*100:.2f}%")
-        print(f"Epoch {epoch+1}: loss={train_loss:.4f}  acc={train_acc*100:.2f}%")
-        history.append(f"Epoch {epoch+1}: loss={train_loss:.4f}  acc={train_acc*100:.2f}%")
+        # evaluate on test set
+        test_loss, test_acc = evaluate_model(model, test_loader, criterion, device)
+        print(f"Epoch {epoch+1}: Train loss={train_loss:.4f}, Train acc={train_acc*100:.2f}%, Test loss={test_loss:.4f}, Test acc={test_acc*100:.2f}%")
+        metrics.append({
+            'epoch': epoch+1,
+            'train_loss': train_loss,
+            'train_acc': train_acc,
+            'test_loss': test_loss,
+            'test_acc': test_acc
+        })
 
-    
-    print(f"TEST:  loss={test_loss:.4f}  acc={test_acc*100:.2f}%")
-    return history
+    # final return of metrics
+    return metrics
 
 
 # ---------------------------------------------------------------------

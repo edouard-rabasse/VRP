@@ -1,4 +1,4 @@
-data/
+/data/
 **/__pycache__/
 MSH/
 MSH.zip
@@ -8,3 +8,4 @@ checkpoints/
 results/
 outputs/
 multirun/
+wandb/

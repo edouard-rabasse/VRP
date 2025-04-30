@@ -87,7 +87,7 @@ def train_model(
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
-    results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate"]
+    metrics = []
 
     for epoch in range(num_epochs):
         model.train()
@@ -111,21 +111,21 @@ def train_model(
             running_loss += loss.item() * inputs.size(0)
 
         scheduler.step()
-
+        # compute metrics
         train_loss = running_loss / total
         train_acc = correct / total
-        print(f"Epoch {epoch+1}: Train Loss = {train_loss:.4f}, Train Acc = {train_acc*100:.2f}%")
-        results.append(f"Epoch {epoch+1}: Train Loss = {train_loss:.4f}, Train Acc = {train_acc*100:.2f}%")
-        if epoch % 5 == 0:
-            eval_loss, eval_acc = evaluate_model(model, test_loader, criterion, device)
-            print(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%")
-            results.append(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%")
+        test_loss, test_acc = evaluate_model(model, test_loader, criterion, device)
+        print(f"Epoch {epoch+1}: Train Loss={train_loss:.4f}, Train Acc={train_acc*100:.2f}%, Test Loss={test_loss:.4f}, Test Acc={test_acc*100:.2f}%")
+        metrics.append({
+            'epoch': epoch+1,
+            'train_loss': train_loss,
+            'train_acc': train_acc,
+            'test_loss': test_loss,
+            'test_acc': test_acc
+        })
 
-        # Optional: run evaluation on test set
-    eval_loss, eval_acc = evaluate_model(model, test_loader, criterion, device)
-    print(f"           Test Loss  = {eval_loss:.4f}, Test Acc  = {eval_acc*100:.2f}%\n")
-    results.append(f"Test Loss = {eval_loss:.4f}, Test Acc = {eval_acc*100:.2f}%")
-    return results
+    # final return of metrics
+    return metrics
 
 
 import cv2
@@ -184,4 +184,3 @@ if __name__ == "__main__":
     model.to(device)
     train_model(model, train_loader, test_loader, num_epochs=10, device=device)
 
-    

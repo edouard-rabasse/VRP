@@ -47,3 +47,44 @@ def get_confusion_matrix(model, test_loader, device="cuda"):
 # --- Exemple d'utilisation ------------------------------------
 # cm = get_confusion_matrix(model, test_loader, device="cuda")
 # print(cm)
+
+
+def evaluate_model_mono(model, data_loader, criterion, device='cpu'):
+    model.eval()
+    running_loss = 0.0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for inputs, targets, mask in data_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+
+            preds = torch.argmax(outputs, dim=1)
+            correct += (preds == targets).sum().item()
+            total += targets.size(0)
+            running_loss += loss.item() * inputs.size(0)
+
+    return running_loss / total, correct / total
+
+def evaluate_model_multi_task(model, data_loader, criterion_cls, device='cpu'):
+    model.eval()
+    running_loss = 0.0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for inputs, targets, masks in data_loader:
+            inputs, targets, masks = inputs.to(device), targets.to(device), masks.to(device).float()
+
+            clf_logits, seg_logits = model(inputs)
+            loss = criterion_cls(clf_logits, targets)
+
+            preds = torch.argmax(clf_logits, dim=1)
+            correct += (preds == targets).sum().item()
+            total += targets.size(0)
+            running_loss += loss.item() * inputs.size(0)
+
+    return running_loss / total, correct / total

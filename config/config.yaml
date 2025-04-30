@@ -18,7 +18,9 @@ heatmap: ${model.heatmap}  # heatmap method to use
 
 
 train_ratio: 0.8
-batch_size: 8
+batch_size: 1
 image_size: [224, 224]     # YAML has no tuples : use lists
 mask_shape: [10, 10]
 
+
+experiment_name: ${model.name}_${model.params.learning_rate}
