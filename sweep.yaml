@@ -28,7 +28,7 @@ parameters:
     values: [0.001, 0.0005, 0.00001, 0.000005]
 
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
-  model.params.kernel_size:
+  ++model.params.kernel_size:
     values: [3, 5, 7, 15]
-  model.params.freeze:
+  ++model.params.freeze:
     values: [True, False]
