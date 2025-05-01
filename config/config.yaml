@@ -1,4 +1,4 @@
-# config/cfg_cnn.yaml
+# config/config.yaml
 defaults:
   - data: config7 # ← then merge conf/data/data_config.yaml
   - model: cnn       # ← then merge conf/model/cnn.yaml

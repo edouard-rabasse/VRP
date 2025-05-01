@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=2 # At least two cpus is recommended - one for the main process and one for the wandB process
 #SBATCH --mem=16G
 #SBATCH --time=03:00:00
-#SBATCH --output=%x-%A_%a.log      # log par tâche Array
+#SBATCH --output=logs/%x-%A_%a.log      # log par tâche Array
 #SBATCH --array=1-6               
 #SBATCH --export=ALL,WANDB_API_KEY
 
