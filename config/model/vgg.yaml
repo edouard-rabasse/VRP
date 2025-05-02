@@ -11,6 +11,9 @@ weight_path: checkpoints/vgg_model.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}
 
+freeze: true
+grad_layer: 5 # between 0 and 6
+
 
 params:
   learning_rate: 0.0001

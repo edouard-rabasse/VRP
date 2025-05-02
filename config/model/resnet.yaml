@@ -11,6 +11,7 @@ kernel_size: 7
 weight_path: checkpoints/resnet_model.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}
+freeze: true
 
 params:
   learning_rate: 0.0001

@@ -19,7 +19,7 @@ class ResNetScoringModel(nn.Module):
                  input_channels: int = 1,
                  pretrained: bool = False,
                  *,
-                 kernel_size: int = 7):
+                 kernel_size: int = 7, freeze=True):
         super().__init__()
 
         # ❶ Load a vanilla ResNet-18
@@ -48,9 +48,10 @@ class ResNetScoringModel(nn.Module):
         #     param.requires_grad = False
         # for param in self.backbone.fc.parameters():
         #     param.requires_grad = True
-        
-        for p in self.parameters():
-            p.requires_grad = False
+
+        if freeze:
+            for p in self.parameters():
+                p.requires_grad = False
 
     # 2. Débloquer conv1 + BN1
         for p in self.backbone.conv1.parameters():
@@ -100,18 +101,26 @@ def train_model(model,
     model.to(device)
     print(f"Training on {device} for {num_epochs} epochs — LR={learning_rate}")
     # params + LR différenciés (facultatif mais utile)
-    head_params   = list(model.backbone.fc.parameters()) + \
-                    list(model.backbone.layer4.parameters())
-    backbone_new  = list(model.backbone.conv1.parameters()) + \
-                    list(model.backbone.bn1.parameters())
 
-    optimizer = torch.optim.AdamW(
-        [
-            {"params": head_params,  "lr": learning_rate},   # fine-tune rapide
-            {"params": backbone_new, "lr": learning_rate/5},   # plus lent
-        ],
-        weight_decay=1e-4
-    )
+    if cfg.model.freeze
+        head_params   = list(model.backbone.fc.parameters()) + \
+                        list(model.backbone.layer4.parameters())
+        backbone_new  = list(model.backbone.conv1.parameters()) + \
+                        list(model.backbone.bn1.parameters())
+
+        optimizer = torch.optim.AdamW(
+            [
+                {"params": head_params,  "lr": learning_rate},   # fine-tune rapide
+                {"params": backbone_new, "lr": learning_rate/5},   # plus lent
+            ],
+            weight_decay=1e-4
+        )
+    else:
+        optimizer = torch.optim.AdamW(
+            model.parameters(),
+            lr=learning_rate,
+            weight_decay=1e-4
+        )
     scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, 5, gamma=0.1)
     criterion  = criterion or nn.CrossEntropyLoss()
     # collect per-epoch metrics

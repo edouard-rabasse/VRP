@@ -33,7 +33,7 @@ def _load_multi_task(cfgm, device):
     return model
 
 def _load_vgg(cfgm, device):
-    return load_vgg()
+    return load_vgg(freeze=cfgm.freeze, grad_layer=cfgm.grad_layer)
 
 def _load_MFCN(cfgm, device):
     return MultiTaskVGG(mask_shape=tuple(cfgm.mask_shape))
@@ -44,6 +44,7 @@ def _load_resnet(cfgm, device):
         input_channels=3,
         kernel_size=cfgm.kernel_size,
         num_classes=2
+        freeze=cfgm.freeze,
     )
 
 # Registry: map your string names → loader functions

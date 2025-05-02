@@ -5,10 +5,10 @@ import numpy as np
 from tqdm import tqdm
 
 class VisualScoringModel(nn.Module):
-    def __init__(self,input_shape=(1, 84, 84)):
+    def __init__(self,input_shape=(1, 84, 84), intermediary_kernel = [30, 20, 5]):
         super(VisualScoringModel, self).__init__()
         # intermediary_kernel = [8, 4, 3]
-        intermediary_kernel = [30, 20, 5]
+        
 
         self.conv1 = nn.Conv2d(input_shape[0], 32, intermediary_kernel[0], stride=5)
         self.conv2 = nn.Conv2d(32, 64, intermediary_kernel[1], stride=2)

@@ -96,7 +96,7 @@ def process_all_solutions(arcs_folder, coordinates_folder, output_folder):
 
 # File paths*
 if __name__ == "__main__":
-    numbers = [1,3,4,5,6,7]
+    numbers = [7]
     for number in numbers:
         print("Processing configuration", number)
         arcs_folder = f"data/results/configuration{number}/"
