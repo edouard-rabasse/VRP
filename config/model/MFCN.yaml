@@ -1,4 +1,4 @@
-# Model configuration for a deit_tiny model
+# Model configuration for a MFCN model
 defaults:
   - _self_            
   - /heatmap: multi_task 
@@ -14,6 +14,6 @@ mask_shape: ${mask_shape}
 
 params:
   learning_rate: 0.0001
-  batch_size: ${..batch_size}           # duplicated on purpose; you can omit if you prefer
+  batch_size: ${...batch_size}           # duplicated on purpose; you can omit if you prefer
   epochs: 30
   lambda_visual: 0.5       # formerly LAMBDA_VISUAL
