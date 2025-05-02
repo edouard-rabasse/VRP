@@ -3,8 +3,8 @@
 #SBATCH --job-name=vrp-sweep
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=16G
-#SBATCH --time=12:00:00
+#SBATCH --mem=64G
+#SBATCH --time=24:00:00
 #SBATCH --output=logs/wandb-agent-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
 
@@ -20,7 +20,7 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 wandb login --relogin "$WANDB_API_KEY"
 
 # votre sweep ID
-SWEEP_ID=polytechnique-rabasse/VRP/1jfzslfr
+SWEEP_ID=polytechnique-rabasse/VRP/d6ovvlqc
 
 # chaque tâche Array lance un agent
 wandb agent "$SWEEP_ID"
