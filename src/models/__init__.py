@@ -43,7 +43,7 @@ def _load_resnet(cfgm, device):
         pretrained=True,
         input_channels=3,
         kernel_size=cfgm.kernel_size,
-        num_classes=2
+        num_classes=2,
         freeze=cfgm.freeze,
     )
 

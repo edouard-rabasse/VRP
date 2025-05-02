@@ -14,7 +14,7 @@ def load_vgg(freeze=True, grad_layer=5):
             m.inplace = False
     if freeze:
         for param in model.parameters():
-        param.requires_grad = False
+            param.requires_grad = False
     
         for param in model.classifier[grad_layer:].parameters():
             param.requires_grad = True

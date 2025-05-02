@@ -102,7 +102,7 @@ def train_model(model,
     print(f"Training on {device} for {num_epochs} epochs — LR={learning_rate}")
     # params + LR différenciés (facultatif mais utile)
 
-    if cfg.model.freeze
+    if cfg.model.freeze:
         head_params   = list(model.backbone.fc.parameters()) + \
                         list(model.backbone.layer4.parameters())
         backbone_new  = list(model.backbone.conv1.parameters()) + \
