@@ -14,5 +14,5 @@ mask_shape: ${mask_shape}
 
 params:
   learning_rate: 0.0001
-  batch_size: ${..batch_size}           # duplicated on purpose; you can omit if you prefer
+  batch_size: ${...batch_size}           # duplicated on purpose; you can omit if you prefer
   epochs: 20

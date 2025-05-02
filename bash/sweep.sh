@@ -4,8 +4,8 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
-#SBATCH --time=03:00:00
-#SBATCH --output=wandb-agent-%A_%a.log
+#SBATCH --time=12:00:00
+#SBATCH --output=logs/wandb-agent-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
 
 module load python/3.11 scipy-stack/2023b opencv/4.10.0

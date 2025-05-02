@@ -99,9 +99,9 @@ if __name__ == "__main__":
     numbers = [1,3,4,5,6,7]
     for number in numbers:
         print("Processing configuration", number)
-        arcs_folder = f"MSH/MSH/results/configuration{number}/"
-        coordinates_folder = "MSH/MSH/instances/"
-        output_folder = f"MSH/MSH/plots/configuration{number}/"
+        arcs_folder = f"data/results/configuration{number}/"
+        coordinates_folder = "data/instances/"
+        output_folder = f"data/plots/configuration{number}/"
 
         # Process all solutions
         process_all_solutions(arcs_folder, coordinates_folder, output_folder)
