@@ -30,7 +30,7 @@ parameters:
     values: [0.001, 0.0005, 0.0001]
   model.freeze:
     values: [true, false]
-  model.params.lambad_seg:
+  model.params.lambda_seg:
     values: [0.1, 0.5, 1.0]
 
 
