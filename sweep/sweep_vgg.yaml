@@ -1,5 +1,7 @@
 # sweep.yaml
 program: train.py
+name: sweep_vgg  # 👈 Nom explicite ici
+project: VRP
 
 command:
   - ${env}
@@ -28,5 +30,5 @@ parameters:
     values: [0.001, 0.0005, 0.0001]
 
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
-  ++model.params.freeze:
+  ++model.freeze:
     values: [true, false]

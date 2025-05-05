@@ -23,9 +23,14 @@ wandb login --relogin "$WANDB_API_KEY"
 MODELS=("vgg" "resnet" "deit_tiny" "multi" "cnn" "MFCN")
 MODEL=${MODELS[$SLURM_ARRAY_TASK_ID]}
 
-# Launch sweep for this model and extract its ID
-SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep/sweep_${MODEL}.yaml"
-SWEEP_ID=$(wandb sweep "$SWEEP_CONFIG" | grep "Created sweep with ID:" | awk '{print $NF}')
+SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep_${MODEL}.yaml"
+
+SWEEP_ID=$(python "$SLURM_SUBMIT_DIR/sweep/extract_id.py" "$SWEEP_CONFIG")
+
+echo "Launching sweep for model=$MODEL (SWEEP_ID=$SWEEP_ID)"
+
+# Lancer agent
+wandb agent "polytechnique-rabasse/VRP/$SWEEP_ID"
 
 echo "Launching sweep for model=$MODEL (SWEEP_ID=$SWEEP_ID)"
 wandb agent "$SWEEP_ID"

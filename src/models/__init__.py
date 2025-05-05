@@ -13,6 +13,7 @@ from .deit_tiny                import load_deit
 
 def _load_cnn(cfgm, device):
     H, W = cfgm.image_size
+    kernel_sizes = [int(i) for i in (cfgm.kernel_size).split(',')]
     model = VisualScoringModel(input_shape=(3, H, W))
     return model
 

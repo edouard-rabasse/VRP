@@ -1,6 +1,7 @@
 # sweep.yaml
 program: train.py
 name: sweep_MFCN  # 👈 Nom explicite ici
+project: VRP
 
 command:
   - ${env}
