@@ -20,7 +20,8 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 wandb login --relogin "$WANDB_API_KEY"
 
 # votre sweep ID
-SWEEP_ID=polytechnique-rabasse/VRP/d6ovvlqc
+# SWEEP_ID=polytechnique-rabasse/VRP/d6ovvlqc
+SWEEP_ID=polytechnique-rabasse/VRP/xhxhr9j3
 
 # chaque tâche Array lance un agent
 wandb agent "$SWEEP_ID"
