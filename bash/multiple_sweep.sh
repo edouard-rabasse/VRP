@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
-#SBATCH --time=12:00:00
+#SBATCH --time=00:05:00
 #SBATCH --output=logs/sweep-%A_%a.log
 #SBATCH --array=0-5
 #SBATCH --export=ALL,WANDB_API_KEY
@@ -24,6 +24,8 @@ MODELS=("vgg" "resnet" "deit_tiny" "multi" "cnn" "MFCN")
 MODEL=${MODELS[$SLURM_ARRAY_TASK_ID]}
 
 SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep_${MODEL}.yaml"
+
+python "$SLURM_SUBMIT_DIR/sweep/extract_id.py" "$SWEEP_CONFIG"
 
 SWEEP_ID=$(python "$SLURM_SUBMIT_DIR/sweep/extract_id.py" "$SWEEP_CONFIG")
 
