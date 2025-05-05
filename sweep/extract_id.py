@@ -14,6 +14,10 @@ def create_sweep(sweep_config_path):
         )
 
         output = result.stdout
+        # save output to file
+        with open("sweep_output.txt", "w") as f:
+            f.write(output)
+        print("Sweep output saved to sweep_output.txt")
 
         # Try to find sweep ID using regex
         match = re.search(r"Creating sweep with ID: ([a-z0-9]+)", output)

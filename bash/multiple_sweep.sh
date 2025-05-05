@@ -6,7 +6,7 @@
 #SBATCH --mem=16G
 #SBATCH --time=12:00:00
 #SBATCH --output=logs/sweep-%A_%a.log
-#SBATCH --array=0-5
+#SBATCH --array=4
 #SBATCH --export=ALL,WANDB_API_KEY
 
 module load python/3.11 scipy-stack/2023b opencv/4.10.0
@@ -25,7 +25,8 @@ MODEL=${MODELS[$SLURM_ARRAY_TASK_ID]}
 
 SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep_${MODEL}.yaml"
 
-SWEEP_ID=$(python "$SLURM_SUBMIT_DIR/sweep/extract_id.py" "$SWEEP_CONFIG")
+
+SWEEP_ID=$(grep "^$MODEL=" "$SLURM_SUBMIT_DIR/sweep/sweep_ids.txt" | cut -d= -f2)
 
 echo "Launching sweep for model=$MODEL (SWEEP_ID=$SWEEP_ID)"
 
@@ -33,4 +34,3 @@ echo "Launching sweep for model=$MODEL (SWEEP_ID=$SWEEP_ID)"
 wandb agent "polytechnique-rabasse/VRP/$SWEEP_ID"
 
 echo "Launching sweep for model=$MODEL (SWEEP_ID=$SWEEP_ID)"
-wandb agent "$SWEEP_ID"

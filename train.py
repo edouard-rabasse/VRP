@@ -37,8 +37,8 @@ def main(cfg: DictConfig):
         image_transform_test  = image_transform_test(tuple(cfg.image_size)),
         mask_transform_train  = mask_transform(tuple(cfg.mask_shape)),
         mask_transform_test   = mask_transform(tuple(cfg.mask_shape)),
-        num_workers        = os.cpu_count(),
-        # num_workers=0
+        # num_workers        = os.cpu_count(),
+        num_workers=2
     )
     print(f"[Train] Data loaded: {len(train_loader.dataset)} train / {len(test_loader.dataset)} test")
 
