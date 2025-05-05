@@ -12,10 +12,9 @@ image_size: ${image_size}
 mask_shape: ${mask_shape}
 
 freeze: true
-grad_layer: 5 # between 0 and 6
-
+grad_layer: 4 # between 0 and 6
 
 params:
-  learning_rate: 0.0001
+  learning_rate: 0.001
   batch_size: ${...batch_size}           # duplicated on purpose; you can omit if you prefer
   epochs: 20

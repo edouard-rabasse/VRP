@@ -17,6 +17,8 @@ def main(cfg: DictConfig):
     # ── config ────────────────────────────────────────────────────────────────
     # sys.path.append(os.path.dirname(cfg_path))
     # cfg = __import__(os.path.basename(cfg_path).replace('.py',''))
+
+    cfg.load_model = True
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = load_model(cfg.model.name, device, cfg.model).eval()

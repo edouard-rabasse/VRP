@@ -38,7 +38,7 @@ def create_sweep(sweep_config_path):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python create_sweep.py path/to/sweep.yaml")
+        print("Usage: python extract_id.py path/to/sweep.yaml")
         sys.exit(1)
 
     sweep_yaml = sys.argv[1]
