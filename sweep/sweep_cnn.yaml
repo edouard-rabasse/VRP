@@ -1,0 +1,35 @@
+# sweep.yaml
+program: train.py
+name: sweep_cnn
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
+
+# On cherche à maximiser la métrique val_accuracy (à adapter)
+metric:
+  name: val_acc
+  goal: maximize
+
+method: bayes   # ou random, bayes...
+
+parameters:
+  model:
+    values: ["cnn"]
+
+  model.params.epochs:
+    values: [20, 30, 40]
+
+  batch_size:
+    values: [16, 32, 64, 128]
+
+  model.params.learning_rate:
+    values: [0.001, 0.0005, 0.0001]
+
+  # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
+  ++model.kernel:
+    values:[[3,4,5], [10,11,12], [15,16,17], [20,21,22]]
+  ++model.params.freeze:
+    values: [true, false]

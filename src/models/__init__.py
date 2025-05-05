@@ -43,7 +43,7 @@ def _load_vgg(cfgm, device):
     return load_vgg(freeze=cfgm.freeze, grad_layer=cfgm.grad_layer)
 
 def _load_MFCN(cfgm, device):
-    return MultiTaskVGG(mask_shape=tuple(cfgm.mask_shape))
+    return MultiTaskVGG(mask_shape=tuple(cfgm.mask_shape), freeze=cfgm.freeze)
 
 def _load_resnet(cfgm, device):
     return ResNetScoringModel(

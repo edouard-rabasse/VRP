@@ -60,7 +60,7 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
 
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.classifier.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
     metrics = []  # collect per-epoch metrics
 
     # Training loop

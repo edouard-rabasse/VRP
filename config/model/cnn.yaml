@@ -11,7 +11,7 @@ weight_path: checkpoints/CNNModel_model.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}
 
-
+kernel: [30, 20, 5]
 params:
   learning_rate: 0.0001
   batch_size: ${...batch_size}           # duplicated on purpose; you can omit if you prefer

@@ -117,7 +117,7 @@ def train_model(model,
         )
     else:
         optimizer = torch.optim.AdamW(
-            model.parameters(),
+            filter(lambda p: p.requires_grad, model.parameters()),
             lr=learning_rate,
             weight_decay=1e-4
         )

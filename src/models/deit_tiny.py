@@ -79,11 +79,11 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
     model.to(device)
     model.eval() #
     
-    model.head.train()
+    model.train()
 
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.head.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
 
     # Initialize metrics list
     metrics = []
