@@ -2,5 +2,5 @@ vgg=0r7h0itr
 resnet=cji2qynz
 deit_tiny=swxuavwc
 multi=kxqrm5np
-cnn=okgsth8i
-MFCN=av6ovd14
+cnn=a4bp9fb4
+MFCN=kst0b1fr
