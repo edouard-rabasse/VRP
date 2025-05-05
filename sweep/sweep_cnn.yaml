@@ -30,7 +30,6 @@ parameters:
     values: [0.001, 0.0005, 0.0001]
 
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
-  ++model.kernel:
+  model.kernel_size:
     values: ["'3,4,5'", "'10,11,12'", "'15,16,17'", "'20,21,22'"]
-  ++model.params.freeze:
-    values: [true, false]
+
