@@ -47,17 +47,4 @@ def train(model_name, model, train_loader, test_loader,
     return metrics
 
 
-import torch
 
-
-        
-
-def save_model(model, path):
-    """Saves the model to the specified path.
-    Only for pyTorch models.
-    Args:
-        model (torch.nn.Module): The model to save.
-        path (str): The path to save the model to.
-    """
-    torch.save(model.state_dict(), path)
-    print(f"Model saved to {path}")

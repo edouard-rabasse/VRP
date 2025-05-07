@@ -15,7 +15,7 @@ pixels plus gros.
 
 
 
-24/04
+## 24/04
 Modèle Distances
 stride plus petits ou plus grands.
 calcul canada : bash script.
@@ -31,7 +31,7 @@ Clean pour les hyperparamètres.
 
 
 
-06/05
+## 06/05
 Clients différents
 Nombre de clients différents.
 
