@@ -1,4 +1,4 @@
-# Model configuration for a deit_tiny model
+# Model configuration for a MFCN model
 defaults:
   - _self_            
   - /heatmap: multi_task 
@@ -10,10 +10,11 @@ save: ${..save_model}  # save model to checkpoint
 weight_path: checkpoints/MFCN_model.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}
+freeze: true
 
 
 params:
   learning_rate: 0.0001
-  batch_size: ${..batch_size}           # duplicated on purpose; you can omit if you prefer
+  batch_size: ${...batch_size}           # duplicated on purpose; you can omit if you prefer
   epochs: 30
-  lambda_visual: 0.5       # formerly LAMBDA_VISUAL
+  lambda_seg: 0.5       # formerly LAMBDA_VISUAL

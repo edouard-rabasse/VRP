@@ -14,6 +14,6 @@ mask_shape: ${mask_shape}
 
 params:
   learning_rate: 5e-4
-  batch_size: ${..batch_size}           # duplicated on purpose; you can omit if you prefer
+  batch_size: ${...batch_size}           # duplicated on purpose; you can omit if you prefer
   epochs: 20
   lambda_visual: 0.2       # formerly LAMBDA_VISUAL

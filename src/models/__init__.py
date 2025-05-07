@@ -9,20 +9,28 @@ from .MultiTaskVisualModel     import MultiTaskVisualScoringModel
 from .vgg                      import load_vgg
 from .MFCN                     import MultiTaskVGG
 from .resnet                   import ResNetScoringModel
+from .deit_tiny                import load_deit
 
 def _load_cnn(cfgm, device):
     H, W = cfgm.image_size
+    kernel_sizes = [int(i) for i in (cfgm.kernel_size).split(',')]
     model = VisualScoringModel(input_shape=(3, H, W))
     return model
 
 def _load_deit_tiny(cfgm, device):
     # timm already handles head replacement when you pass num_classes
-    return timm.create_model(
-        'deit_tiny_patch16_224',
-        pretrained=True,
+    # return timm.create_model(
+    #     'deit_tiny_patch16_224',
+    #     pretrained=True,
+    #     num_classes=2
+    # )
+    return load_deit(
+        model_name='deit_tiny',
         num_classes=2,
         freeze=cfgm.freeze,
+        device=device,
     )
+    
 
 def _load_multi_task(cfgm, device):
     H, W = cfgm.image_size
@@ -33,17 +41,18 @@ def _load_multi_task(cfgm, device):
     return model
 
 def _load_vgg(cfgm, device):
-    return load_vgg()
+    return load_vgg(freeze=cfgm.freeze, grad_layer=cfgm.grad_layer)
 
 def _load_MFCN(cfgm, device):
-    return MultiTaskVGG(mask_shape=tuple(cfgm.mask_shape))
+    return MultiTaskVGG(mask_shape=tuple(cfgm.mask_shape), freeze=cfgm.freeze)
 
 def _load_resnet(cfgm, device):
     return ResNetScoringModel(
         pretrained=True,
         input_channels=3,
         kernel_size=cfgm.kernel_size,
-        num_classes=2
+        num_classes=2,
+        freeze=cfgm.freeze,
     )
 
 # Registry: map your string names → loader functions

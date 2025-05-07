@@ -1,0 +1,6 @@
+vgg=0r7h0itr
+resnet=3vbiw7t3
+deit_tiny=swxuavwc
+multi=kxqrm5np
+cnn=f85527lu
+MFCN=kst0b1fr

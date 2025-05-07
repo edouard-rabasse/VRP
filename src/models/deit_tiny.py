@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader, TensorDataset
 
 
 
-def load_deit(model_name, device, out_features=2, freeze=True):
+def load_deit(model_name, device, num_classes=2, freeze=True):
     if model_name == 'deit_tiny':
         # Load the pretrained DEIT model from Facebook Research
         # This will download the model if not already cached
@@ -19,9 +19,9 @@ def load_deit(model_name, device, out_features=2, freeze=True):
         in_features = model.head.in_features
         model.head = nn.Sequential(
             nn.Dropout(0.1),
-            nn.Linear(in_features, 2)
+            nn.Linear(in_features, num_classes)
         )
-        nn.init.xavier_uniform_(model.head.weight); nn.init.zeros_(model.head.bias)
+        # nn.init.xavier_uniform_(model.head.weight); nn.init.zeros_(model.head.bias)
 
 
         if freeze:
@@ -79,11 +79,11 @@ def train_deit(model, train_loader, test_loader,device='cpu', num_epochs=20, lea
     model.to(device)
     model.eval() #
     
-    model.head.train()
+    model.train()
 
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.head.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
 
     # Initialize metrics list
     metrics = []

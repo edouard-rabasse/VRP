@@ -128,8 +128,8 @@ if __name__ == "__main__":
     for numero in numeros:
         # Call the function with the specified directories
         process_image_pairs(
-            original_dir="MSH/MSH/plots/configuration1",
-            modified_dir=f"MSH/MSH/plots/configuration{numero}",
+            original_dir="data/plots/configuration1",
+            modified_dir=f"data/plots/configuration{numero}",
             output_dir=f"data/MSH/mask_removed_color/mask{numero}",
             pixel_size=1,
             method="removed_lines",
@@ -137,8 +137,8 @@ if __name__ == "__main__":
 
         )
         process_image_pairs(
-            original_dir="MSH/MSH/plots/configuration1",
-            modified_dir=f"MSH/MSH/plots/configuration{numero}",
+            original_dir="data/plots/configuration1",
+            modified_dir=f"data/plots/configuration{numero}",
             output_dir=f"data/MSH/mask_removed/mask{numero}",
             pixel_size=1,
             method="removed_lines",
@@ -146,8 +146,8 @@ if __name__ == "__main__":
         )
 
         process_image_pairs(
-            original_dir="MSH/MSH/plots/configuration1",
-            modified_dir=f"MSH/MSH/plots/configuration{numero}",
+            original_dir="data/plots/configuration1",
+            modified_dir=f"data/plots/configuration{numero}",
             output_dir=f"data/MSH/mask_classic/mask{numero}",
             pixel_size=1,
             method="default",

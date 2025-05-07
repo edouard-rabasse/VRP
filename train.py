@@ -7,6 +7,7 @@ from src.transform           import image_transform_train, image_transform_test,
 from src.train_functions     import train
 from src.evaluation          import get_confusion_matrix
 import hydra
+import wandb
 from omegaconf import DictConfig, OmegaConf
 
 
@@ -37,12 +38,25 @@ def main(cfg: DictConfig):
         mask_transform_train  = mask_transform(tuple(cfg.mask_shape)),
         mask_transform_test   = mask_transform(tuple(cfg.mask_shape)),
         # num_workers        = os.cpu_count(),
-        num_workers=0
+        num_workers=2
     )
     print(f"[Train] Data loaded: {len(train_loader.dataset)} train / {len(test_loader.dataset)} test")
 
+        # initialise W&B en lui passant tout le cfg Hydra
+    run = wandb.init(
+        project="VRP",
+        name=f"{cfg.experiment_name}",
+        config=OmegaConf.to_container(cfg, resolve=True),
+        reinit=True
+    )
+    # renomme avec l’ID pour plus de lisibilité
+    run.name = f"{cfg.experiment_name}_{run.id}"
+    # log des gradients / poids
+    wandb.watch(model, log="all")
+
+
     
-    results = train(
+    metrics = train(
         model_name    =cfg.model.name,
         model         =model,
         train_loader  =train_loader,
@@ -52,6 +66,12 @@ def main(cfg: DictConfig):
         learning_rate =cfg.model_params.learning_rate,
         cfg           =cfg
     )
+    for epoch_metrics in metrics:
+        wandb.log(epoch_metrics)
+    wandb.finish()
+
+
+
     # confusion
     # cm = get_confusion_matrix(model, test_loader, device=device)
     # results.append(f"\nConfusion matrix:\n{cm}")
@@ -68,7 +88,10 @@ def main(cfg: DictConfig):
         from src.utils import save_model
         os.makedirs(os.path.dirname(cfg.model.weight_path), exist_ok=True)
         save_model(model, cfg.model.weight_path)
-        print(f"[Train] Model saved at {cfg.model.weight_path}")
+        if os.path.exists(cfg.model.weight_path):
+            print(f"[Train] ✅ Model saved at {cfg.model.weight_path}")
+        else:
+            print(f"[Train] ❌ ERROR: Model was NOT saved at {cfg.model.weight_path}")
 
 if __name__ == "__main__":
     main()

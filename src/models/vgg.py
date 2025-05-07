@@ -6,12 +6,19 @@ import torch
 from tqdm import tqdm
 
 
-def load_vgg():
+def load_vgg(freeze=True, grad_layer=5):
     model = models.vgg16(weights='DEFAULT')
     model.classifier[6] = nn.Linear(4096, 2)  # Change the last layer to have 2 classes
     for m in model.modules():
         if isinstance(m, nn.ReLU):
             m.inplace = False
+    if freeze:
+        for param in model.parameters():
+            param.requires_grad = False
+    
+        for param in model.classifier[grad_layer:].parameters():
+            param.requires_grad = True
+
     return model
 
 
@@ -49,21 +56,17 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
     import torch.optim as optim
     # Send model to device
     model.to(device)
-    for param in model.parameters():
-        param.requires_grad = False
     
-    for param in model.classifier[grad_layer:].parameters():
-        param.requires_grad = True
 
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.classifier.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
     metrics = []  # collect per-epoch metrics
 
     # Training loop
     for epoch in range(num_epochs):
         # === Training Phase ===
-        model.classifier.train()
+        model.train()
         running_loss, correct_preds, total = 0.0, 0, 0
 
         for input, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
@@ -86,7 +89,7 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
         train_acc = correct_preds / total
 
         # === Validation Phase ===
-        model.classifier.eval()
+        model.eval()
         val_running_loss, val_correct, val_total = 0.0, 0, 0
         all_val_preds, all_val_labels = [], []
 

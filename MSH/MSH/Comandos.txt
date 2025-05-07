@@ -1,0 +1,67 @@
+For the configuration of the jam:
+
+-Djava.library.path=/Applications/CPLEX_Studio221/cplex/bin/x86-64_osx
+-Xmx10000m
+
+########### KEY COMMANDS #########
+
+cd /Users/nicolas.cabrera-malik/Documents/Work/Thesis/Papers/VisualAttractiveness/MSH/
+
+### Solve the instances with the MSH:
+
+for i in {1..79}; do
+   	java -Xmx14000m -jar ./jars/MSH.jar ExperimentsAllSets.txt $i configuration1.xml 1 8
+	java -Xmx14000m -jar ./jars/MSH.jar ExperimentsAllSets.txt $i configuration2.xml 1 8
+	java -Xmx14000m -jar ./jars/MSH.jar ExperimentsAllSets.txt $i configuration3.xml 1 8
+done
+
+for i in {100..300}; do
+   	java -Xmx14000m -jar ./jars/MSH.jar ExperimentsAllSets.txt $i configuration1.xml 1 8
+done
+
+for i in {1..2}; do
+   	java -Xmx14000m -jar ./jars/MSH.jar ExperimentsAllSets.txt $i configuration1.xml 1 8
+done
+
+for /L %i in (1,1,2) do java -Xmx14000m -jar .\jars\MSH.jar ExperimentsAllSets.txt %i configuration1.xml 1 8
+
+
+
+####### FOR THE FOLLOWING YOU MUST FIRST RUN CONFIGURATION 1 #####
+
+### Refine the solutions but try keeping the same order
+
+for i in {1..79}; do
+   	java -Xmx14000m -jar ./jars/MSH_refine.jar ExperimentsAllSets.txt $i configuration4.xml 1 8
+	java -Xmx14000m -jar ./jars/MSH_refine.jar ExperimentsAllSets.txt $i configuration5.xml 1 8
+done
+
+### Refine the solutions without reassigning tasks among the routes
+
+for i in {1..79}; do
+   	java -Xmx14000m -jar ./jars/MSH_refineRoutes.jar ExperimentsAllSets.txt $i configuration6.xml 1 8
+	java -Xmx14000m -jar ./jars/MSH_refineRoutes.jar ExperimentsAllSets.txt $i configuration7.xml 1 8
+done
+
+### CREATE NEW INSTANCES ####
+
+#Parameters: MaxX, MaxY, NumClients, InitialInstanceID, FinalInstanceID
+
+for i in {1..1}; do
+   	java -Xmx14000m -jar ./jars/createInstances.jar 10 10 50 100 300
+done
+
+
+#### Steps:
+
+# 1 Generate instances:
+
+	# Select the maximum x coordinate, the maximum y coordinate, the number of clients
+	# The initial id for the instance, and the final instance ID
+	
+# 2 Use configuration 1 to generate the solutions with the standard parameters of the MSH
+
+# 3 Use configurations 4 to 7 to try to modify these solutions
+
+
+

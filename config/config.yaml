@@ -1,4 +1,4 @@
-# config/cfg_cnn.yaml
+# config/config.yaml
 defaults:
   - data: config7 # ← then merge conf/data/data_config.yaml
   - model: cnn       # ← then merge conf/model/cnn.yaml
@@ -23,4 +23,4 @@ image_size: [224, 224]     # YAML has no tuples : use lists
 mask_shape: [10, 10]
 
 
-experiment_name: ${model.name}_${model.params.learning_rate}_${model.params.batch_size}_${model.params.epochs}
+experiment_name: ${model.name}_${batch_size}_${model.params.epochs}

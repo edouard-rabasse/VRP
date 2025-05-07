@@ -63,7 +63,7 @@ if __name__ == "__main__":
             random_state=123
         )
     
-    src_dir = "MSH/MSH/plots/"
+    src_dir = "data/plots/"
     dst_dir = "data/"
     split_dataset(
         src_dir=src_dir,

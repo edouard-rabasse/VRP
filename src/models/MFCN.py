@@ -25,7 +25,8 @@ class MultiTaskVGG(nn.Module):
                  seg_out_channels=1,    # e.g., 1 for binary segmentation
                  pretrained=True,
                  input_size=(224, 224),
-                 mask_shape=(10,10)  # Input image size for upsampling the segmentation
+                 mask_shape=(10,10),  # Input image size for upsampling the segmentation,
+                 freeze=True
                 ):
         super(MultiTaskVGG, self).__init__()
 
@@ -35,7 +36,9 @@ class MultiTaskVGG(nn.Module):
         # 2. Keep only the 'features' part of VGG as your encoder (shared feature extractor)
         self.features = vgg.features  # [N, 512, H_out, W_out] after the last conv + pooling
 
-        self.features.requires_grad_(False)  # Freeze the feature extractor
+        if freeze:
+            for param in self.features.parameters():
+                param.requires_grad = False
         
         # 3. Keep the avgpool from VGG (this is a nn.AdaptiveAvgPool2d((7,7)) by default)
         self.avgpool = vgg.avgpool
@@ -107,7 +110,7 @@ class MultiTaskVGG(nn.Module):
 
 
 
-def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, device, learning_rate, lambda_seg=1.0, cfg=None):
+def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, device, learning_rate, cfg=None):
     """
     Train the multi-task model.
     Args:
@@ -121,11 +124,12 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
     Returns:
         model, optimizer, scheduler after training.
     """
+    lambda_seg = cfg.model.params.lambda_seg if cfg is not None else 1.0
     model.to(device)
     model.train()
     metrics = []  # list to collect metrics per epoch
     
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     
     # Loss functions: classification and segmentation
@@ -147,8 +151,9 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
             
             optimizer.zero_grad()
             
-            with torch.no_grad():                       # aucun grad sur features
-                feats = model.features(images)
+            # with torch.no_grad():                       # aucun grad sur features
+            #     feats = model.features(images)
+            feats = model.features(images)             # shape: [N, 512, H_out, W_out]
             pooled   = model.avgpool(feats)
             clf_logits = model.classifier(torch.flatten(pooled,1))
             loss_cls  = criterion_cls(clf_logits, labels)
