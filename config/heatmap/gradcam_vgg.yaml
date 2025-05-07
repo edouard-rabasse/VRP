@@ -1,4 +1,4 @@
-method: gradcam
+method: grad_cam_vgg
 args:
   class_index: 1
-  target_layer: features[-1]
+  
