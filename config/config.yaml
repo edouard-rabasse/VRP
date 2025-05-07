@@ -23,4 +23,4 @@ image_size: [224, 224]     # YAML has no tuples : use lists
 mask_shape: [10, 10]
 
 
-experiment_name: ${model.name}_${model.params.learning_rate}_${batch_size}_${model.params.epochs}
+experiment_name: ${model.name}_${batch_size}_${model.params.epochs}

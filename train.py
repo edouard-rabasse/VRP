@@ -88,7 +88,10 @@ def main(cfg: DictConfig):
         from src.utils import save_model
         os.makedirs(os.path.dirname(cfg.model.weight_path), exist_ok=True)
         save_model(model, cfg.model.weight_path)
-        print(f"[Train] Model saved at {cfg.model.weight_path}")
+        if os.path.exists(cfg.model.weight_path):
+            print(f"[Train] ✅ Model saved at {cfg.model.weight_path}")
+        else:
+            print(f"[Train] ❌ ERROR: Model was NOT saved at {cfg.model.weight_path}")
 
 if __name__ == "__main__":
     main()
