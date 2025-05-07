@@ -1,6 +1,5 @@
 /data/
 **/__pycache__/
-MSH/
 MSH.zip
 .vscode/
 output/
@@ -10,3 +9,6 @@ outputs/
 multirun/
 wandb/
 *.log
+plots/
+instances/
+

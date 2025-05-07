@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="INSTANCE_FOLDER">./instances/</entry>
+<entry key="RESULT_FOLDER">./results/test/</entry> 
+
+<entry key="PRINT_IN_CONSOLE">false</entry>
+<entry key="PRINT_POOLS_TO_FILE">false</entry>
+
+<entry key="PRECISION">4</entry> 
+<entry key="SEED">1</entry> 
+<entry key="THREADS">8</entry> 
+
+<entry key="MSH_MAX_POOL_SIZE">20000</entry> 
+<entry key="MSH_NUM_ITERATIONS">2500</entry>
+<entry key="MSH_SAMPLING_TIME_LIMIT">60</entry>
+<entry key="MSH_RANDOM_FACTOR_HIGH">12</entry>
+<entry key="MSH_RANDOM_FACTOR_HIGH_RN">5</entry>
+<entry key="MSH_RANDOM_FACTOR_LOW">6</entry>
+<entry key="MSH_ASSEMBLY_TIME_LIMIT">60</entry>
+
+<entry key="DRIVING_SPEED">30</entry> 
+<entry key="WALKING_SPEED">4</entry> 
+<entry key="FIXED_COST">300</entry> 
+<entry key="VARIABLE_COST">1</entry> 
+<entry key="MAX_WD_B2P">2.5</entry> 
+<entry key="SUBTOUR_TIME_LIMIT">30000</entry>
+<entry key="ROUTE_WALKING_DISTANCE_LIMIT">75</entry>
+<entry key="ROUTE_DURATION_LIMIT">420</entry>
+<entry key="PARKING_TIME_MIN">0</entry>
+
+</properties>
