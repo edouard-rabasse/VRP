@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CreateInstances2 {
 
@@ -16,14 +17,19 @@ public class CreateInstances2 {
     
     public static void main(String[] args) {
     	
-    	double maxX = 10;
-    	double maxY = 10;
-    	int numClients = 50;
-    	int initialInstanceID = 301;
-    	int finalInstanceID = 1000;
+    	double maxX = Double.parseDouble(args[0]);
+    	double maxY = Double.parseDouble(args[1]);
+    	int minClients = Integer.parseInt(args[2]);
+    	int initialInstanceID = Integer.parseInt(args[3]);
+    	int finalInstanceID = Integer.parseInt(args[4]);
+
+        int maxClients = minClients+40;
+        System.out.println("minClients: " + minClients);
     	
    
     	for(int i = initialInstanceID; i <= finalInstanceID; i++) {
+            int numClients = ThreadLocalRandom.current()
+                                .nextInt(minClients, maxClients + 1);
     		generateInstance(numClients,maxX,maxY,""+i);
     	}
     }

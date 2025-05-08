@@ -11,4 +11,5 @@ wandb/
 *.log
 plots/
 instances/
+gurobi_lib/
 
