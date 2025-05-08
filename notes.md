@@ -42,7 +42,7 @@ Licence Gurobi pour alliance.
 Comment automatiser les points d'attention pour modifier la boucle.
 
 Simplifier en un modèle plus simple pour mettre dans un solver.
-CHanger 4 arcs. Minimiser le nombre de variables modifiées tout en passant la proba sous un seuil.
+Changer 4 arcs. Minimiser le nombre de variables modifiées tout en passant la proba sous un seuil.
 
 Faire un modèle pour prédire le nombre d'arcs à changer. (3e loss)
 
