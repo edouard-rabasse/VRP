@@ -1,3 +1,5 @@
+# Notes
+
 - séparer sets
 plus de données
 - config 2
@@ -8,14 +10,12 @@ code de couleur sur le masque.
 
 - autres métriques
 
-
 proba sur les arêtes
-arêtes voisines 
+arêtes voisines
 pixels plus gros.
 
-
-
 ## 24/04
+
 Modèle Distances
 stride plus petits ou plus grands.
 calcul canada : bash script.
@@ -25,19 +25,18 @@ GNN
 GAN, matrices d'adjacence.
 plus de rotations.
 
-## TODO :
+## TODO
+
 Clean pour les hyperparamètres.
 
-
-
-
 ## 06/05
+
 Clients différents
 Nombre de clients différents.
 
 Points d'attention.
 
-Licence Gurobi pour alliance.
+- Licence Gurobi pour alliance.
 
 Comment automatiser les points d'attention pour modifier la boucle.
 
@@ -48,8 +47,7 @@ Faire un modèle pour prédire le nombre d'arcs à changer. (3e loss)
 
 tester avec une autre configuration (2)
 
-+ et - de clients.
-
+- \+ et - de clients.
 
 Benchmark ? Si on connaissait la valeur de la contrainte. Distance en coût + dépassement de la vraie contrainte.
 Vecteur de features avec les instances. features : nb de tournées à pied, distances, distance à pied la plus longue, moyenne, en voiture.
