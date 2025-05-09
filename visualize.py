@@ -9,6 +9,7 @@ from torchvision import transforms
 from src.models          import load_model
 from src.transform       import image_transform_test, mask_transform, denormalize
 from src.visualization   import get_heatmap, show_mask_on_image
+from src.graph.reverse_heatmap import reverse_heatmap, get_arc_name, get_coordinates_name, read_arcs, read_coordinates
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
@@ -29,6 +30,7 @@ def main(cfg: DictConfig):
 
     for fname in sorted(os.listdir(cfg.data.test_modified_path)):
         if not fname.endswith('.png'): continue
+        number = int(fname.split('.')[0].split('_')[1])
 
         # ── load images & transforms ────────────────────────────────────────
         orig_p = os.path.join(cfg.data.test_original_path, fname)
@@ -55,6 +57,27 @@ def main(cfg: DictConfig):
         # cv2.imwrite(out_p, overlay)
         Image.fromarray(overlay).save(out_p)
         print(f"[Viz] Saved overlay to {out_p}")
+
+
+        # ── reverse heatmap ────────────────────────────────────────────────────
+        coordinates_dir = cfg.arcs.coord_in_dir
+        arcs_dir  = cfg.arcs.arc_in_dir
+        coordinates_p = os.path.join(coordinates_dir, get_coordinates_name(number))
+        arcs_p        = os.path.join(arcs_dir, get_arc_name(number))
+        coordinates,_ = read_coordinates(coordinates_p)
+        arcs = read_arcs(arcs_p)
+        arcs_with_zone, coordinates = reverse_heatmap(arcs=arcs,
+                                                      coordinates=coordinates,
+                                                      heatmap=hm,
+                                                      bounds=list(cfg.arcs.bounds),
+                                                      threshold=cfg.arcs.threshold,
+                                                      n_samples=cfg.arcs.n_samples)
+        # ── save arcs ────────────────────────────────────────────────────────────
+        arcs_out_p = cfg.arcs.arc_out_dir
+        os.makedirs(arcs_out_p, exist_ok=True)
+        coordinates_out_p = cfg.arcs.coord_out_dir
+
+
 
 
 if __name__ == "__main__":
