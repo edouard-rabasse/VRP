@@ -124,31 +124,32 @@ if __name__ == "__main__":
     if len(sys.argv) >= 2:
         numeros = [sys.argv[1]]
     else:
-        numeros = range(2, 8)
+        # numeros = range(2, 8)
+        numeros = [2,7]
     for numero in numeros:
         # Call the function with the specified directories
         process_image_pairs(
-            original_dir="data/plots/configuration1",
-            modified_dir=f"data/plots/configuration{numero}",
-            output_dir=f"data/MSH/mask_removed_color/mask{numero}",
+            original_dir="data/plots/configuration1_2",
+            modified_dir=f"data/plots/configuration{numero}_2",
+            output_dir=f"data/MSH/mask_removed_color/mask{numero}_2",
             pixel_size=1,
             method="removed_lines",
             colored=True
 
         )
         process_image_pairs(
-            original_dir="data/plots/configuration1",
-            modified_dir=f"data/plots/configuration{numero}",
-            output_dir=f"data/MSH/mask_removed/mask{numero}",
+            original_dir="data/plots/configuration1_2",
+            modified_dir=f"data/plots/configuration{numero}_2",
+            output_dir=f"data/MSH/mask_removed/mask{numero}_2",
             pixel_size=1,
             method="removed_lines",
             colored=False
         )
 
         process_image_pairs(
-            original_dir="data/plots/configuration1",
-            modified_dir=f"data/plots/configuration{numero}",
-            output_dir=f"data/MSH/mask_classic/mask{numero}",
+            original_dir="data/plots/configuration1_2",
+            modified_dir=f"data/plots/configuration{numero}_2",
+            output_dir=f"data/MSH/mask_classic/mask{numero}_2",
             pixel_size=1,
             method="default",
             colored=True

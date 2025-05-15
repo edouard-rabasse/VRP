@@ -31,6 +31,9 @@ def split_dataset(
             f for f in os.listdir(class_src)
             if os.path.isfile(os.path.join(class_src, f))
         ]
+        if len(images)==0:
+            # exit function
+            return None
         print (f"Found {len(images)} images in class '{cls}'")
         # split into train/test
         train_imgs, test_imgs = train_test_split(
@@ -63,7 +66,7 @@ if __name__ == "__main__":
             random_state=123
         )
     
-    src_dir = "data/plots/"
+    src_dir = "data/plots"
     dst_dir = "data/"
     split_dataset(
         src_dir=src_dir,

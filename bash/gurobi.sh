@@ -16,12 +16,12 @@ MAIN_CLASS="main.Main_gurobi"
 BIN_DIR="bin"
 SRC_DIR="src"
 JAR="$GUROBI_TMP_LIB/gurobi.jar"
-CP_COMPILE="$GUROBI_JAR"                     # javac doesn't need BIN_DIR
+CP_COMPILE="$BIN_DIR:$GUROBI_JAR"                     # javac doesn't need BIN_DIR
 CP_RUN="$BIN_DIR:$GUROBI_JAR"  
 
 # === Fichiers d'entrée ===
-EXPERIMENT_FILE="Experiments2.txt"
-CONFIG_FILE="configuration1.xml"
+EXPERIMENT_FILE="ExperimentsAllSets.txt"
+CONFIG_FILE="configuration2.xml"
 OTHER_ARGS="1 8"
 
 # === Créer le dossier temporaire ===
@@ -46,15 +46,10 @@ fi
 
 
 cd MSH/MSH
-echo "🔍 PWD = $(pwd)"
-ls -l ./config/config_test.xml
-file ./config/config_test.xml
 # === Affichage ===
 echo "✅ Fichiers copiés dans $GUROBI_TMP_LIB"
 echo "➡️ Lancement Java avec classe $MAIN_CLASS"
 
-echo "📄 Contenu de config/config_test.xml :"
-head -n 5 ./config/config_test.xml
 
 echo "🔍 Vérif classpath :"
 ls -lh $GUROBI_TMP_LIB/gurobi.jar
@@ -62,7 +57,8 @@ ls -lh $GUROBI_TMP_LIB/gurobi.jar
 
 ## ===== Recompilation du code Java =====
 echo "⏳ (re)compiling …"         # list up‑to‑date files
-javac  -cp "$CP_COMPILE"  -d "$BIN_DIR"  src/main/CreateInstances2.java
+
+javac  -cp "$CP_RUN"  -d "$BIN_DIR"  src/main/CreateInstances2.java
 javac  -cp "$CP_COMPILE"  -d "$BIN_DIR"  src/main/Main_gurobi.java
 
 echo "✅ compilation done"
@@ -76,7 +72,7 @@ echo "✅ compilation done"
 #   main.CreateInstances2 10 10 20 1001 3000
 
 
-for i in {1001..3000}; do
+for i in {1001..2000}; do
 java \
   -Djava.library.path="$GUROBI_TMP_LIB" \
   -cp "$BIN_DIR:$JAR" \

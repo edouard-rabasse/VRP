@@ -17,6 +17,6 @@ pip install --no-index --upgrade pip
 pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
 
-python graph_creator.py
+# python graph_creator.py
 python -m src.mask
 python -m src.test_train
