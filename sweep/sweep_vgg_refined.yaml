@@ -34,3 +34,5 @@ parameters:
     values: [false]
   data:
     values: ["config7_new"]
+  data.cfg_number:
+    values: ["2_2"]
