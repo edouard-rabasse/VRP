@@ -1,9 +1,9 @@
 threshold: 0.5
 n_samples: 15
 bounds: [0,10,0,10]
-arcs_in_dir: ${hydra:runtime.cwd}/data/results/${..experiment_name}
-arcs_out_dir: ${hydra:runtime.cwd}/data/results_modified/${..experiment_name}
-coord_in_dir: ${hydra:runtime.cwd}/data/instances/${..experiment_name}
-coord_out_dir: ${hydra:runtime.cwd}/data/instances_modified/${..experiment_name}
+arcs_in_dir: ${hydra:runtime.cwd}/MSH/MSH/results/configuration${..cfg_number}/
+arcs_out_dir: ${hydra:runtime.cwd}/data/results_modified/configuration${..cfg_number}/
+coord_in_dir: ${hydra:runtime.cwd}/MSH/MSH/instances/
+coord_out_dir: ${hydra:runtime.cwd}/data/instances_modified/
 
 

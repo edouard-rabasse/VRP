@@ -7,7 +7,7 @@ defaults:
 
 # now your keys are available for interpolation:
 path: data
-cfg_number: 7
+cfg_number: ${data.cfg_number}
 mask: mask_removed
 
 model_params: ${model.params}

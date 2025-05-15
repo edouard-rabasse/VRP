@@ -61,7 +61,7 @@ def main(cfg: DictConfig):
 
         # ── reverse heatmap ────────────────────────────────────────────────────
         coordinates_dir = cfg.arcs.coord_in_dir
-        arcs_dir  = cfg.arcs.arc_in_dir
+        arcs_dir  = cfg.arcs.arcs_in_dir
         coordinates_p = os.path.join(coordinates_dir, get_coordinates_name(number))
         arcs_p        = os.path.join(arcs_dir, get_arc_name(number))
         coordinates,_ = read_coordinates(coordinates_p)
@@ -73,9 +73,18 @@ def main(cfg: DictConfig):
                                                       threshold=cfg.arcs.threshold,
                                                       n_samples=cfg.arcs.n_samples)
         # ── save arcs ────────────────────────────────────────────────────────────
-        arcs_out_p = cfg.arcs.arc_out_dir
+        arcs_out_p = cfg.arcs.arcs_out_dir
         os.makedirs(arcs_out_p, exist_ok=True)
         coordinates_out_p = cfg.arcs.coord_out_dir
+        os.makedirs(coordinates_out_p, exist_ok=True)
+        coordinates_out_p = os.path.join(coordinates_out_p, get_coordinates_name(number))
+        arcs_out_p = os.path.join(arcs_out_p, get_arc_name(number))
+        with open(arcs_out_p, 'w') as f:
+            for arc in arcs_with_zone:
+                f.write(f"{arc[0]};{arc[1]};{arc[2]};{arc[3]};{arc[4]}\n")
+        with open(coordinates_out_p, 'w') as f:
+            for node, coord in coordinates.items():
+                f.write(f"{node},{coord[0]},{coord[1]}\n")
 
 
 
