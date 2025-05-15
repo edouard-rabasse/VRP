@@ -32,3 +32,5 @@ parameters:
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
   model.freeze:
     values: [false]
+  data:
+    values: ["config7_new"]
