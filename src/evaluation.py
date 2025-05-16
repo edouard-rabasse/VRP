@@ -2,6 +2,7 @@ import torch
 from sklearn.metrics import confusion_matrix
 import numpy as np
 
+
 def get_confusion_matrix(model, test_loader, device="cuda"):
     """
     Calcule la matrice de confusion pour `model` sur `test_loader`.
@@ -39,17 +40,18 @@ def get_confusion_matrix(model, test_loader, device="cuda"):
             all_targets.append(labels.cpu())
 
     # concatène les batches en un seul vecteur
-    y_pred   = torch.cat(all_preds).numpy()
-    y_true   = torch.cat(all_targets).numpy()
+    y_pred = torch.cat(all_preds).numpy()
+    y_true = torch.cat(all_targets).numpy()
 
     return confusion_matrix(y_true, y_pred)
+
 
 # --- Exemple d'utilisation ------------------------------------
 # cm = get_confusion_matrix(model, test_loader, device="cuda")
 # print(cm)
 
 
-def evaluate_model_mono(model, data_loader, criterion, device='cpu'):
+def evaluate_model_mono(model, data_loader, criterion, device="cpu"):
     model.eval()
     running_loss = 0.0
     correct = 0
@@ -69,7 +71,8 @@ def evaluate_model_mono(model, data_loader, criterion, device='cpu'):
 
     return running_loss / total, correct / total
 
-def evaluate_model_multi_task(model, data_loader, criterion_cls, device='cpu'):
+
+def evaluate_model_multi_task(model, data_loader, criterion_cls, device="cpu"):
     model.eval()
     running_loss = 0.0
     correct = 0
@@ -77,7 +80,11 @@ def evaluate_model_multi_task(model, data_loader, criterion_cls, device='cpu'):
 
     with torch.no_grad():
         for inputs, targets, masks in data_loader:
-            inputs, targets, masks = inputs.to(device), targets.to(device), masks.to(device).float()
+            inputs, targets, masks = (
+                inputs.to(device),
+                targets.to(device),
+                masks.to(device).float(),
+            )
 
             clf_logits, seg_logits = model(inputs)
             loss = criterion_cls(clf_logits, targets)

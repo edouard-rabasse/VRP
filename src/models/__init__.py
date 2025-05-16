@@ -4,18 +4,20 @@ import timm
 import torch
 import torch.nn as nn
 
-from .VisualScoringModel       import VisualScoringModel
-from .MultiTaskVisualModel     import MultiTaskVisualScoringModel
-from .vgg                      import load_vgg
-from .MFCN                     import MultiTaskVGG
-from .resnet                   import ResNetScoringModel
-from .deit_tiny                import load_deit
+from .VisualScoringModel import VisualScoringModel
+from .MultiTaskVisualModel import MultiTaskVisualScoringModel
+from .vgg import load_vgg
+from .MFCN import MultiTaskVGG
+from .resnet import ResNetScoringModel
+from .deit_tiny import load_deit
+
 
 def _load_cnn(cfgm, device):
     H, W = cfgm.image_size
-    kernel_sizes = [int(i) for i in (cfgm.kernel_size).split(',')]
+    kernel_sizes = [int(i) for i in (cfgm.kernel_size).split(",")]
     model = VisualScoringModel(input_shape=(3, H, W))
     return model
+
 
 def _load_deit_tiny(cfgm, device):
     # timm already handles head replacement when you pass num_classes
@@ -25,26 +27,28 @@ def _load_deit_tiny(cfgm, device):
     #     num_classes=2
     # )
     return load_deit(
-        model_name='deit_tiny',
+        model_name="deit_tiny",
         num_classes=2,
         freeze=cfgm.freeze,
         device=device,
     )
-    
+
 
 def _load_multi_task(cfgm, device):
     H, W = cfgm.image_size
     model = MultiTaskVisualScoringModel(
-        input_shape=(3, H, W),
-        mask_shape=tuple(cfgm.mask_shape)
+        input_shape=(3, H, W), mask_shape=tuple(cfgm.mask_shape)
     )
     return model
+
 
 def _load_vgg(cfgm, device):
     return load_vgg(freeze=cfgm.freeze, grad_layer=cfgm.grad_layer)
 
+
 def _load_MFCN(cfgm, device):
     return MultiTaskVGG(mask_shape=tuple(cfgm.mask_shape), freeze=cfgm.freeze)
+
 
 def _load_resnet(cfgm, device):
     return ResNetScoringModel(
@@ -55,16 +59,17 @@ def _load_resnet(cfgm, device):
         freeze=cfgm.freeze,
     )
 
+
 # Registry: map your string names → loader functions
 _MODEL_REGISTRY = {
-    'cnn'         : _load_cnn,
-    'deit_tiny'   : _load_deit_tiny,
-    'multi_task'  : _load_multi_task,
-    'vgg'         : _load_vgg,
-    'MFCN'        : _load_MFCN,
-    'resnet'      : _load_resnet,
-
+    "cnn": _load_cnn,
+    "deit_tiny": _load_deit_tiny,
+    "multi_task": _load_multi_task,
+    "vgg": _load_vgg,
+    "MFCN": _load_MFCN,
+    "resnet": _load_resnet,
 }
+
 
 def load_model(model_name: str, device: torch.device, cfgm) -> nn.Module:
     """

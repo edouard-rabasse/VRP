@@ -4,11 +4,11 @@ import torch.nn.functional as F
 import numpy as np
 from tqdm import tqdm
 
+
 class VisualScoringModel(nn.Module):
-    def __init__(self,input_shape=(1, 84, 84), intermediary_kernel = [30, 20, 5]):
+    def __init__(self, input_shape=(1, 84, 84), intermediary_kernel=[30, 20, 5]):
         super(VisualScoringModel, self).__init__()
         # intermediary_kernel = [8, 4, 3]
-        
 
         self.conv1 = nn.Conv2d(input_shape[0], 32, intermediary_kernel[0], stride=5)
         self.conv2 = nn.Conv2d(32, 64, intermediary_kernel[1], stride=2)
@@ -23,11 +23,11 @@ class VisualScoringModel(nn.Module):
         self.fc1 = nn.Linear(self.flattened_size, 1024)
         self.fc2 = nn.Linear(1024, 2)
 
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
+        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
 
     def _forward_conv(self, x):
         x = F.leaky_relu(self.conv1(x), 0.01)
@@ -42,7 +42,7 @@ class VisualScoringModel(nn.Module):
         return self.fc2(x)
 
 
-def evaluate_model(model, data_loader, criterion, device='cpu'):
+def evaluate_model(model, data_loader, criterion, device="cpu"):
     model.eval()
     running_loss = 0.0
     correct = 0
@@ -62,18 +62,20 @@ def evaluate_model(model, data_loader, criterion, device='cpu'):
 
     return running_loss / total, correct / total
 
+
 def train_model(
     model: nn.Module,
     train_loader: torch.utils.data.DataLoader,
     test_loader: torch.utils.data.DataLoader,
     num_epochs: int = 10,
-    device: str = 'cpu',
+    device: str = "cpu",
     learning_rate: float = 1e-3,
     criterion: nn.Module = None,
-    cfg=None,*,
+    cfg=None,
+    *,
     gamma: float = 0.5,
     step_size: int = 5,
-    ):
+):
     # Send model to device
     model.to(device)
     model.train()
@@ -84,7 +86,9 @@ def train_model(
 
     # Optimizer, scheduler, and loss function
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer, step_size=step_size, gamma=gamma
+    )
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
     metrics = []
@@ -95,7 +99,9 @@ def train_model(
         correct = 0
         total = 0
 
-        for inputs, targets, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
+        for inputs, targets, mask in tqdm(
+            train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False
+        ):
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
@@ -115,20 +121,25 @@ def train_model(
         train_loss = running_loss / total
         train_acc = correct / total
         val_loss, val_acc = evaluate_model(model, test_loader, criterion, device)
-        print(f"Epoch {epoch+1}: Train Loss={train_loss:.4f}, Train Acc={train_acc*100:.2f}%, Test Loss={val_loss:.4f}, Test Acc={val_acc*100:.2f}%")
-        metrics.append({
-            'epoch': epoch+1,
-            'train_loss': train_loss,
-            'train_acc': train_acc,
-            'val_loss': val_loss,
-            'val_acc': val_acc
-        })
+        print(
+            f"Epoch {epoch+1}: Train Loss={train_loss:.4f}, Train Acc={train_acc*100:.2f}%, Test Loss={val_loss:.4f}, Test Acc={val_acc*100:.2f}%"
+        )
+        metrics.append(
+            {
+                "epoch": epoch + 1,
+                "train_loss": train_loss,
+                "train_acc": train_acc,
+                "val_loss": val_loss,
+                "val_acc": val_acc,
+            }
+        )
 
     # final return of metrics
     return metrics
 
 
 import cv2
+
 
 class GradCAM:
     def __init__(self, model, target_layer):
@@ -142,7 +153,7 @@ class GradCAM:
         target_layer.register_full_backward_hook(self.save_gradient)
 
     def save_activation(self, module, input, output):
-    
+
         self.activations = output.detach()
         # output.retain_grad()
 
@@ -156,7 +167,9 @@ class GradCAM:
         loss = output[:, class_index].sum()
         loss.backward()
 
-        assert self.gradients is not None, "Hook never called: bad layer or requires_grad=False"
+        assert (
+            self.gradients is not None
+        ), "Hook never called: bad layer or requires_grad=False"
 
         # Compute the weights
         pooled_gradients = self.gradients.mean(dim=[0, 2, 3])  # global average pooling
@@ -168,7 +181,6 @@ class GradCAM:
         heatmap = np.maximum(heatmap, 0)
         heatmap /= np.max(heatmap) + 1e-8  # normalize
         return heatmap
-    
 
 
 if __name__ == "__main__":
@@ -177,10 +189,18 @@ if __name__ == "__main__":
     grad_cam = GradCAM(model, model.conv3)
 
     from src.data_loader_mask import load_data_mask
-    train_loader, test_loader = load_data_mask("MSH/MSH/plots/configuration1", "MSH/MSH/plots/configuration3", batch_size=2,  
-                                            train_ratio=0.8, image_size=(84, 84), num_workers=4, mask_path="data/MSH/mask3", num_max=20)
+
+    train_loader, test_loader = load_data_mask(
+        "MSH/MSH/plots/configuration1",
+        "MSH/MSH/plots/configuration3",
+        batch_size=2,
+        train_ratio=0.8,
+        image_size=(84, 84),
+        num_workers=4,
+        mask_path="data/MSH/mask3",
+        num_max=20,
+    )
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
     train_model(model, train_loader, test_loader, num_epochs=10, device=device)
-

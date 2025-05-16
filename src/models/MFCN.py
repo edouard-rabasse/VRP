@@ -1,11 +1,13 @@
 from torchvision import transforms
 from src.data_loader_mask import CustomDataset
 
-transform = transforms.Compose([
-    transforms.ToPILImage(),        # Convert numpy array (from cv2) to PIL Image
-    transforms.Resize((84, 84)),      # Resize both image and mask to 84x84
-    transforms.ToTensor(),            # Convert to tensor (scales to [0,1])
-])
+transform = transforms.Compose(
+    [
+        transforms.ToPILImage(),  # Convert numpy array (from cv2) to PIL Image
+        transforms.Resize((84, 84)),  # Resize both image and mask to 84x84
+        transforms.ToTensor(),  # Convert to tensor (scales to [0,1])
+    ]
+)
 
 
 import torch
@@ -19,27 +21,31 @@ import torch.nn.functional as F
 from torchvision import models
 from torchvision.models.vgg import VGG16_BN_Weights
 
+
 class MultiTaskVGG(nn.Module):
-    def __init__(self, 
-                 num_classes=2,         # e.g., original vs. modified
-                 seg_out_channels=1,    # e.g., 1 for binary segmentation
-                 pretrained=True,
-                 input_size=(224, 224),
-                 mask_shape=(10,10),  # Input image size for upsampling the segmentation,
-                 freeze=True
-                ):
+    def __init__(
+        self,
+        num_classes=2,  # e.g., original vs. modified
+        seg_out_channels=1,  # e.g., 1 for binary segmentation
+        pretrained=True,
+        input_size=(224, 224),
+        mask_shape=(10, 10),  # Input image size for upsampling the segmentation,
+        freeze=True,
+    ):
         super(MultiTaskVGG, self).__init__()
 
         # 1. Load pretrained VGG16 with batch normalization
         vgg = models.vgg16_bn(weights=VGG16_BN_Weights.DEFAULT)
-        
+
         # 2. Keep only the 'features' part of VGG as your encoder (shared feature extractor)
-        self.features = vgg.features  # [N, 512, H_out, W_out] after the last conv + pooling
+        self.features = (
+            vgg.features
+        )  # [N, 512, H_out, W_out] after the last conv + pooling
 
         if freeze:
             for param in self.features.parameters():
                 param.requires_grad = False
-        
+
         # 3. Keep the avgpool from VGG (this is a nn.AdaptiveAvgPool2d((7,7)) by default)
         self.avgpool = vgg.avgpool
 
@@ -50,7 +56,7 @@ class MultiTaskVGG(nn.Module):
             # Copy everything except the last layer from vgg.classifier:
             *list(vgg.classifier.children())[:-1],
             # Replace the last layer: 4096 -> num_classes
-            nn.Linear(4096, num_classes)
+            nn.Linear(4096, num_classes),
         )
 
         # 5. Create a segmentation decoder/head
@@ -61,56 +67,56 @@ class MultiTaskVGG(nn.Module):
         self.segmentation_head = nn.Sequential(
             nn.Conv2d(512, 256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            
+            nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False),
             nn.Conv2d(256, 128, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-
-            # At this point, if the input was 224x224, 
+            nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False),
+            # At this point, if the input was 224x224,
             # after VGG, the spatial size is 7x7 before avgpool.
             # We did 2x + 2x upsampling => 28x28
             # Another upsampling might be needed:
             nn.Conv2d(128, 64, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Upsample(size=mask_shape, mode='bilinear', align_corners=False),
-
+            nn.Upsample(size=mask_shape, mode="bilinear", align_corners=False),
             # Final conv to get the correct number of segmentation channels (1 for binary)
-            nn.Conv2d(64, seg_out_channels, kernel_size=3, padding=1)
+            nn.Conv2d(64, seg_out_channels, kernel_size=3, padding=1),
         )
 
         # 6. (Optional) Initialize new layers
-        #    The pretrained VGG layers are already initialized. 
+        #    The pretrained VGG layers are already initialized.
         #    For newly added layers, you can do e.g. Kaiming or Xavier init.
         for m in self.segmentation_head.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
         # Classification head replaced layer is also newly initialized:
         for m in self.classifier.modules():
             if isinstance(m, nn.Linear):
-                nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         # Shared feature extraction
-        features = self.features(x)            # shape: [N, 512, H_out, W_out]
-        
+        features = self.features(x)  # shape: [N, 512, H_out, W_out]
+
         # Classification head: Global avgpool + linear
-        pooled = self.avgpool(features)        # shape: [N, 512, 7, 7]
-        flattened = torch.flatten(pooled, 1)   # shape: [N, 512*7*7]
-        clf_logits = self.classifier(flattened)# shape: [N, num_classes]
-        
+        pooled = self.avgpool(features)  # shape: [N, 512, 7, 7]
+        flattened = torch.flatten(pooled, 1)  # shape: [N, 512*7*7]
+        clf_logits = self.classifier(flattened)  # shape: [N, num_classes]
+
         # Segmentation head
-        seg_logits = self.segmentation_head(features)  # shape: [N, 1, input_size[0], input_size[1]]
+        seg_logits = self.segmentation_head(
+            features
+        )  # shape: [N, 1, input_size[0], input_size[1]]
 
         return clf_logits, seg_logits
 
 
-
-def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, device, learning_rate, cfg=None):
+def train_model_multi_task(
+    model, train_loader, test_loader, *, num_epochs, device, learning_rate, cfg=None
+):
     """
     Train the multi-task model.
     Args:
@@ -128,78 +134,93 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
     model.to(device)
     model.train()
     metrics = []  # list to collect metrics per epoch
-    
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
+
+    optimizer = torch.optim.Adam(
+        filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate
+    )
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
-    
+
     # Loss functions: classification and segmentation
-    criterion_cls = nn.CrossEntropyLoss()        # expects (logits, target labels)
-    criterion_seg = nn.BCEWithLogitsLoss(reduction='none')         # for pixel-wise mask prediction
-    
+    criterion_cls = nn.CrossEntropyLoss()  # expects (logits, target labels)
+    criterion_seg = nn.BCEWithLogitsLoss(
+        reduction="none"
+    )  # for pixel-wise mask prediction
+
     for epoch in range(num_epochs):
         running_loss = 0.0
         running_cls_loss = 0.0
         running_seg_loss = 0.0
         correct = 0
         total = 0
-        results = [f"Parameters: {num_epochs} epochs, {learning_rate} learning rate, {lambda_seg} lambda_seg"]
-        
-        for images, labels, masks in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
-            images = images.to(device)               # shape: [N, 3, H, W] (e.g., 84x84)
-            labels = labels.to(device)               # shape: [N]
-            masks = masks.to(device).float()         # shape: [N, 1, H, W]
-            
+        results = [
+            f"Parameters: {num_epochs} epochs, {learning_rate} learning rate, {lambda_seg} lambda_seg"
+        ]
+
+        for images, labels, masks in tqdm(
+            train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False
+        ):
+            images = images.to(device)  # shape: [N, 3, H, W] (e.g., 84x84)
+            labels = labels.to(device)  # shape: [N]
+            masks = masks.to(device).float()  # shape: [N, 1, H, W]
+
             optimizer.zero_grad()
-            
+
             # with torch.no_grad():                       # aucun grad sur features
             #     feats = model.features(images)
-            feats = model.features(images)             # shape: [N, 512, H_out, W_out]
-            pooled   = model.avgpool(feats)
-            clf_logits = model.classifier(torch.flatten(pooled,1))
-            loss_cls  = criterion_cls(clf_logits, labels)
-            loss_cls.backward()                         # <- petit backward
+            feats = model.features(images)  # shape: [N, 512, H_out, W_out]
+            pooled = model.avgpool(feats)
+            clf_logits = model.classifier(torch.flatten(pooled, 1))
+            loss_cls = criterion_cls(clf_logits, labels)
+            loss_cls.backward()  # <- petit backward
 
             # ---- pass 2 : segmentation (optionnel) ------------------------------
             optimizer.zero_grad()
-            seg_logits = model.segmentation_head(feats.detach())  
-            loss_seg   = criterion_seg(seg_logits, masks)
+            seg_logits = model.segmentation_head(feats.detach())
+            loss_seg = criterion_seg(seg_logits, masks)
             clf_logits, seg_logits = model(images)
             # loss_seg = criterion_seg(seg_logits, masks)
             # sortie du critère sans réduction : (N,1,H,W)
             loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
 
             # vecteur booléen : 1 si l'image a au moins un pixel positif
-            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()  # shape (N,)
+            mask_present = (
+                masks.view(masks.size(0), -1).sum(dim=1) > 0
+            ).float()  # shape (N,)
 
             # on pèse chaque carte de perte par mask_present
-            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() \
-                    / (mask_present.sum() + 1e-6)      # moyenne sur les images « valides »
+            loss_seg = (
+                loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present
+            ).sum() / (
+                mask_present.sum() + 1e-6
+            )  # moyenne sur les images « valides »
 
             loss = loss_cls + lambda_seg * loss_seg
             (loss_seg * lambda_seg).backward()
             optimizer.step()
-            
+
             running_loss += loss.item() * images.size(0)
             running_cls_loss += loss_cls.item() * images.size(0)
             running_seg_loss += loss_seg.item() * images.size(0)
             preds = torch.argmax(clf_logits, dim=1)
             correct += (preds == labels).sum().item()
             total += labels.size(0)
-        
+
         scheduler.step()
         epoch_loss = running_loss / total
         epoch_cls_loss = running_cls_loss / total
         epoch_seg_loss = running_seg_loss / total
         epoch_acc = correct / total
-        
+
         # Record training metrics
-        metrics.append({
-            'epoch': epoch+1,
-            'train_loss': epoch_loss,
-            'train_acc': epoch_acc,
-            'cls_loss': epoch_cls_loss,
-            'seg_loss': epoch_seg_loss
-        })
+        metrics.append(
+            {
+                "epoch": epoch + 1,
+                "train_loss": epoch_loss,
+                "train_acc": epoch_acc,
+                "cls_loss": epoch_cls_loss,
+                "seg_loss": epoch_seg_loss,
+            }
+        )
     # evaluate on test set
     test_cls_loss = 0.0
     test_seg_loss = 0.0
@@ -210,7 +231,7 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
         images = images.to(device)
         labels = labels.to(device)
         masks = masks.to(device).float()
-        
+
         with torch.no_grad():
             clf_logits, seg_logits = model(images)
             loss_cls = criterion_cls(clf_logits, labels)
@@ -219,13 +240,16 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
             loss_seg_map = criterion_seg(seg_logits, masks)
 
             # vecteur booléen : 1 si l'image a au moins un pixel positif
-            mask_present = (masks.view(masks.size(0), -1).sum(dim=1) > 0).float()  # shape (N,)
+            mask_present = (
+                masks.view(masks.size(0), -1).sum(dim=1) > 0
+            ).float()  # shape (N,)
 
             # on pèse chaque carte de perte par mask_present
-            loss_seg = (loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present).sum() \
-                    / (mask_present.sum() + 1e-6)
+            loss_seg = (
+                loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1) * mask_present
+            ).sum() / (mask_present.sum() + 1e-6)
             loss = loss_cls + lambda_seg * loss_seg
-        
+
         preds = torch.argmax(clf_logits, dim=1)
         correct += (preds == labels).sum().item()
         total += labels.size(0)
@@ -233,19 +257,25 @@ def train_model_multi_task(model, train_loader, test_loader,*, num_epochs, devic
         test_cls_loss = loss_cls.item() * images.size(0)
         test_seg_loss = loss_seg.item() * images.size(0)
     # Record test metrics
-    metrics.append({
-        'val_loss': val_loss,
-        'val_acc': correct/total,
-        'test_cls_loss': test_cls_loss/total,
-        'test_seg_loss': test_seg_loss/total
-    })
+    metrics.append(
+        {
+            "val_loss": val_loss,
+            "val_acc": correct / total,
+            "test_cls_loss": test_cls_loss / total,
+            "test_seg_loss": test_seg_loss / total,
+        }
+    )
 
     return metrics
 
+
 if __name__ == "__main__":
     # Assuming your directory paths are defined:
-    original_path, modified_path, mask_path = "MSH/MSH/plots/configuration1", "MSH/MSH/plots/configuration3", "data/MSH/mask3"
-
+    original_path, modified_path, mask_path = (
+        "MSH/MSH/plots/configuration1",
+        "MSH/MSH/plots/configuration3",
+        "data/MSH/mask3",
+    )
 
     train_original_path = "data/train/configuration1"
     test_original_path = "data/test/configuration1"
@@ -253,14 +283,16 @@ if __name__ == "__main__":
     test_modified_path = "data/test/configuration3"
     train_mask_path = "data/mask_removed/configuration3"
     test_mask_path = "data/mask_removed/configuration3"
-    image_size = (224,224)
+    image_size = (224, 224)
 
     ## Define the transform to resize the images and convert them to tensors
 
-
     from src.data_loader_mask import load_data_train_test
-    from src.transform import image_transform_train, image_transform_test, mask_transform
-
+    from src.transform import (
+        image_transform_train,
+        image_transform_test,
+        mask_transform,
+    )
 
     print("Loading data...")
     train_loader, test_loader = load_data_train_test(
@@ -275,25 +307,24 @@ if __name__ == "__main__":
         mask_transform_train=mask_transform(size=image_size),
         mask_transform_test=mask_transform(size=image_size),
         batch_size=1,
-        num_workers=0
+        num_workers=0,
     )
-
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = MultiTaskVGG()
     model.to(device)
 
     # Train for, say, 10 epochs and use a lambda weight of 1.0 for segmentation loss.
-    model, optimizer, scheduler = train_model_multi_task(model, train_loader, test_loader,
-                                                num_epochs=50,
-                                                device=device,
-                                                learning_rate=1e-3,
-                                                lambda_seg=0.1)
+    model, optimizer, scheduler = train_model_multi_task(
+        model,
+        train_loader,
+        test_loader,
+        num_epochs=50,
+        device=device,
+        learning_rate=1e-3,
+        lambda_seg=0.1,
+    )
     # print results
     print("Training completed.")
 
-
-
-
     # test the model on test set and save an image of the overlay
-

@@ -2,11 +2,20 @@
 import src.trainers as trainers
 import wandb
 from omegaconf import OmegaConf
-    
-def train(model_name, model, train_loader, test_loader,
-          num_epochs, device, learning_rate, *,
-          cfg=None,
-          **extra):
+
+
+def train(
+    model_name,
+    model,
+    train_loader,
+    test_loader,
+    num_epochs,
+    device,
+    learning_rate,
+    *,
+    cfg=None,
+    **extra
+):
     """
     Trains the model using the specified parameters and returns the results (log).
     Args:
@@ -25,7 +34,6 @@ def train(model_name, model, train_loader, test_loader,
     #     wandb_config = {}
     # project = wandb_config.pop('project_name', None) or 'default_project'
 
-
     # wandb.init(project="VRP", name=cfg.experiment_name)
     # wandb.run.name = f"{model_name}_{wandb.run.id}"
     # # Watch model for gradients and parameters
@@ -34,17 +42,15 @@ def train(model_name, model, train_loader, test_loader,
     trainer_fn = trainers.get_trainer(model_name)
 
     # Execute training and capture per-epoch metrics
-    metrics = trainer_fn(model,
-                         train_loader,
-                         test_loader,
-                         num_epochs=num_epochs,
-                         device=device,
-                         learning_rate=learning_rate,
-                         cfg=cfg,
-                         **extra)
-    
-    
+    metrics = trainer_fn(
+        model,
+        train_loader,
+        test_loader,
+        num_epochs=num_epochs,
+        device=device,
+        learning_rate=learning_rate,
+        cfg=cfg,
+        **extra
+    )
+
     return metrics
-
-
-

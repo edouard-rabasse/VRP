@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 
 def load_vgg(freeze=True, grad_layer=5):
-    model = models.vgg16(weights='DEFAULT')
+    model = models.vgg16(weights="DEFAULT")
     model.classifier[6] = nn.Linear(4096, 2)  # Change the last layer to have 2 classes
     for m in model.modules():
         if isinstance(m, nn.ReLU):
@@ -15,15 +15,14 @@ def load_vgg(freeze=True, grad_layer=5):
     if freeze:
         for param in model.parameters():
             param.requires_grad = False
-    
+
         for param in model.classifier[grad_layer:].parameters():
             param.requires_grad = True
 
     return model
 
 
-
-def precompute_model(model, dataloader, device='cpu'):
+def precompute_model(model, dataloader, device="cpu"):
     model.eval()
     model.to(device)
     model.eval()  # Set the model to evaluation mode
@@ -44,23 +43,33 @@ def precompute_model(model, dataloader, device='cpu'):
     all_labels = torch.cat(all_labels, dim=0)
     all_masks = torch.cat(all_masks, dim=0)
 
-
     output_dataset = torch.utils.data.TensorDataset(all_outputs, all_labels, all_masks)
 
     return output_dataset
 
 
-    
-
-def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, learning_rate=0.001, criterion=None,cfg=None, grad_layer=5):
+def train_vgg(
+    model,
+    train_loader,
+    test_loader,
+    *,
+    device="cpu",
+    num_epochs=20,
+    learning_rate=0.001,
+    criterion=None,
+    cfg=None,
+    grad_layer=5,
+):
     import torch.optim as optim
+
     # Send model to device
     model.to(device)
-    
 
     if criterion is None:
         criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate)
+    optimizer = optim.Adam(
+        filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate
+    )
     metrics = []  # collect per-epoch metrics
 
     # Training loop
@@ -69,7 +78,9 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
         model.train()
         running_loss, correct_preds, total = 0.0, 0, 0
 
-        for input, labels, mask in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False):
+        for input, labels, mask in tqdm(
+            train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]", leave=False
+        ):
             input, labels = input.to(device), labels.to(device)
             # Select the CLS token (first token) for classification
             # cls_features = torch.flatten(input, start_dim=1)
@@ -117,17 +128,21 @@ def train_vgg(model, train_loader, test_loader,*,device='cpu', num_epochs=20, le
         all_val_preds = torch.cat(all_val_preds).numpy()
         all_val_labels = torch.cat(all_val_labels).numpy()
 
-        print(f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
-            f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}")
-        
+        print(
+            f"Epoch {epoch+1}/{num_epochs} | Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2%} | "
+            f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2%}"
+        )
+
         # record epoch metrics
-        metrics.append({
-            'epoch': epoch+1,
-            'train_loss': train_loss,
-            'train_acc': train_acc,
-            'val_loss': val_loss,
-            'val_acc': val_acc
-        })
+        metrics.append(
+            {
+                "epoch": epoch + 1,
+                "train_loss": train_loss,
+                "train_acc": train_acc,
+                "val_loss": val_loss,
+                "val_acc": val_acc,
+            }
+        )
     # reactivate gradients
     for param in model.parameters():
         param.requires_grad = True

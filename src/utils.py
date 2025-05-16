@@ -5,8 +5,6 @@ from omegaconf import DictConfig, OmegaConf
 import torch
 
 
-        
-
 def save_model(model, path):
     """Saves the model to the specified path.
     Only for pyTorch models.
@@ -16,6 +14,7 @@ def save_model(model, path):
     """
     torch.save(model.state_dict(), path)
     print(f"Model saved to {path}")
+
 
 def load_cfg_yaml(path: str):
     """Load a YAML file and return a dot-accessible namespace."""
@@ -30,7 +29,6 @@ def load_cfg_yaml(path: str):
         return obj
 
     return to_ns(raw)
-
 
 
 def load_cfg(path: str) -> SimpleNamespace:
