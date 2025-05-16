@@ -101,6 +101,7 @@ def process_all_solutions(
             number = int(match.group(1))
             if valid_range is None or number in valid_range:
                 instance = match.group(1)
+                print(instance)
                 arcs_file = os.path.join(arcs_folder, filename)
                 coordinates_file = os.path.join(
                     coordinates_folder, f"Coordinates_{instance}.txt"
@@ -125,7 +126,7 @@ def main(cfg: DictConfig) -> None:
         print("Processing configuration", number)
         arcs_folder = cfg.arcs_folder + f"configuration{number}/"
         coordinates_folder = cfg.coordinates_folder
-        output_folder = cfg.output_folder + f"configuration{number}/"
+        output_folder = cfg.output_folder + f"configuration{number}{cfg.special}/"
 
         # Process all solutions
         process_all_solutions(
