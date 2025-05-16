@@ -21,7 +21,7 @@ CP_RUN="$BIN_DIR:$GUROBI_JAR"
 
 # === Fichiers d'entrée ===
 EXPERIMENT_FILE="ExperimentsAllSets.txt"
-CONFIG_FILE="configuration2.xml"
+CONFIG_FILE="configuration7.xml"
 OTHER_ARGS="1 8"
 
 # === Créer le dossier temporaire ===
@@ -72,7 +72,7 @@ echo "✅ compilation done"
 #   main.CreateInstances2 10 10 20 1001 3000
 
 
-for i in {1001..2000}; do
+for i in {2001..3000}; do
 java \
   -Djava.library.path="$GUROBI_TMP_LIB" \
   -cp "$BIN_DIR:$JAR" \

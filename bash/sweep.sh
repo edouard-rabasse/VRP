@@ -21,7 +21,8 @@ wandb login --relogin "$WANDB_API_KEY"
 
 # votre sweep ID
 # SWEEP_ID=polytechnique-rabasse/VRP/d6ovvlqc
-SWEEP_ID=polytechnique-rabasse/VRP/jlg9b4tf
+SWEEP_ID=polytechnique-rabasse/VRP/jlg9b4tf # 7_2
+# SWEEP_ID=polytechnique-rabasse/VRP/frpyrdwi #2_2
 
 # chaque tâche Array lance un agent
 wandb agent "$SWEEP_ID"

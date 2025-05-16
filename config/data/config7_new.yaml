@@ -1,13 +1,13 @@
 # 1) Valeurs de base
-cfg_number: 7_2
+cfg_number: "7_2"
 mask: mask_removed
 path: data
 
 # 2) Tes chemins, **interpolés** depuis les valeurs ci-dessus
-train_original_path: "${path}/train/configuration1/"
+train_original_path: "${path}/train/configuration1_2/"
 train_modified_path: "${path}/train/configuration${cfg_number}/"
 
-test_original_path:  "${path}/test/configuration1/"
+test_original_path:  "${path}/test/configuration1_2/"
 test_modified_path:  "${path}/test/configuration${cfg_number}/"
 
 train_mask_path:     "${path}/${mask}/train/mask${cfg_number}/"

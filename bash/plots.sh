@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=def-martin4
-#SBATCH --job-name=vrp-sweep
+#SBATCH --job-name=plot
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
@@ -17,6 +17,6 @@ pip install --no-index --upgrade pip
 pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
 
-# python graph_creator.py
+python graph_creator.py
 python -m src.mask
 python -m src.test_train
