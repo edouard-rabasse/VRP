@@ -1,0 +1,9 @@
+threshold: 0.2
+n_samples: 15
+bounds: [0,10,0,10]
+arcs_in_dir: ${hydra:runtime.cwd}/MSH/MSH/results/configuration1/
+arcs_out_dir: ${hydra:runtime.cwd}/data/results_modified/configuration${..cfg_number}/
+coord_in_dir: ${hydra:runtime.cwd}/MSH/MSH/instances/
+coord_out_dir: ${hydra:runtime.cwd}/data/instances_modified/
+
+

@@ -2,11 +2,12 @@
 defaults:
   - data: config7 # ← then merge conf/data/data_config.yaml
   - model: cnn       # ← then merge conf/model/cnn.yaml
+  - arcs: default    # ← then merge conf/arcs/default.yaml
   - _self_            # ← load THIS file’s keys 
 
 # now your keys are available for interpolation:
 path: data
-cfg_number: 7
+cfg_number: ${data.cfg_number}
 mask: mask_removed
 
 model_params: ${model.params}

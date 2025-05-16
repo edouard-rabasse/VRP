@@ -28,10 +28,12 @@ def read_coordinates(file_path):
     return coordinates, last_node
 
 
-def plot_routes(arcs, coordinates, depot, output_file):
+def plot_routes(arcs, coordinates, depot, output_file, bounds=(-1, 11, -1, 11)):
     # Create a figure and axes with a 10x10 inch size and equal aspect ratio
     fig, ax = plt.subplots(figsize=(10, 10))
     ax.set_aspect('equal', adjustable='box')
+    ax.set_xlim(bounds[0], bounds[1])
+    ax.set_ylim(bounds[2], bounds[3])
     
     # Remove the borders (spines) from the plot
     for spine in ax.spines.values():
@@ -68,7 +70,7 @@ def plot_routes(arcs, coordinates, depot, output_file):
     plt.grid(False)
     
     # Save the figure to a file and close the plot
-    plt.savefig(output_file)
+    plt.savefig(output_file, bbox_inches='tight', pad_inches=0)
     plt.close()
 
 
