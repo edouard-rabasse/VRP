@@ -11,7 +11,7 @@ command:
 
 # On cherche à maximiser la métrique val_accuracy (à adapter)
 metric:
-  name: cls_loss
+  name: seg_loss
   goal: minimize
 
 method: bayes   # ou random, bayes...
@@ -31,6 +31,6 @@ parameters:
   model.freeze:
     values: [true, false]
   model.params.lambda_seg:
-    values: [0.1, 0.5, 1.0]
+    values: [1000]
 
 

@@ -35,4 +35,13 @@ Sachant que
 - "++" est pour ajouter ou modifier un élément de config
 - "-" est pour supprimer un élément de config
 - "" est pour remplacer un élément de config
-- 
+
+
+## Si vsc sur ssh bug
+s'y connecter puis 
+rm -rf ~/.vscode-server
+
+## Pour faire un commit sur git
+    git add .
+    git commit -m "message"
+    git push origin <branch_name>

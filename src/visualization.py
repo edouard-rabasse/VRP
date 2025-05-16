@@ -19,7 +19,7 @@ def show_mask_on_image(input, heatmap, alpha=0.5, interpolation=cv2.INTER_LINEAR
     ## Args:
     - input_tensor (torch.Tensor): The input tensor to the model, dimension (N, C, H, W) or (C, H, W), in RGB format.
     - heatmap (numpy.ndarray): The heatmap to overlay.
-    - alpha (float): The transparency level for the overlay.
+    - alpha (float): The transparency level for the overlay. Higher values mean more of the input image is visible.
     ## Returns:
     - overlay (numpy.ndarray): The overlayed image.
     """

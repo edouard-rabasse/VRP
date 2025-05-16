@@ -1,6 +1,6 @@
 # sweep.yaml
 program: train.py
-name: sweep_vgg3  # 👈 Nom explicite ici
+name: sweep_vgg2  # 👈 Nom explicite ici
 project: VRP
 
 command:
@@ -35,4 +35,4 @@ parameters:
   data:
     values: ["config7_new"]
   data.cfg_number:
-    values: ["2_2"]
+    values: [2]
