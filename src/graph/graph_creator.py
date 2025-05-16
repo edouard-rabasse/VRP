@@ -104,6 +104,7 @@ def process_all_solutions(arcs_folder, coordinates_folder, output_folder, bounds
 def main(cfg: DictConfig) -> None:
     numbers = cfg.numbers
     valid_range = range(cfg.valid_range[0], cfg.valid_range[1] + 1)
+    print(cfg)
     bounds = tuple(cfg.bounds)
     for number in numbers:
         print("Processing configuration", number)
