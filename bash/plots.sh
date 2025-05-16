@@ -3,7 +3,7 @@
 #SBATCH --job-name=plot
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=16G
+#SBATCH --mem=2G
 #SBATCH --time=4:00:00
 #SBATCH --output=logs/plots-%A_%a.log
 #SBATCH --export=ALL
