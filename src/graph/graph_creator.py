@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import re
-
+from tqdm import tqdm
+import hydra
+from omegaconf import DictConfig
 # plt.style.use('default')
 # plt.rcParams['lines.alpha'] = 1.0
 
@@ -74,39 +76,54 @@ def plot_routes(arcs, coordinates, depot, output_file, bounds=(-1, 11, -1, 11)):
     plt.close()
 
 
-def process_all_solutions(arcs_folder, coordinates_folder, output_folder):
+def process_all_solutions(arcs_folder, coordinates_folder, output_folder, bounds=(-1, 11, -1, 11), valid_range=None):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     
-    for filename in os.listdir(arcs_folder):
+    for filename in tqdm(os.listdir(arcs_folder), desc="Processing files", unit="file"):
         match = re.match(r'Arcs_(\w+)_\d+\.txt', filename)
         if match:
-            instance = match.group(1)
-            arcs_file = os.path.join(arcs_folder, filename)
-            coordinates_file = os.path.join(coordinates_folder, f'Coordinates_{instance}.txt')
-            output_file = os.path.join(output_folder, f'Plot_{instance}.png')
-            
-            if os.path.exists(coordinates_file):
-                arcs = read_arcs(arcs_file)
-                coordinates, depot = read_coordinates(coordinates_file)
-                plot_routes(arcs, coordinates, depot, output_file)
-            else:
-                print(f"Warning: Coordinates file {coordinates_file} not found.")
+            number = int(match.group(1))
+            if valid_range is None or number in valid_range:
+                instance = match.group(1)
+                arcs_file = os.path.join(arcs_folder, filename)
+                coordinates_file = os.path.join(coordinates_folder, f'Coordinates_{instance}.txt')
+                output_file = os.path.join(output_folder, f'Plot_{instance}.png')
+                
+                if os.path.exists(coordinates_file):
+                    arcs = read_arcs(arcs_file)
+                    coordinates, depot = read_coordinates(coordinates_file)
+                    plot_routes(arcs, coordinates, depot, output_file, bounds)
+                else:
+                    print(f"Warning: Coordinates file {coordinates_file} not found.")
 
 
 
 
-# File paths*
-if __name__ == "__main__":
-    numbers = [1,2,7]
+@hydra.main(config_path="../../config/plot", config_name="default", version_base=None)
+def main(cfg: DictConfig) -> None:
+    numbers = cfg.numbers
+    valid_range = range(cfg.valid_range[0], cfg.valid_range[1] + 1)
+    bounds = tuple(cfg.bounds)
     for number in numbers:
         print("Processing configuration", number)
-        arcs_folder = f"MSH/MSH/results/configuration{number}/"
-        coordinates_folder = "MSH/MSH/instances/"
-        output_folder = f"data/plots/configuration{number}_2/"
+        arcs_folder = cfg.arcs_folder+f"configuration{number}/"
+        coordinates_folder = cfg.coordinates_folder
+        output_folder = cfg.output_folder +f"configuration{number}/"
 
         # Process all solutions
-        process_all_solutions(arcs_folder, coordinates_folder, output_folder)
+        process_all_solutions(arcs_folder, coordinates_folder, output_folder, bounds=bounds, valid_range=valid_range)
 
 
+if __name__ == "__main__":
+    # numbers = [7]
+    # for number in numbers:
+    #     print("Processing configuration", number)
+    #     arcs_folder = f"data/results_modified/configuration{number}/"
+    #     coordinates_folder = "data/instances_modified/"
+    #     output_folder = f"data/plots_modified/configuration{number}/"
+    #
+    #     # Process all solutions
+    #     process_all_solutions(arcs_folder, coordinates_folder, output_folder)
+    main()
 

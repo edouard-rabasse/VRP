@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import re
+import hydra
+from omegaconf import DictConfig
 
 # plt.style.use('default')
 # plt.rcParams['lines.alpha'] = 1.0
@@ -94,18 +96,30 @@ def process_all_solutions(arcs_folder, coordinates_folder, output_folder):
 
 
 
-
-# File paths*
-if __name__ == "__main__":
-    numbers = [7]
+@hydra.main(config_path="../../config/plot", config_name="default", version_base=None)
+def main(cfg: DictConfig) -> None:
+    numbers = cfg.numbers
+    valid_range = range(cfg.valid_range[0], cfg.valid_range[1] + 1)
+    bounds = tuple(cfg.bounds)
     for number in numbers:
         print("Processing configuration", number)
-        arcs_folder = f"data/results_modified/configuration{number}/"
-        coordinates_folder = "data/instances_modified/"
-        output_folder = f"data/plots_modified/configuration{number}/"
+        arcs_folder = cfg.arcs_folder+f"configuration{number}/"
+        coordinates_folder = cfg.coordinates_folder
+        output_folder = cfg.output_folder +f"configuration{number}/"
 
         # Process all solutions
-        process_all_solutions(arcs_folder, coordinates_folder, output_folder)
+        process_all_solutions(arcs_folder, coordinates_folder, output_folder, bounds=bounds, valid_range=valid_range)
 
 
 
+if __name__ == "__main__":
+    # numbers = [7]
+    # for number in numbers:
+    #     print("Processing configuration", number)
+    #     arcs_folder = f"data/results_modified/configuration{number}/"
+    #     coordinates_folder = "data/instances_modified/"
+    #     output_folder = f"data/plots_modified/configuration{number}/"
+    #
+    #     # Process all solutions
+    #     process_all_solutions(arcs_folder, coordinates_folder, output_folder)
+    main()
