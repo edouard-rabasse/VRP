@@ -28,7 +28,7 @@ def main(cfg: DictConfig):
     output_dir = f"output/{cfg.heatmap.method}_{cfg.model.name}"
     os.makedirs(output_dir, exist_ok=True)
 
-    for fname in sorted(os.listdir(cfg.data.test_modified_path)):
+    for fname in sorted(os.listdir(cfg.data.test_original_path)):
         if not fname.endswith('.png'): continue
         number = int(fname.split('.')[0].split('_')[1])
 
@@ -48,8 +48,10 @@ def main(cfg: DictConfig):
 
         # ── heatmap & overlay ────────────────────────────────────────────────
         hm      = get_heatmap(cfg.heatmap.method, model, t_img, cfg.heatmap.args, device=device)
+        if "58" in fname:
+            print(hm)
         print("[Debug] Heatmap shape:", hm.shape)
-        overlay = show_mask_on_image(mask, hm, alpha=0.5)
+        overlay = show_mask_on_image(mask, hm, alpha=0.5, interpolation=cv2.INTER_NEAREST)
 
         # ── save ───────────────────────────────────────────────────────────────
         out_p = os.path.join(output_dir, fname)
@@ -84,7 +86,10 @@ def main(cfg: DictConfig):
                 f.write(f"{arc[0]};{arc[1]};{arc[2]};{arc[3]};{arc[4]}\n")
         with open(coordinates_out_p, 'w') as f:
             for node, coord in coordinates.items():
-                f.write(f"{node},{coord[0]},{coord[1]}\n")
+                f.write(f"{node},{coord[0]},{coord[1]},{coord[2]}\n")
+
+    print(f"[Viz] Saved arcs to {arcs_out_p}")
+
 
 
 

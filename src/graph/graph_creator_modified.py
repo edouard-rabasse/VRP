@@ -32,6 +32,9 @@ def plot_routes(arcs, coordinates, depot, output_file):
     # Create a figure and axes with a 10x10 inch size and equal aspect ratio
     fig, ax = plt.subplots(figsize=(10, 10))
     ax.set_aspect('equal', adjustable='box')
+    ax.set_xlim(-1, 11)
+    ax.set_ylim(-1, 11)
+    ax.margins(0)
     
     # Remove the borders (spines) from the plot
     for spine in ax.spines.values():
@@ -51,7 +54,7 @@ def plot_routes(arcs, coordinates, depot, output_file):
     for tail, head, mode, route_id, arc_type in arcs:
         x1, y1,_ = coordinates[tail]
         x2, y2,_ = coordinates[head]
-        linestyle = '-' if arc_type == 0 else '--'
+        linestyle = '-' if arc_type == 0 else ':'
         # Blue for mode 1 and green for mode 2 (if you want to use colors per route, swap accordingly)
         arccolor = (0.0, 1.0, 0.0) if mode == 2 else (0.0, 0.0, 1.0)
         ax.plot([x1, x2], [y1, y2], linestyle=linestyle, color=arccolor, linewidth=4, zorder=1)
@@ -60,13 +63,13 @@ def plot_routes(arcs, coordinates, depot, output_file):
         marker = 's' if co_type == 1 else 'o'
         ax.scatter(x, y, color=red, marker=marker, s = 60, zorder=2)
         # Optionally, you can uncomment the next line to add node labels:
-        # ax.text(x + 0.1, y + 0.1, str(node), fontsize=9, color='blue')
+        ax.text(x + 0.1, y + 0.1, str(node), fontsize=9, color='blue')
     
     # Turn off the grid
     plt.grid(False)
     
     # Save the figure to a file and close the plot
-    plt.savefig(output_file)
+    plt.savefig(output_file, bbox_inches='tight', pad_inches=0)
     plt.close()
 
 

@@ -3,14 +3,14 @@ import numpy as np
 import torch
 
 
-def resize_heatmap(heatmap, target_size):
+def resize_heatmap(heatmap, target_size, interpolation = cv2.INTER_LINEAR):
     """Resize the heatmap to match the target size."""
-    heatmap_resized = cv2.resize(heatmap, target_size)
+    heatmap_resized = cv2.resize(heatmap, target_size, interpolation=interpolation)
     heatmap_resized = (heatmap_resized - np.min(heatmap_resized)) / (np.max(heatmap_resized) - np.min(heatmap_resized)+1e-8)
     
     return heatmap_resized
 
-def show_mask_on_image(input, heatmap, alpha=0.5):
+def show_mask_on_image(input, heatmap, alpha=0.5, interpolation=cv2.INTER_LINEAR):
     """
     Overlay the heatmap on the input image.
     ## Args:
@@ -35,7 +35,7 @@ def show_mask_on_image(input, heatmap, alpha=0.5):
     # print("input_shape:", input.shape)
     input_size = (input.shape[1], input.shape[2])
 
-    heatmap_resized = resize_heatmap(heatmap, (input_size[0], input_size[1]))
+    heatmap_resized = resize_heatmap(heatmap, (input_size[0], input_size[1]), interpolation=interpolation)
     heatmap_resized = (heatmap_resized * 255).astype(np.uint8)
     # print("max over heatmap:", np.max(heatmap_resized))
     # print("max of input:", np.max(input))
