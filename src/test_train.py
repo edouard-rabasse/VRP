@@ -3,6 +3,8 @@
 import os
 import shutil
 from sklearn.model_selection import train_test_split
+import hydra
+from omegaconf import DictConfig
 
 def split_dataset(
     src_dir: str,
@@ -51,26 +53,32 @@ def split_dataset(
                 dst_path = os.path.join(subset_dir, fname)
                 shutil.copy2(src_path, dst_path)
 
-if __name__ == "__main__":
+@hydra.main(config_path="../config/plot/", config_name="default", version_base=None)
+def main(cfg: DictConfig) -> None:
     # Example usage:
     # your original data in "./data/" with subfolders label0/, label1/, etc.
     # will be split into "./splits/train/..." and "./splits/test/..."
     src_dirs = ["mask_removed_color", "mask_removed", "mask_classic"]
+    input_dir = cfg.mask_output_folder
+    output_dir = cfg.mask_split_output_folder
 
     for src_dir in src_dirs:
 
         split_dataset(
-            src_dir=f"data/MSH/{src_dir}",
-            dst_dir=f"data/{src_dir}/",
-            train_ratio=0.75,      # e.g. 75% train, 25% test
-            random_state=123
+            src_dir=input_dir+f"{src_dir}",
+            dst_dir=output_dir+f"{src_dir}/",
+            train_ratio=cfg.train_ratio,      # e.g. 75% train, 25% test
+            random_state=cfg.random_state
         )
     
-    src_dir = "data/plots"
-    dst_dir = "data/"
+    src_dir = cfg.output_folder
+    dst_dir = output_dir
     split_dataset(
         src_dir=src_dir,
         dst_dir=dst_dir,
-        train_ratio=0.75,      # e.g. 75% train, 25% test
-        random_state=123
+        train_ratio=cfg.train_ratio,      # e.g. 75% train, 25% test
+        random_state=cfg.random_state
     )
+
+if __name__ == "__main__":
+    main()

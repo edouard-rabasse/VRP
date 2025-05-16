@@ -1,6 +1,8 @@
 import os
 import cv2
 from tqdm import tqdm  # Optional for progress bar
+import hydra
+from omegaconf import DictConfig
 
 def process_image_pairs(original_dir, modified_dir, output_dir, img_extensions=('.jpg', '.png', '.jpeg'), pixel_size=10, method='default', colored=False):
     """
@@ -118,39 +120,45 @@ def get_removed_lines(original_image, modified_image, colored=True):
     else:
         return diff_mask_clean
     
+@hydra.main(config_path="../config/plot/", config_name="default", version_base=None)
+def main(cfg: DictConfig):
+    numeros = cfg.numbers
+    output_dir = cfg.mask_output_folder
+    special = cfg.special
+    plot_folder = cfg.output_folder
+    print(special)
 
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) >= 2:
-        numeros = [sys.argv[1]]
-    else:
-        # numeros = range(2, 8)
-        numeros = [2,7]
     for numero in numeros:
+        if numero == 1:
+            continue
         # Call the function with the specified directories
+
         process_image_pairs(
-            original_dir="data/plots/configuration1_2",
-            modified_dir=f"data/plots/configuration{numero}_2",
-            output_dir=f"data/MSH/mask_removed_color/mask{numero}_2",
+            original_dir=plot_folder + f"configuration1{special}",
+            modified_dir=plot_folder + f"configuration{numero}{special}",
+            output_dir=output_dir+f"mask_removed_color/mask{numero}{special}",
             pixel_size=1,
             method="removed_lines",
             colored=True
 
         )
         process_image_pairs(
-            original_dir="data/plots/configuration1_2",
-            modified_dir=f"data/plots/configuration{numero}_2",
-            output_dir=f"data/MSH/mask_removed/mask{numero}_2",
+            original_dir=plot_folder + f"configuration1{special}",
+            modified_dir=plot_folder + f"configuration{numero}{special}",
+            output_dir=output_dir+ f"mask_removed/mask{numero}{special}",
             pixel_size=1,
             method="removed_lines",
             colored=False
         )
 
         process_image_pairs(
-            original_dir="data/plots/configuration1_2",
-            modified_dir=f"data/plots/configuration{numero}_2",
-            output_dir=f"data/MSH/mask_classic/mask{numero}_2",
+            original_dir=plot_folder + f"configuration1{special}",
+            modified_dir=plot_folder + f"configuration{numero}{special}",
+            output_dir=output_dir+ f"mask_classic/mask{numero}{special}",
             pixel_size=1,
             method="default",
             colored=True
         )    
+
+if __name__ == "__main__":
+    main()

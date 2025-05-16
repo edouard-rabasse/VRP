@@ -1,3 +1,6 @@
+defaults:
+  - override_config
+
 numbers: [1, 2, 3, 4, 5, 6, 7]
 valid_range: [1, 80]
 bounds: [-1, 11, -1, 11]
@@ -5,3 +8,12 @@ arcs_folder: ${hydra:runtime.cwd}/MSH/MSH/results/
 coordinates_folder: ${hydra:runtime.cwd}/MSH/MSH/instances/
 output_folder: ${hydra:runtime.cwd}/data/plots/
 
+## for mask
+mask_output_folder: ${hydra:runtime.cwd}/data/MSH/
+# special: "_2"
+special: ""
+
+## for test_train
+mask_split_output_folder: ${hydra:runtime.cwd}/data/
+train_ratio: 0.75
+random_state: 123
