@@ -1,0 +1,4 @@
+# @package _global_
+
+arcs_folder: ${hydra:runtime.cwd}/data/results/
+coordinates_folder: ${hydra:runtime.cwd}/data/instances/

@@ -21,7 +21,7 @@ CP_RUN="$BIN_DIR:$GUROBI_JAR"
 
 # === Fichiers d'entrée ===
 EXPERIMENT_FILE="ExperimentsAllSets.txt"
-CONFIG_FILE="configuration7.xml"
+CONFIG_FILE="configuration2.xml"
 OTHER_ARGS="1 8"
 
 # === Créer le dossier temporaire ===

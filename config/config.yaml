@@ -18,7 +18,7 @@ save_model: true
 heatmap: ${model.heatmap}  # heatmap method to use
 
 
-train_ratio: 0.8
+train_ratio: 0.75
 batch_size: 1
 image_size: [224, 224]     # YAML has no tuples : use lists
 mask_shape: [10, 10]

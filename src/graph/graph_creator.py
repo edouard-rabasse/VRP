@@ -95,8 +95,10 @@ def process_all_solutions(
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    for filename in tqdm(os.listdir(arcs_folder), desc="Processing files", unit="file"):
+    for filename in tqdm(os.listdir(arcs_folder), desc="Processing files", unit="file", leave=False):
         match = re.match(r"Arcs_(\w+)_\d+\.txt", filename)
+        if not match:
+             print(f"Skipped file (no match): {filename}")
         if match:
             number = int(match.group(1))
             if valid_range is None or number in valid_range:
