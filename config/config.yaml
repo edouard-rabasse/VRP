@@ -1,6 +1,6 @@
 # config/config.yaml
 defaults:
-  - data: config7 # ← then merge conf/data/data_config.yaml
+  - data: config7_new # ← then merge conf/data/data_config.yaml
   - model: cnn       # ← then merge conf/model/cnn.yaml
   - arcs: default    # ← then merge conf/arcs/default.yaml
   - _self_            # ← load THIS file’s keys 
