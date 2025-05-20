@@ -97,9 +97,9 @@ def get_heatmap(method, model, input_tensor, args, device="cpu"):
             # apply softmax to the heatmap
             heatmap = torch.nn.functional.softmax(heatmap, dim=0).cpu().numpy()
 
-            heatmap = cv2.resize(
-                heatmap, (input_tensor.shape[2], input_tensor.shape[3])
-            )
+            # heatmap = cv2.resize(
+            #     heatmap, (input_tensor.shape[2], input_tensor.shape[3])
+            # )
             # heatmap = heatmap* 255  # Scale to [0, 255]
 
     elif method == "grad_cam_vgg":
