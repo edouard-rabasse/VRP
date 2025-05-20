@@ -1,4 +1,5 @@
-# visualize.py
+# visualize.py : this script is used to visualize the heatmap and the overlay
+
 import os, sys
 import torch
 import cv2

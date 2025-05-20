@@ -1,3 +1,5 @@
+# graph_creator_modified.py: Read enhanced arc/coordinate data and plot routes with arc types and depot markings
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os

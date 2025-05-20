@@ -1,3 +1,5 @@
+# utils.py : utility functions for loading and saving models, and loading configurations
+
 import yaml
 from types import SimpleNamespace
 from omegaconf import DictConfig, OmegaConf

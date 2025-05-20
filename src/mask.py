@@ -1,3 +1,5 @@
+# mask.py: Process pairs of images to generate binary and colored masks of their differences
+
 import os
 import cv2
 from tqdm import tqdm  # Optional for progress bar

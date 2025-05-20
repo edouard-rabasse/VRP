@@ -1,4 +1,4 @@
-# this scripts takes two folders and divides it into train and test sets
+# test_train.py this scripts takes two folders and divides it into train and test sets
 
 import os
 import shutil
@@ -20,9 +20,9 @@ def split_dataset(
     :param random_state: seed for reproducibility
     """
     # find all class subdirectories
-    classes = sorted([
-        d for d in os.listdir(src_dir) if os.path.isdir(os.path.join(src_dir, d))
-    ])
+    classes = sorted(
+        [d for d in os.listdir(src_dir) if os.path.isdir(os.path.join(src_dir, d))]
+    )
 
     for cls in classes:
         class_src = os.path.join(src_dir, cls)

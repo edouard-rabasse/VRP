@@ -93,12 +93,10 @@ class VRPGraphDataset(Dataset):
         for file in os.listdir(arcs_original_folder):
             if file.startswith("Arcs_") and file.endswith(".txt"):
                 instance_id = file[len("Arcs_") : -len("_1.txt")]
-                print(instance_id)
                 coords_file = f"Coordinates_{instance_id}.txt"
                 arcs_path = os.path.join(arcs_original_folder, file)
                 coords_path = os.path.join(coordinates_folder, coords_file)
                 if os.path.exists(coords_path):
-                    print("a")
                     self.instances.append((arcs_path, coords_path, 0))
                     self.names.append(instance_id)
 
@@ -119,8 +117,16 @@ class VRPGraphDataset(Dataset):
     def __getitem__(self, idx):
         arcs_path, coords_path, label = self.instances[idx]
         instance = VRPGraphInstance(arcs_path, coords_path)
-        features = instance.get_features()
-        return features, label
+        # Assemble graph data with full information
+        graph_data = {
+            "nodes": list(instance.coordinates.keys()),
+            "coordinates": instance.coordinates,
+            "arcs": instance.arcs,
+            "routes": instance.routes,
+            "features": instance.get_features(),
+            "depot": instance.depot,
+        }
+        return graph_data, label
 
 
 if __name__ == "__main__":
@@ -134,3 +140,4 @@ if __name__ == "__main__":
         print(f"Instance {i}: {features}")
         print(f"Instance name: {dataset.names[i]}")
         print("-" * 20)
+        break

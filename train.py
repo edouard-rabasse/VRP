@@ -1,4 +1,5 @@
-# train.py
+# train.py : this script trains the model, all the parameters are in config.yaml and subfolders
+
 import os, sys
 import torch
 from src.data_loader_mask import load_data_train_test

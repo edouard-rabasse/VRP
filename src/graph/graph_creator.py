@@ -1,3 +1,5 @@
+# graph_creator.py: Read VRP arcs and coordinates, then plot and save route diagrams
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os
