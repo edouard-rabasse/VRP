@@ -1,3 +1,5 @@
+# evaluation.py : code for evaluating models and generating confusion matrices
+
 import torch
 from sklearn.metrics import confusion_matrix
 import numpy as np

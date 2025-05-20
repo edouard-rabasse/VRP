@@ -1,3 +1,5 @@
+# visualisation.py : functions for visualizing the model's heatmap and overlaying it on the input image
+
 import cv2
 import numpy as np
 import torch

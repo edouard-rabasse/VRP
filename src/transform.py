@@ -1,3 +1,5 @@
+# transform.py : No longer in use.
+
 import torch
 from torchvision import transforms
 import torch.nn.functional as F

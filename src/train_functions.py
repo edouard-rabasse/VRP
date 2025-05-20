@@ -1,4 +1,5 @@
 # trainers/__init__.py
+# train_functions.py : call the train function and return the results
 import src.trainers as trainers
 import wandb
 from omegaconf import OmegaConf

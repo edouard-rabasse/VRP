@@ -1,3 +1,5 @@
+# data_loader_mask.py : creates a dataset class for loading images and masks, and provides functions to load data into DataLoader objects.
+
 import os
 import cv2
 import numpy as np
