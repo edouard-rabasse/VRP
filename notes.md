@@ -59,3 +59,8 @@ Faire des mouvements pour diminuer le treshold.
  identifier la tournée avec les coordonnées.
 
 nouvelle config avec le nombre de boucle à pied <=1.
+
+## 20/05
+- simuler des zones de parking
+- avoir un modèle qui prend direct les coordonnées.
+- 
