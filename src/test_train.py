@@ -20,9 +20,9 @@ def split_dataset(
     :param random_state: seed for reproducibility
     """
     # find all class subdirectories
-    classes = [
+    classes = sorted([
         d for d in os.listdir(src_dir) if os.path.isdir(os.path.join(src_dir, d))
-    ]
+    ])
 
     for cls in classes:
         class_src = os.path.join(src_dir, cls)
