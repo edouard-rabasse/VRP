@@ -21,6 +21,7 @@ class CustomDataset(Dataset):
         mask_transform=None,
         samples=None,
         augment=False,
+        range=None,
     ):
         """
         Args:
@@ -30,22 +31,65 @@ class CustomDataset(Dataset):
             image_transform (callable): Transform to be applied to images.
             mask_transform (callable): Transform to be applied to masks.
             samples (list, optional): Pre-built sample list, each a tuple (img_path, label, mask_path).
+            augment (bool): Whether to apply augmentations.
+            range (tuple): Range of indices to sample from the dataset.
         """
         self.image_transform = image_transform
         self.mask_transform = mask_transform
         if samples is not None:
             self.all_samples = samples
         else:
-            self.original_images = [
-                os.path.join(original_dir, f)
-                for f in os.listdir(original_dir)
-                if f.lower().endswith((".jpg", ".png"))
-            ]
-            self.modified_images = [
-                os.path.join(modified_dir, f)
-                for f in os.listdir(modified_dir)
-                if f.lower().endswith((".jpg", ".png"))
-            ]
+            if range is None:
+                self.original_images = [
+                    os.path.join(original_dir, f)
+                    for f in os.listdir(original_dir)
+                    if f.lower().endswith((".jpg", ".png"))
+                ]
+                self.modified_images = [
+                    os.path.join(modified_dir, f)
+                    for f in os.listdir(modified_dir)
+                    if f.lower().endswith((".jpg", ".png"))
+                ]
+
+            else:  # range is not None:
+                indices = range  # Assuming range is a list of indices
+
+                # Function to extract the numeric part from the file name
+                def extract_number(fname):
+                    import re
+
+                    numbers = re.findall(r"\d+", fname)
+                    return int(numbers[0]) if numbers else -1
+
+                # Sort the files based on the numeric part of their names
+                sorted_original_images = sorted(
+                    [
+                        os.path.join(original_dir, f)
+                        for f in os.listdir(original_dir)
+                        if f.lower().endswith((".jpg", ".png"))
+                    ],
+                    key=lambda x: extract_number(os.path.basename(x)),
+                )
+                sorted_modified_images = sorted(
+                    [
+                        os.path.join(modified_dir, f)
+                        for f in os.listdir(modified_dir)
+                        if f.lower().endswith((".jpg", ".png"))
+                    ],
+                    key=lambda x: extract_number(os.path.basename(x)),
+                )
+
+                # Select only the specified indices
+                self.original_images = [
+                    sorted_original_images[i]
+                    for i in indices
+                    if i < len(sorted_original_images)
+                ]
+                self.modified_images = [
+                    sorted_modified_images[i]
+                    for i in indices
+                    if i < len(sorted_modified_images)
+                ]
             if mask_dir is not None:
                 self.all_samples = [
                     (path, 0, None) for path in self.modified_images
@@ -57,6 +101,7 @@ class CustomDataset(Dataset):
                 self.all_samples = [
                     (path, 0, None) for path in self.modified_images
                 ] + [(path, 1, None) for path in self.original_images]
+
         self.imgs = self.all_samples  # for backward compatibility
         self.augment = augment
 
@@ -88,7 +133,7 @@ class CustomDataset(Dataset):
             angles = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
             angle = random.choice(angles)
             img = TF.rotate(img, angle, fill=[255, 255, 255])
-            mask = TF.rotate(mask, angle)
+            mask = TF.rotate(mask, angle, fill=0)
 
         # Apply image transform (expects a PIL array)
         if self.image_transform:
@@ -133,6 +178,7 @@ def load_data_mask(
     num_max=None,
 ):
     """
+    Not used anymore.
     Load the dataset and return separate training and testing DataLoaders using separate transforms.
     """
     # Create a base dataset to get the sample list (without any transform)
@@ -196,7 +242,7 @@ def load_data_train_test(
     mask_transform_test=None,
     image_size=(224, 224),
     num_workers=4,
-    num_max=None,
+    range=None,
 ):
     train_set = CustomDataset(
         original_dir=train_original_path,
@@ -205,6 +251,7 @@ def load_data_train_test(
         image_transform=image_transform_train,
         mask_transform=mask_transform_train,
         augment=True,
+        range=range,
     )
     test_set = CustomDataset(
         original_dir=test_original_path,
@@ -213,6 +260,7 @@ def load_data_train_test(
         image_transform=image_transform_test,
         mask_transform=mask_transform_test,
         augment=False,
+        range=range,
     )
 
     train_loader = get_dataloader(
@@ -275,6 +323,7 @@ if __name__ == "__main__":
         num_workers=4,
         mask_path_train=train_mask_path,
         mask_path_test=test_mask_path,
+        range=None,
     )
 
     # Test one batch to check outputs.

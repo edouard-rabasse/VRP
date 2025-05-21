@@ -45,3 +45,14 @@ def load_cfg(path: str) -> SimpleNamespace:
 
     # return to_ns(cfg)
     return cfg
+
+
+def extract_number(fname):
+    import re
+
+    numbers = re.findall(r"\d+", fname)
+    return int(numbers[0]) if numbers else -1
+
+
+if __name__ == "__main__":
+    print(extract_number("Plot_12.png"))
