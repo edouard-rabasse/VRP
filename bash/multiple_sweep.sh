@@ -20,7 +20,7 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 wandb login --relogin "$WANDB_API_KEY"
 
 # Define models array
-MODELS=("resnet" "deit_tiny" "vgg")
+MODELS=("resnet" "deit_tiny" "vgg_refined")
 MODEL=${MODELS[$SLURM_ARRAY_TASK_ID]}
 
 SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep/sweep_${MODEL}.yaml"
