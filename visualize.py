@@ -63,8 +63,6 @@ def main(cfg: DictConfig):
         hm = get_heatmap(
             cfg.heatmap.method, model, t_img, cfg.heatmap.args, device=device
         )
-        if "58" in fname:
-            print(hm)
         print("[Debug] Heatmap shape:", hm.shape)
         overlay = show_mask_on_image(
             mask, hm, alpha=0.5, interpolation=cv2.INTER_NEAREST
@@ -112,5 +110,4 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
-    # cfg_file = sys.argv[1] if len(sys.argv)>1 else "config/cfg_deit.py"
     main()

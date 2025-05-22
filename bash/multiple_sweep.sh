@@ -17,7 +17,12 @@ source "$SLURM_TMPDIR/env/bin/activate"
 pip install --no-index --upgrade pip
 pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
+
+### comment the second line and uncomment the first to use the local wandb ###
+# wandb offline
 wandb login --relogin "$WANDB_API_KEY"
+
+# 
 
 # Define models array
 MODELS=("resnet" "deit_tiny" "vgg_refined")
