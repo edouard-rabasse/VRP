@@ -10,6 +10,7 @@ from .vgg import load_vgg
 from .MFCN import MultiTaskVGG
 from .resnet import ResNetScoringModel
 from .deit_tiny import load_deit
+from .vgg_segment import SegmentVGG
 
 
 def _load_cnn(cfgm, device):
@@ -60,6 +61,16 @@ def _load_resnet(cfgm, device):
     )
 
 
+def _load_vgg_segment(cfgm, device):
+    H, W = cfgm.image_size
+    model = SegmentVGG(
+        seg_out_channels=1,
+        mask_shape=tuple(cfgm.mask_shape),
+        freeze=cfgm.freeze,
+    )
+    return model
+
+
 # Registry: map your string names → loader functions
 _MODEL_REGISTRY = {
     "cnn": _load_cnn,
@@ -68,6 +79,7 @@ _MODEL_REGISTRY = {
     "vgg": _load_vgg,
     "MFCN": _load_MFCN,
     "resnet": _load_resnet,
+    "vgg_seg": _load_vgg_segment,
 }
 
 

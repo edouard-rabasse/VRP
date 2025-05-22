@@ -22,17 +22,16 @@ from torchvision import models
 from torchvision.models.vgg import VGG16_BN_Weights
 
 
-class MultiTaskVGG(nn.Module):
+class SegmentVGG(nn.Module):
     def __init__(
-        self,
-        num_classes=2,  # e.g., original vs. modified
+        self,  # e.g., original vs. modified
         seg_out_channels=1,  # e.g., 1 for binary segmentation
         pretrained=True,
         input_size=(224, 224),
         mask_shape=(10, 10),  # Input image size for upsampling the segmentation,
         freeze=True,
     ):
-        super(MultiTaskVGG, self).__init__()
+        super(SegmentVGG, self).__init__()
 
         # 1. Load pretrained VGG16 with batch normalization
         vgg = models.vgg16_bn(weights=VGG16_BN_Weights.DEFAULT)
@@ -51,13 +50,6 @@ class MultiTaskVGG(nn.Module):
 
         # 4. Create a new classifier head
         #    - Typically VGG16 has [Linear(512*7*7, 4096), ReLU, Dropout, Linear(4096, 4096), ReLU, Dropout, Linear(4096, 1000)]
-        #    - We only need 2 classes, so replace the last layer. We can keep the first layers or skip them.
-        self.classifier = nn.Sequential(
-            # Copy everything except the last layer from vgg.classifier:
-            *list(vgg.classifier.children())[:-1],
-            # Replace the last layer: 4096 -> num_classes
-            nn.Linear(4096, num_classes),
-        )
 
         # 5. Create a segmentation decoder/head
         #    - We end up with a 512-channel feature map after `self.features`.
@@ -90,12 +82,6 @@ class MultiTaskVGG(nn.Module):
                 nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
-        # Classification head replaced layer is also newly initialized:
-        for m in self.classifier.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         # Shared feature extraction
@@ -104,14 +90,13 @@ class MultiTaskVGG(nn.Module):
         # Classification head: Global avgpool + linear
         pooled = self.avgpool(features)  # shape: [N, 512, 7, 7]
         flattened = torch.flatten(pooled, 1)  # shape: [N, 512*7*7]
-        clf_logits = self.classifier(flattened)  # shape: [N, num_classes]
 
         # Segmentation head
         seg_logits = self.segmentation_head(
             features
         )  # shape: [N, 1, input_size[0], input_size[1]]
 
-        return clf_logits, seg_logits
+        return seg_logits
 
 
 def train_model_multi_task(
@@ -130,7 +115,6 @@ def train_model_multi_task(
     Returns:
         model, optimizer, scheduler after training.
     """
-    lambda_seg = cfg.model.params.lambda_seg if cfg is not None else 1.0
     model.to(device)
     model.train()
     metrics = []  # list to collect metrics per epoch
@@ -140,17 +124,12 @@ def train_model_multi_task(
     )
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
-    # Loss functions: classification and segmentation
-    criterion_cls = nn.CrossEntropyLoss()  # expects (logits, target labels)
     criterion_seg = nn.BCEWithLogitsLoss(
         reduction="none"
     )  # for pixel-wise mask prediction
 
     for epoch in range(num_epochs):
-        running_loss = 0.0
-        running_cls_loss = 0.0
         running_seg_loss = 0.0
-        correct = 0
         total = 0
 
         for images, labels, masks in tqdm(
@@ -162,18 +141,9 @@ def train_model_multi_task(
 
             optimizer.zero_grad()
 
-            # with torch.no_grad():                       # aucun grad sur features
-            #     feats = model.features(images)
             feats = model.features(images)  # shape: [N, 512, H_out, W_out]
-            pooled = model.avgpool(feats)
-            clf_logits = model.classifier(torch.flatten(pooled, 1))
-            loss_cls = criterion_cls(clf_logits, labels)
-
-            # ---- pass 2 : segmentation (optionnel) ------------------------------
             seg_logits = model.segmentation_head(feats.detach())
-            # loss_seg = criterion_seg(seg_logits, masks)
-            # sortie du critère sans réduction : (N,1,H,W)
-            loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
+            loss_seg_map = criterion_seg(seg_logits, masks)
 
             # vecteur booléen : 1 si l'image a au moins un pixel positif
             mask_present = (
@@ -187,38 +157,23 @@ def train_model_multi_task(
                 mask_present.sum() + 1e-6
             )  # moyenne sur les images « valides »
 
-            loss = loss_cls + lambda_seg * loss_seg
-            loss.backward()  # backpropagation
+            (loss_seg).backward()
             optimizer.step()
-
-            running_loss += loss.item() * images.size(0)
-            running_cls_loss += loss_cls.item() * images.size(0)
             running_seg_loss += loss_seg.item() * images.size(0)
-            preds = torch.argmax(clf_logits, dim=1)
-            correct += (preds == labels).sum().item()
             total += labels.size(0)
 
         scheduler.step()
-        epoch_loss = running_loss / total
-        epoch_cls_loss = running_cls_loss / total
         epoch_seg_loss = running_seg_loss / total
-        epoch_acc = correct / total
 
         # Record training metrics
         metrics.append(
             {
                 "epoch": epoch + 1,
-                "train_loss": epoch_loss,
-                "train_acc": epoch_acc,
-                "cls_loss": epoch_cls_loss,
                 "seg_loss": epoch_seg_loss,
             }
         )
         # evaluate on test set
-        test_cls_loss = 0.0
         test_seg_loss = 0.0
-        val_loss = 0.0
-        correct = 0
         total = 0
         for images, labels, masks in test_loader:
             images = images.to(device)
@@ -226,8 +181,8 @@ def train_model_multi_task(
             masks = masks.to(device).float()
 
             with torch.no_grad():
-                clf_logits, seg_logits = model(images)
-                loss_cls = criterion_cls(clf_logits, labels)
+                seg_logits = model(images)
+                loss_seg = criterion_seg(seg_logits, masks)
 
                 loss_seg_map = criterion_seg(seg_logits, masks)
 
@@ -241,20 +196,11 @@ def train_model_multi_task(
                     loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1)
                     * mask_present
                 ).sum() / (mask_present.sum() + 1e-6)
-                loss = loss_cls + lambda_seg * loss_seg
-
-            preds = torch.argmax(clf_logits, dim=1)
-            correct += (preds == labels).sum().item()
-            total += labels.size(0)
-            val_loss += loss.item() * images.size(0)
-            test_cls_loss += loss_cls.item() * images.size(0)
             test_seg_loss += loss_seg.item() * images.size(0)
+            total += labels.size(0)
         # Record test metrics
         metrics.append(
             {
-                "val_loss": val_loss / total,
-                "val_acc": correct / total,
-                "test_cls_loss": test_cls_loss / total,
                 "test_seg_loss": test_seg_loss / total,
             }
         )
@@ -304,7 +250,7 @@ if __name__ == "__main__":
     )
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = MultiTaskVGG()
+    model = SegmentVGG()
     model.to(device)
 
     # Train for, say, 10 epochs and use a lambda weight of 1.0 for segmentation loss.

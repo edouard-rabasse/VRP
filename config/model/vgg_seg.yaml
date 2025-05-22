@@ -1,0 +1,21 @@
+# Model configuration for a CNN model
+defaults:
+  - _self_            
+  - /heatmap: seg
+
+name: vgg_seg
+load: ${..load_model}  # load model from checkpoint
+save: ${..save_model}  # save model to checkpoint
+
+weight_path: ${hydra:runtime.cwd}/checkpoints/${..experiment_name}.pth
+# weight_path: ${hydra:runtime.cwd}/checkpoints/vgg_32_30.pth
+image_size: ${image_size}
+mask_shape: ${mask_shape}
+
+freeze: false
+grad_layer: 4 # between 0 and 6
+
+params:
+  learning_rate: 0.001
+  batch_size: ${...batch_size}           # duplicated on purpose; you can omit if you prefer
+  epochs: 20
