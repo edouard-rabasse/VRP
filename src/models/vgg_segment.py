@@ -114,7 +114,6 @@ def train_model_multi_task(
         model, optimizer, scheduler after training.
     """
     model.to(device)
-    model.train()
     metrics = []  # list to collect metrics per epoch
 
     optimizer = torch.optim.Adam(
@@ -165,6 +164,7 @@ def train_model_multi_task(
         epoch_seg_loss = running_seg_loss / total
 
         # evaluate on test set
+        model.eval()
         test_seg_loss = 0.0
         total = 0
         model.eval()
