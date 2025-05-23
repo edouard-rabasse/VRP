@@ -142,7 +142,7 @@ def train_model_multi_task(
             optimizer.zero_grad()
 
             feats = model.features(images)  # shape: [N, 512, H_out, W_out]
-            seg_logits = model.segmentation_head(feats.detach())
+            seg_logits = model.segmentation_head(feats)
             loss_seg_map = criterion_seg(seg_logits, masks)
 
             # vecteur booléen : 1 si l'image a au moins un pixel positif
@@ -165,13 +165,6 @@ def train_model_multi_task(
         scheduler.step()
         epoch_seg_loss = running_seg_loss / total
 
-        # Record training metrics
-        metrics.append(
-            {
-                "epoch": epoch + 1,
-                "seg_loss": epoch_seg_loss,
-            }
-        )
         # evaluate on test set
         test_seg_loss = 0.0
         total = 0
@@ -182,7 +175,6 @@ def train_model_multi_task(
 
             with torch.no_grad():
                 seg_logits = model(images)
-                loss_seg = criterion_seg(seg_logits, masks)
 
                 loss_seg_map = criterion_seg(seg_logits, masks)
 
@@ -201,6 +193,8 @@ def train_model_multi_task(
         # Record test metrics
         metrics.append(
             {
+                "epoch": epoch + 1,
+                "seg_loss": epoch_seg_loss,
                 "test_seg_loss": test_seg_loss / total,
             }
         )
