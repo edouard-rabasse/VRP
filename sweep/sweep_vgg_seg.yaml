@@ -1,6 +1,6 @@
 # sweep.yaml
 program: train.py
-name: sweep_vgg_seg  # 👈 Nom explicite ici
+name: sweep_vgg_seg2  # 👈 Nom explicite ici
 project: VRP
 
 command:
@@ -11,7 +11,7 @@ command:
 
 # On cherche à maximiser la métrique val_accuracy (à adapter)
 metric:
-  name: seg_loss
+  name: test_seg_loss
   goal: minimize
 
 method: bayes   # ou random, bayes...
