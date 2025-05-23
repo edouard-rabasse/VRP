@@ -62,33 +62,19 @@ class CustomDataset(Dataset):
                     return int(numbers[0]) if numbers else -1
 
                 # Sort the files based on the numeric part of their names
-                sorted_original_images = sorted(
-                    [
-                        os.path.join(original_dir, f)
-                        for f in os.listdir(original_dir)
-                        if f.lower().endswith((".jpg", ".png"))
-                    ],
-                    key=lambda x: extract_number(os.path.basename(x)),
-                )
-                sorted_modified_images = sorted(
-                    [
-                        os.path.join(modified_dir, f)
-                        for f in os.listdir(modified_dir)
-                        if f.lower().endswith((".jpg", ".png"))
-                    ],
-                    key=lambda x: extract_number(os.path.basename(x)),
-                )
+                orig_map = {
+                    extract_number(fname): fname for fname in os.listdir(original_dir)
+                }
+                chosen_nums = [n for n in indices if n in orig_map]
 
                 # Select only the specified indices
                 self.original_images = [
-                    sorted_original_images[i]
-                    for i in indices
-                    if i < len(sorted_original_images)
+                    os.path.join(original_dir, orig_map[n]) for n in chosen_nums
                 ]
                 self.modified_images = [
-                    sorted_modified_images[i]
-                    for i in indices
-                    if i < len(sorted_modified_images)
+                    os.path.join(modified_dir, orig_map[n])
+                    for n in chosen_nums
+                    if n in orig_map
                 ]
             if mask_dir is not None:
                 self.all_samples = [
