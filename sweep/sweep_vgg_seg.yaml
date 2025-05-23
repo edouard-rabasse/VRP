@@ -27,8 +27,12 @@ parameters:
     values: [16, 32, 64, 128]
 
   model.params.learning_rate:
-    values: [0.001, 0.0005, 0.0001]
+    values: [0.0001, 0.00005, 0.00001]
+
+  # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
   model.freeze:
-    values: [true, false]
+    values: [false]
+  data:
+    values: ["config7_new"]
 
 
