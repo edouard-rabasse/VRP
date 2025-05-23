@@ -1,5 +1,4 @@
 from torchvision import transforms
-from src.data_loader_mask import CustomDataset
 
 transform = transforms.Compose(
     [
@@ -8,7 +7,6 @@ transform = transforms.Compose(
         transforms.ToTensor(),  # Convert to tensor (scales to [0,1])
     ]
 )
-
 
 import torch
 import torch.nn as nn
@@ -129,6 +127,7 @@ def train_model_multi_task(
     )  # for pixel-wise mask prediction
 
     for epoch in range(num_epochs):
+        model.train()
         running_seg_loss = 0.0
         total = 0
 
@@ -168,6 +167,7 @@ def train_model_multi_task(
         # evaluate on test set
         test_seg_loss = 0.0
         total = 0
+        model.eval()
         for images, labels, masks in test_loader:
             images = images.to(device)
             labels = labels.to(device)
