@@ -148,6 +148,7 @@ def train_model_multi_task(
             mask_present = (
                 masks.view(masks.size(0), -1).sum(dim=1) > 0
             ).float()  # shape (N,)
+            num_pos = mask_present.sum().item()
 
             # on pèse chaque carte de perte par mask_present
             loss_seg = (
@@ -158,8 +159,8 @@ def train_model_multi_task(
 
             (loss_seg).backward()
             optimizer.step()
-            running_seg_loss += loss_seg.item() * images.size(0)
-            total += labels.size(0)
+            running_seg_loss += loss_seg.item() * num_pos
+            total += num_pos
 
         scheduler.step()
         epoch_seg_loss = running_seg_loss / total
@@ -182,14 +183,15 @@ def train_model_multi_task(
                 mask_present = (
                     masks.view(masks.size(0), -1).sum(dim=1) > 0
                 ).float()  # shape (N,)
+                num_pos = mask_present.sum().item()
 
                 # on pèse chaque carte de perte par mask_present
                 loss_seg = (
                     loss_seg_map.view(loss_seg_map.size(0), -1).mean(dim=1)
                     * mask_present
                 ).sum() / (mask_present.sum() + 1e-6)
-            test_seg_loss += loss_seg.item() * images.size(0)
-            total += labels.size(0)
+            test_seg_loss += loss_seg.item() * num_pos
+            total += num_pos
         # Record test metrics
         metrics.append(
             {
