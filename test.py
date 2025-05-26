@@ -24,7 +24,7 @@ from src.data_loader_mask import load_data
 @hydra.main(version_base=None, config_path="config", config_name="config")
 def main(cfg: DictConfig):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # cfg.load_model = True
+    cfg.load_model = True
     model = load_model(cfg.model.name, device, cfg.model).eval()
     os.makedirs(f"output/{cfg.heatmap.method}_{cfg.model.name}", exist_ok=True)
 
@@ -61,6 +61,7 @@ def main(cfg: DictConfig):
             # denormalize the image back to uint8 H×W×3
             # ensure mask & heatmap are numpy 2D arrays
             mask_np = mask_tensor.cpu().numpy()
+            print("mask shape:", mask_np.shape)
             print("heatmap shape:", hm.shape)
             hm_np = hm
 
@@ -76,35 +77,35 @@ def main(cfg: DictConfig):
 
             # ── reverse heatmap per-sample ────────────────────────────────────
             # extract sample index from filename (must match your naming)
-            number = int(os.path.splitext(fname)[0].split("_")[1])
-            coord_in = os.path.join(cfg.arcs.coord_in_dir, get_coordinates_name(number))
-            arcs_in = os.path.join(cfg.arcs.arcs_in_dir, get_arc_name(number))
-            coords, _ = read_coordinates(coord_in)
-            arcs = read_arcs(arcs_in)
+            # number = int(os.path.splitext(fname)[0].split("_")[1])
+            # coord_in = os.path.join(cfg.arcs.coord_in_dir, get_coordinates_name(number))
+            # arcs_in = os.path.join(cfg.arcs.arcs_in_dir, get_arc_name(number))
+            # coords, _ = read_coordinates(coord_in)
+            # arcs = read_arcs(arcs_in)
 
-            arcs_with_zone, coords_out = reverse_heatmap(
-                arcs=arcs,
-                coordinates=coords,
-                heatmap=hm_np,
-                bounds=list(cfg.arcs.bounds),
-                threshold=cfg.arcs.threshold,
-                n_samples=cfg.arcs.n_samples,
-            )
+            # arcs_with_zone, coords_out = reverse_heatmap(
+            #     arcs=arcs,
+            #     coordinates=coords,
+            #     heatmap=hm_np,
+            #     bounds=list(cfg.arcs.bounds),
+            #     threshold=cfg.arcs.threshold,
+            #     n_samples=cfg.arcs.n_samples,
+            # )
 
-            # save reverse-heatmap outputs
-            os.makedirs(cfg.arcs.arcs_out_dir, exist_ok=True)
-            os.makedirs(cfg.arcs.coord_out_dir, exist_ok=True)
-            arcs_out_p = os.path.join(cfg.arcs.arcs_out_dir, get_arc_name(number))
-            coord_out_p = os.path.join(
-                cfg.arcs.coord_out_dir, get_coordinates_name(number)
-            )
+            # # save reverse-heatmap outputs
+            # os.makedirs(cfg.arcs.arcs_out_dir, exist_ok=True)
+            # os.makedirs(cfg.arcs.coord_out_dir, exist_ok=True)
+            # arcs_out_p = os.path.join(cfg.arcs.arcs_out_dir, get_arc_name(number))
+            # coord_out_p = os.path.join(
+            #     cfg.arcs.coord_out_dir, get_coordinates_name(number)
+            # )
 
-            with open(arcs_out_p, "w") as f:
-                for arc in arcs_with_zone:
-                    f.write(f"{arc[0]};{arc[1]};{arc[2]};{arc[3]};{arc[4]}\n")
-            with open(coord_out_p, "w") as f:
-                for node, c in coords_out.items():
-                    f.write(f"{node},{c[0]},{c[1]},{c[2]}\n")
+            # with open(arcs_out_p, "w") as f:
+            #     for arc in arcs_with_zone:
+            #         f.write(f"{arc[0]};{arc[1]};{arc[2]};{arc[3]};{arc[4]}\n")
+            # with open(coord_out_p, "w") as f:
+            #     for node, c in coords_out.items():
+            #         f.write(f"{node},{c[0]},{c[1]},{c[2]}\n")
 
     print("[Viz] Done.")
 
