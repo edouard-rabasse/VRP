@@ -12,8 +12,8 @@ mask: mask_removed
 
 model_params: ${model.params}
 
-load_model: false
-save_model: true
+load_model: true
+save_model: false
 
 heatmap: ${model.heatmap}  # heatmap method to use
 
