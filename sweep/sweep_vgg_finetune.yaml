@@ -22,6 +22,10 @@ parameters:
 
   model.params.epochs:
     values: [20, 30,40]
+  save_model:
+    values: [false]
+  load_model:
+    values: [true]
 
   batch_size:
     values: [8,16, 32]
@@ -38,3 +42,5 @@ parameters:
     values: [2]
   model.weight_path:
     values: ["${hydra:runtime.cwd}/checkpoints/vgg_32_50_7.pth"]
+  data.selection.value:
+    values: [[1001,1100]]

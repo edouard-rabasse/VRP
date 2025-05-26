@@ -22,6 +22,10 @@ parameters:
 
   model.params.epochs:
     values: [30, 40,50]
+  save_model:
+    values: [false]
+  load_model:
+    values: [true]
 
   batch_size:
     values: [8,16, 32]
