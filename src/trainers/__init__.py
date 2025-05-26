@@ -4,7 +4,7 @@ from src.models.MultiTaskVisualModel import train_model_multi_task as _multi
 from src.models.vgg import train_vgg as _vgg
 from src.models.MFCN import train_model_multi_task as _mfcn
 from src.models.resnet import train_model as _resnet
-from src.models.vgg_segment import train_model_multi_task as _vgg_seg
+from src.models.vgg_segment import train_vgg_seg as _vgg_seg
 
 TRAIN_REGISTRY = {
     "cnn": _vis,

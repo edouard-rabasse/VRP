@@ -87,7 +87,6 @@ class SegmentVGG(nn.Module):
 
         # Classification head: Global avgpool + linear
         pooled = self.avgpool(features)  # shape: [N, 512, 7, 7]
-        flattened = torch.flatten(pooled, 1)  # shape: [N, 512*7*7]
 
         # Segmentation head
         seg_logits = self.segmentation_head(
@@ -97,11 +96,11 @@ class SegmentVGG(nn.Module):
         return seg_logits
 
 
-def train_model_multi_task(
+def train_vgg_seg(
     model, train_loader, test_loader, *, num_epochs, device, learning_rate, cfg=None
 ):
     """
-    Train the multi-task model.
+    Train the seg model.
     Args:
         model: the multi-task model.
         train_loader: DataLoader for training.
@@ -250,7 +249,7 @@ if __name__ == "__main__":
     model.to(device)
 
     # Train for, say, 10 epochs and use a lambda weight of 1.0 for segmentation loss.
-    model, optimizer, scheduler = train_model_multi_task(
+    model, optimizer, scheduler = train_vgg_seg(
         model,
         train_loader,
         test_loader,

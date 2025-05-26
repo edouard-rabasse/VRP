@@ -132,7 +132,6 @@ def train_model_multi_task(
     """
     lambda_seg = cfg.model.params.lambda_seg if cfg is not None else 1.0
     model.to(device)
-    model.train()
     metrics = []  # list to collect metrics per epoch
 
     optimizer = torch.optim.Adam(
@@ -147,6 +146,7 @@ def train_model_multi_task(
     )  # for pixel-wise mask prediction
 
     for epoch in range(num_epochs):
+        model.train()
         running_loss = 0.0
         running_cls_loss = 0.0
         running_seg_loss = 0.0
@@ -170,8 +170,8 @@ def train_model_multi_task(
             loss_cls = criterion_cls(clf_logits, labels)
 
             # ---- pass 2 : segmentation (optionnel) ------------------------------
-            seg_logits = model.segmentation_head(feats.detach())
-            # loss_seg = criterion_seg(seg_logits, masks)
+            # seg_logits = model.segmentation_head(feats.detach()) # for no modification
+            seg_logits = model.segmentation_head(feats)
             # sortie du critère sans réduction : (N,1,H,W)
             loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
 
@@ -205,16 +205,9 @@ def train_model_multi_task(
         epoch_acc = correct / total
 
         # Record training metrics
-        metrics.append(
-            {
-                "epoch": epoch + 1,
-                "train_loss": epoch_loss,
-                "train_acc": epoch_acc,
-                "cls_loss": epoch_cls_loss,
-                "seg_loss": epoch_seg_loss,
-            }
-        )
+
         # evaluate on test set
+        model.eval()
         test_cls_loss = 0.0
         test_seg_loss = 0.0
         val_loss = 0.0
@@ -252,6 +245,11 @@ def train_model_multi_task(
         # Record test metrics
         metrics.append(
             {
+                "epoch": epoch + 1,
+                "train_loss": epoch_loss,
+                "train_acc": epoch_acc,
+                "cls_loss": epoch_cls_loss,
+                "seg_loss": epoch_seg_loss,
                 "val_loss": val_loss / total,
                 "val_acc": correct / total,
                 "test_cls_loss": test_cls_loss / total,
