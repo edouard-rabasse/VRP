@@ -3,9 +3,9 @@
 #SBATCH --job-name=vrp-sweep-model
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=16G
-#SBATCH --time=24:00:00
-#SBATCH --output=logs/all-sweep-%A_%a.log
+#SBATCH --mem=32G
+#SBATCH --time=12:00:00
+#SBATCH --output=logs/sweep-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
 
 module load python/3.11 scipy-stack/2023b opencv/4.10.0
@@ -24,7 +24,7 @@ wandb login --relogin "$WANDB_API_KEY"
 # 
 
 # Define models array
-MODEL="vgg_finetune"
+MODEL="vgg_seg"
 
 SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep/sweep_${MODEL}.yaml"
 

@@ -1,7 +1,9 @@
 # sweep.yaml
 program: train.py
-name: sweep_vgg_seg2  # 👈 Nom explicite ici
+name: sweep_vgg_seg_${config}  # 👈 Nom explicite ici
 project: VRP
+
+config: 2
 
 command:
   - ${env}
@@ -34,5 +36,7 @@ parameters:
     values: [false]
   data:
     values: ["config7_new"]
+  data.cfg_number:
+    values: [${config}]
 
 
