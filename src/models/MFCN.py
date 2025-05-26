@@ -170,8 +170,8 @@ def train_model_multi_task(
             loss_cls = criterion_cls(clf_logits, labels)
 
             # ---- pass 2 : segmentation (optionnel) ------------------------------
-            # seg_logits = model.segmentation_head(feats.detach()) # for no modification
-            seg_logits = model.segmentation_head(feats)
+            seg_logits = model.segmentation_head(feats.detach()) # for no modification
+            # seg_logits = model.segmentation_head(feats)
             # sortie du critère sans réduction : (N,1,H,W)
             loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
 
