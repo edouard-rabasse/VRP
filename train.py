@@ -11,6 +11,7 @@ from src.utils.config_utils import load_selection_config
 import hydra
 import wandb
 from omegaconf import DictConfig, OmegaConf
+from evaluate_seg import compute_seg_loss_from_loader
 
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
@@ -69,8 +70,14 @@ def main(cfg: DictConfig):
         learning_rate=cfg.model_params.learning_rate,
         cfg=cfg,
     )
+    loss = compute_seg_loss_from_loader(
+        test_loader, model, device, cfg.heatmap.method, cfg.heatmap.args
+    )
+    # append loss to metrics
+
     for epoch_metrics in metrics:
         wandb.log(epoch_metrics)
+    wandb.log({"final_seg_loss": loss})
     wandb.finish()
 
     # confusion
