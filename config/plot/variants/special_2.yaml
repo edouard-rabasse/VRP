@@ -1,5 +1,5 @@
 # @package _global_
 
-numbers: [2]
+numbers: [2,7]
 valid_range: [1001, 3000]
 special: "_2"

@@ -112,6 +112,14 @@ def get_heatmap(method, model, input_tensor, args, device="cpu"):
 
         gradcam = GradCAM(model, target_layer)
         heatmap = gradcam(input_tensor, class_index=args["class_index"])
+    elif method == "seg":
+        with torch.no_grad():
+            model.eval()
+            seg_logits = model(input_tensor)
+            heatmap = seg_logits[0, 0]
+            # Assuming the first channel is the one of interest
+            # apply softmax to the heatmap
+            heatmap = torch.nn.functional.softmax(heatmap, dim=0).cpu().numpy()
 
     else:
         raise ValueError("Unknown method: {}".format(method))

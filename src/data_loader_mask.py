@@ -21,6 +21,8 @@ class CustomDataset(Dataset):
         mask_transform=None,
         samples=None,
         augment=False,
+        range=None,
+        return_filenames: bool = False,
     ):
         """
         Args:
@@ -30,22 +32,52 @@ class CustomDataset(Dataset):
             image_transform (callable): Transform to be applied to images.
             mask_transform (callable): Transform to be applied to masks.
             samples (list, optional): Pre-built sample list, each a tuple (img_path, label, mask_path).
+            augment (bool): Whether to apply augmentations.
+            range (tuple): Range of indices to sample from the dataset.
+            return_filenames (bool): Whether to return filenames as 4th argument.
         """
         self.image_transform = image_transform
         self.mask_transform = mask_transform
         if samples is not None:
             self.all_samples = samples
         else:
-            self.original_images = [
-                os.path.join(original_dir, f)
-                for f in os.listdir(original_dir)
-                if f.lower().endswith((".jpg", ".png"))
-            ]
-            self.modified_images = [
-                os.path.join(modified_dir, f)
-                for f in os.listdir(modified_dir)
-                if f.lower().endswith((".jpg", ".png"))
-            ]
+            if range is None:
+                self.original_images = [
+                    os.path.join(original_dir, f)
+                    for f in os.listdir(original_dir)
+                    if f.lower().endswith((".jpg", ".png"))
+                ]
+                self.modified_images = [
+                    os.path.join(modified_dir, f)
+                    for f in os.listdir(modified_dir)
+                    if f.lower().endswith((".jpg", ".png"))
+                ]
+
+            else:  # range is not None:
+                indices = range  # Assuming range is a list of indices
+
+                # Function to extract the numeric part from the file name
+                def extract_number(fname):
+                    import re
+
+                    numbers = re.findall(r"\d+", fname)
+                    return int(numbers[0]) if numbers else -1
+
+                # Sort the files based on the numeric part of their names
+                orig_map = {
+                    extract_number(fname): fname for fname in os.listdir(original_dir)
+                }
+                chosen_nums = [n for n in indices if n in orig_map]
+
+                # Select only the specified indices
+                self.original_images = [
+                    os.path.join(original_dir, orig_map[n]) for n in chosen_nums
+                ]
+                self.modified_images = [
+                    os.path.join(modified_dir, orig_map[n])
+                    for n in chosen_nums
+                    if n in orig_map
+                ]
             if mask_dir is not None:
                 self.all_samples = [
                     (path, 0, None) for path in self.modified_images
@@ -57,8 +89,10 @@ class CustomDataset(Dataset):
                 self.all_samples = [
                     (path, 0, None) for path in self.modified_images
                 ] + [(path, 1, None) for path in self.original_images]
+
         self.imgs = self.all_samples  # for backward compatibility
         self.augment = augment
+        self.return_filenames = return_filenames
 
     def __len__(self):
         return len(self.all_samples)
@@ -88,7 +122,7 @@ class CustomDataset(Dataset):
             angles = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
             angle = random.choice(angles)
             img = TF.rotate(img, angle, fill=[255, 255, 255])
-            mask = TF.rotate(mask, angle)
+            mask = TF.rotate(mask, angle, fill=0)
 
         # Apply image transform (expects a PIL array)
         if self.image_transform:
@@ -109,6 +143,10 @@ class CustomDataset(Dataset):
         if mask_tensor is None:
             raise ValueError(f"Mask tensor is None for image at {img_path}")
 
+        if self.return_filenames:
+            # Return the image, label, mask, and filename
+            return image, torch.tensor(label, dtype=torch.long), mask_tensor, img_path
+
         return image, torch.tensor(label, dtype=torch.long), mask_tensor
 
 
@@ -118,68 +156,33 @@ def get_dataloader(dataset, batch_size=32, shuffle=True, num_workers=4):
     )
 
 
-def load_data_mask(
+def load_data(
     original_path,
     modified_path,
-    batch_size=32,
-    image_transform_train=None,
-    image_transform_test=None,
-    mask_transform_train=None,
-    mask_transform_test=None,
-    train_ratio=0.8,
-    image_size=(224, 224),
-    num_workers=4,
     mask_path=None,
-    num_max=None,
+    batch_size=32,
+    img_transform=None,
+    mask_transform=None,
+    num_workers=4,
+    range=None,
+    return_filenames=False,
 ):
     """
-    Load the dataset and return separate training and testing DataLoaders using separate transforms.
+    Load the dataset and return a DataLoader.
     """
-    # Create a base dataset to get the sample list (without any transform)
-    base_dataset = CustomDataset(
+    dataset = CustomDataset(
         original_dir=original_path,
         modified_dir=modified_path,
         mask_dir=mask_path,
-        image_transform=None,
-        mask_transform=None,
+        image_transform=img_transform,
+        mask_transform=mask_transform,
+        augment=False,
+        range=range,
+        return_filenames=return_filenames,
     )
-    if num_max is not None:
-        base_dataset.all_samples = base_dataset.all_samples[:num_max]
-
-    all_samples = base_dataset.all_samples
-    num_samples = len(all_samples)
-    indices = list(range(num_samples))
-    np.random.shuffle(indices)
-    train_size = int(train_ratio * num_samples)
-    train_indices = indices[:train_size]
-    test_indices = indices[train_size:]
-
-    # Build separate sample lists for train and test.
-    train_samples = [all_samples[i] for i in train_indices]
-    test_samples = [all_samples[i] for i in test_indices]
-
-    # Create dataset instances with appropriate transforms.
-    train_dataset = CustomDataset(
-        samples=train_samples,
-        image_transform=image_transform_train,
-        mask_transform=mask_transform_train,
+    return get_dataloader(
+        dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers
     )
-    test_dataset = CustomDataset(
-        samples=test_samples,
-        image_transform=image_transform_test,
-        mask_transform=mask_transform_test,
-    )
-
-    train_loader = get_dataloader(
-        train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers
-    )
-    test_loader = get_dataloader(
-        test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers
-    )
-    return train_loader, test_loader
-
-
-# Example usage:
 
 
 def load_data_train_test(
@@ -194,32 +197,31 @@ def load_data_train_test(
     image_transform_test=None,
     mask_transform_train=None,
     mask_transform_test=None,
-    image_size=(224, 224),
     num_workers=4,
-    num_max=None,
+    range=None,
+    return_filenames=False,
 ):
-    train_set = CustomDataset(
-        original_dir=train_original_path,
-        modified_dir=train_modified_path,
-        mask_dir=mask_path_train,
-        image_transform=image_transform_train,
-        mask_transform=mask_transform_train,
-        augment=True,
-    )
-    test_set = CustomDataset(
-        original_dir=test_original_path,
-        modified_dir=test_modified_path,
-        mask_dir=mask_path_test,
-        image_transform=image_transform_test,
+    test_loader = load_data(
+        original_path=test_original_path,
+        modified_path=test_modified_path,
+        mask_path=mask_path_test,
+        batch_size=batch_size,
+        img_transform=image_transform_test,
         mask_transform=mask_transform_test,
-        augment=False,
+        num_workers=num_workers,
+        range=range,
+        return_filenames=return_filenames,
     )
-
-    train_loader = get_dataloader(
-        train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers
-    )
-    test_loader = get_dataloader(
-        test_set, batch_size=batch_size, shuffle=False, num_workers=num_workers
+    train_loader = load_data(
+        original_path=train_original_path,
+        modified_path=train_modified_path,
+        mask_path=mask_path_train,
+        batch_size=batch_size,
+        img_transform=image_transform_train,
+        mask_transform=mask_transform_train,
+        num_workers=num_workers,
+        range=range,
+        return_filenames=return_filenames,
     )
     return train_loader, test_loader
 
@@ -275,6 +277,7 @@ if __name__ == "__main__":
         num_workers=4,
         mask_path_train=train_mask_path,
         mask_path_test=test_mask_path,
+        range=None,
     )
 
     # Test one batch to check outputs.

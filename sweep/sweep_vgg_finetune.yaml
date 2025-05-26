@@ -1,6 +1,6 @@
 # sweep.yaml
 program: train.py
-name: sweep_vgg_2  # 👈 Nom explicite ici
+name: sweep_vgg_finetune  # 👈 Nom explicite ici
 project: VRP
 
 command:
@@ -21,7 +21,7 @@ parameters:
     values: ["vgg"]
 
   model.params.epochs:
-    values: [30, 40,50]
+    values: [20, 30,40]
   save_model:
     values: [false]
   load_model:
@@ -35,8 +35,12 @@ parameters:
 
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
   model.freeze:
-    values: [false]
+    values: [true]
   data:
     values: ["config7_new"]
   data.cfg_number:
-    values: [7]
+    values: [2]
+  model.weight_path:
+    values: ["${hydra:runtime.cwd}/checkpoints/vgg_32_50_7.pth"]
+  data.selection.value:
+    values: [[1001,1100]]

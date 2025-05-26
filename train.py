@@ -7,6 +7,7 @@ from src.models import load_model
 from src.transform import image_transform_train, image_transform_test, mask_transform
 from src.train_functions import train
 from src.evaluation import get_confusion_matrix
+from src.utils.config_utils import load_selection_config
 import hydra
 import wandb
 from omegaconf import DictConfig, OmegaConf
@@ -23,6 +24,9 @@ def main(cfg: DictConfig):
     print(f"[Train] Loaded model: {cfg.model.name}")
 
     # ── data loaders ────────────────────────────────────────────────────────
+    print(cfg.data.selection.value)
+    print("a")
+    range = load_selection_config(cfg.data)
     train_loader, test_loader = load_data_train_test(
         train_original_path=cfg.data.train_original_path,
         test_original_path=cfg.data.test_original_path,
@@ -37,6 +41,7 @@ def main(cfg: DictConfig):
         mask_transform_test=mask_transform(tuple(cfg.mask_shape)),
         # num_workers        = os.cpu_count(),
         num_workers=2,
+        range=range,
     )
     print(
         f"[Train] Data loaded: {len(train_loader.dataset)} train / {len(test_loader.dataset)} test"
@@ -81,7 +86,7 @@ def main(cfg: DictConfig):
 
     # ── save model ──────────────────────────────────────────────────────────
     if cfg.save_model:
-        from src.utils import save_model
+        from src.utils.utils import save_model
 
         os.makedirs(os.path.dirname(cfg.model.weight_path), exist_ok=True)
         save_model(model, cfg.model.weight_path)

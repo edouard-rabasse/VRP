@@ -1,18 +1,18 @@
 # Model configuration for a CNN model
 defaults:
   - _self_            
-  - /heatmap: gradcam_vgg
+  - /heatmap: seg
 
-name: vgg
+name: vgg_seg
 load: ${..load_model}  # load model from checkpoint
 save: ${..save_model}  # save model to checkpoint
 
-# weight_path: ${hydra:runtime.cwd}/checkpoints/${..experiment_name}.pth
-weight_path: ${hydra:runtime.cwd}/checkpoints/vgg_32_30.pth
+weight_path: ${hydra:runtime.cwd}/checkpoints/${..experiment_name}.pth
+# weight_path: ${hydra:runtime.cwd}/checkpoints/vgg_32_30_7.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}
 
-freeze: false
+freeze: true
 grad_layer: 4 # between 0 and 6
 
 params:

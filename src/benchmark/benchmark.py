@@ -114,7 +114,7 @@ def train(cfg: DictConfig):
     return model
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="benchmark")
+@hydra.main(version_base=None, config_path="config", config_name="benchmark")
 def main(cfg: DictConfig):
     # restore working directory to project root
     os.chdir(get_original_cwd())

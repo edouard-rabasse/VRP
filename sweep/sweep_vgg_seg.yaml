@@ -1,7 +1,9 @@
 # sweep.yaml
 program: train.py
-name: sweep_MFCN  # 👈 Nom explicite ici
+name: sweep_vgg_seg_${config}  # 👈 Nom explicite ici
 project: VRP
+
+config: 2
 
 command:
   - ${env}
@@ -11,14 +13,14 @@ command:
 
 # On cherche à maximiser la métrique val_accuracy (à adapter)
 metric:
-  name: seg_loss
+  name: test_seg_loss
   goal: minimize
 
 method: bayes   # ou random, bayes...
 
 parameters:
   model:
-    values: ["MFCN"]
+    values: ["vgg_seg"]
 
   model.params.epochs:
     values: [20, 30, 40]
@@ -28,9 +30,13 @@ parameters:
 
   model.params.learning_rate:
     values: [0.001, 0.0005, 0.0001]
+
+  # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
   model.freeze:
-    values: [true, false]
-  model.params.lambda_seg:
-    values: [1,10,100,1000]
+    values: [false]
+  data:
+    values: ["config7_new"]
+  data.cfg_number:
+    values: [${config}]
 
 
