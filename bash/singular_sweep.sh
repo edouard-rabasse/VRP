@@ -24,7 +24,7 @@ wandb login --relogin "$WANDB_API_KEY"
 # 
 
 # Define models array
-MODEL="vgg_finetune"
+MODEL="MFCN"
 
 SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep/sweep_${MODEL}.yaml"
 

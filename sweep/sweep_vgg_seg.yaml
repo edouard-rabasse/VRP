@@ -3,7 +3,7 @@ program: train.py
 name: sweep_vgg_seg_${config}  # 👈 Nom explicite ici
 project: VRP
 
-config: 2
+config: 7
 
 command:
   - ${env}
@@ -37,6 +37,6 @@ parameters:
   data:
     values: ["config7_new"]
   data.cfg_number:
-    values: [${config}]
+    values: [7]
 
 
