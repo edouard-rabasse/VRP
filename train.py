@@ -51,7 +51,7 @@ def main(cfg: DictConfig):
     # initialise W&B en lui passant tout le cfg Hydra
     run = wandb.init(
         project="VRP",
-        name=f"{cfg.experiment_name}",
+        name=f"{cfg.model}_{cfg.batch_size}bs_{cfg.model_params.epochs}ep_{cfg.model_params.learning_rate}lr_cfg{cfg.data.cfg_number}",
         config=OmegaConf.to_container(cfg, resolve=True),
         reinit=True,
     )
