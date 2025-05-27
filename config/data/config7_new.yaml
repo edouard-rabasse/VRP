@@ -2,6 +2,7 @@
 cfg_number: 7
 mask: mask_removed
 path: data
+loader: mask  
 
 # 2) Tes chemins, **interpolés** depuis les valeurs ci-dessus
 train_original_path: "${path}/train/configuration1_2/"

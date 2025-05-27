@@ -6,7 +6,7 @@ defaults:
   - _self_            # ← load THIS file’s keys 
 
 # now your keys are available for interpolation:
-path: data
+path: ${data.path}
 cfg_number: ${data.cfg_number}
 mask: mask_removed
 
