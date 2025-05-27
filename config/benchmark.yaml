@@ -2,7 +2,7 @@
 arcs_original: "MSH/MSH/results/configuration1/"
 arcs_modified: "MSH/MSH/results/configuration2/"
 coords: "MSH/MSH/instances/"
-epochs: 20
+epochs: 5
 batch_size: 32
 lr: 0.001
 hidden_dims: []
