@@ -52,7 +52,6 @@ tester avec une autre configuration (2)
 Benchmark ? Si on connaissait la valeur de la contrainte. Distance en coût + dépassement de la vraie contrainte.
 Vecteur de features avec les instances. features : nb de tournées à pied, distances, distance à pied la plus longue, moyenne, en voiture.
 
-
 Sinon heuristique qui fait des mouvements dans la région locale.
 
 Faire des mouvements pour diminuer le treshold.
@@ -61,6 +60,26 @@ Faire des mouvements pour diminuer le treshold.
 nouvelle config avec le nombre de boucle à pied <=1.
 
 ## 20/05
+
 - simuler des zones de parking
 - avoir un modèle qui prend direct les coordonnées.
 - implémenter métriques pour la heatmap
+
+## 27/05
+Zones de parking
+
+- grosse zone parking sans data augmentation. 1/4 de l'image
+- zones piétonnes
+- zones difficiles à stationner
+- changer la couleur des noeuds
+- réseau routier, en background
+  - pipeline complète (évaluation)
+- heuristique. solutions qui respectent la contrainte.
+- énumérer puis garder les x% meilleurs en terme de distance. Précalculer la matrice des distances (pour les arcs modifiés).
+- - contrainte voiture/piéton
+  - métriques
+  - benchmark avec padding.
+- calculer différentes features, plus de features.
+- benchmark avec le rectangle.
+- faire le heatmap sans plot. Une classe par arc (avec padding)
+- ajouter des métriques pour évaluer les performances.
