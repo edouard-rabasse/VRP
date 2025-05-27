@@ -25,12 +25,15 @@ parameters:
 
   batch_size:
     values: [16, 32, 64]
+  
+  data:
+    values: "config7_new"
 
   model.params.learning_rate:
     values: [0.001, 0.0005, 0.0001]
   model.freeze:
     values: [true, false]
   model.params.lambda_seg:
-    values: [1,10,100,1000]
+    values: [100,1000, 10000]
 
 
