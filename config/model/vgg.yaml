@@ -16,6 +16,6 @@ freeze: false
 grad_layer: 4 # between 0 and 6
 
 params:
-  learning_rate: 0.001
+  learning_rate: 0.00005
   batch_size: ${...batch_size}           # duplicated on purpose; you can omit if you prefer
   epochs: 20

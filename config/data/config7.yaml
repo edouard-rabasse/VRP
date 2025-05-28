@@ -1,6 +1,7 @@
 # 1) Valeurs de base
 cfg_number: 7
 mask: mask_removed
+loader: mask  # use mask-based loader
 path: data
 
 # 2) Tes chemins, **interpolés** depuis les valeurs ci-dessus

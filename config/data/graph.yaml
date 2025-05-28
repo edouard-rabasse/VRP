@@ -1,0 +1,27 @@
+# filepath: config/data/graph.yaml
+# Configuration for graph-based VRP dataset loader
+# Must be used with Hydra via '- data: graph'
+
+# basic values (can also be overridden at command line)
+cfg_number: 7
+path: MSH/MSH
+loader: graph       # choose 'mask' or 'graph'
+
+# unified folder paths for arcs and coordinates
+orig_arcs_folder: "${path}/results/configuration1/"
+mod_arcs_folder:  "${path}/results/configuration${cfg_number}/"
+coords_folder:     "${path}/instances/"
+
+# plotting and mask parameters
+bounds: [-1, 11, -1, 11]
+pixel_size: 1
+mask_method: removed_lines
+
+# split parameters (train/test split)
+train_ratio: ${train_ratio}
+seed: 42
+
+# optional instance selection (filter by instance ID)
+selection:
+  type: range
+  value: [1, 10]
