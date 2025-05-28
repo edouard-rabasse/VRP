@@ -1,5 +1,4 @@
 from torchvision import transforms
-from src.data_loader_mask import CustomDataset
 
 transform = transforms.Compose(
     [
@@ -12,12 +11,9 @@ transform = transforms.Compose(
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from tqdm import tqdm
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from torchvision import models
 from torchvision.models.vgg import VGG16_BN_Weights
 
