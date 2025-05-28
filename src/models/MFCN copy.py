@@ -134,10 +134,21 @@ def train_model_multi_task(
     model.to(device)
     metrics = []  # list to collect metrics per epoch
 
-    optimizer = torch.optim.Adam(
-        filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate
+    # in your setup, after you build `model`:
+    clf_params = list(model.classifier.parameters())
+    seg_params = list(model.segmentation_head.parameters())
+
+    # If you want the classifier update to also tweak the shared features:
+    feat_params = [p for p in model.features.parameters() if p.requires_grad]
+
+    optimizer_clf = torch.optim.Adam(clf_params + feat_params, lr=learning_rate)
+    optimizer_seg = torch.optim.Adam(seg_params, lr=learning_rate)
+    scheduler_clf = torch.optim.lr_scheduler.StepLR(
+        optimizer_clf, step_size=5, gamma=0.1
     )
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+    scheduler_seg = torch.optim.lr_scheduler.StepLR(
+        optimizer_seg, step_size=5, gamma=0.1
+    )
 
     # Loss functions: classification and segmentation
     criterion_cls = nn.CrossEntropyLoss()  # expects (logits, target labels)
@@ -159,18 +170,23 @@ def train_model_multi_task(
             labels = labels.to(device)  # shape: [N]
             masks = masks.to(device).float()  # shape: [N, 1, H, W]
 
-            optimizer.zero_grad()
+            optimizer_clf.zero_grad()
 
             # with torch.no_grad():                       # aucun grad sur features
             #     feats = model.features(images)
-            feats = model.features(images)  # shape: [N, 512, H_out, W_out]
+            feats = model.features(images)
             pooled = model.avgpool(feats)
             clf_logits = model.classifier(torch.flatten(pooled, 1))
             loss_cls = criterion_cls(clf_logits, labels)
+            loss_cls.backward()
+            optimizer_clf.step()
 
             # ---- pass 2 : segmentation (optionnel) ------------------------------
-            seg_logits = model.segmentation_head(feats.detach())
-            # loss_seg = criterion_seg(seg_logits, masks)
+            optimizer_seg.zero_grad()
+            with torch.no_grad():
+                feats_det = model.features(images)
+            seg_logits = model.segmentation_head(feats_det)
+            # seg_logits = model.segmentation_head(feats)
             # sortie du critère sans réduction : (N,1,H,W)
             loss_seg_map = criterion_seg(seg_logits, masks)  # shape (N, 1, H, W)
 
@@ -186,9 +202,8 @@ def train_model_multi_task(
                 mask_present.sum() + 1e-6
             )  # moyenne sur les images « valides »
 
-            loss = loss_cls + lambda_seg * loss_seg
-            loss.backward()  # backpropagation
-            optimizer.step()
+            loss_seg.backward()  # backpropagation pour la segmentation
+            optimizer_seg.step()
 
             running_cls_loss += loss_cls.item() * images.size(0)
             running_seg_loss += loss_seg.item() * images.size(0)
@@ -196,7 +211,8 @@ def train_model_multi_task(
             correct += (preds == labels).sum().item()
             total += labels.size(0)
 
-        scheduler.step()
+            scheduler_seg.step()
+            scheduler_clf.step()
         epoch_cls_loss = running_cls_loss / total
         epoch_seg_loss = running_seg_loss / total
         epoch_acc = correct / total
