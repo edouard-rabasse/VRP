@@ -50,6 +50,7 @@ def plot_routes(arcs, coordinates, depot, output_file, bounds=(-1, 11, -1, 11)):
 
     # Identify nodes that are heads of mode 2 arcs
     mode2_heads = {head for _, head, mode, _ in arcs if mode == 2}
+    mode1_heads = {head for _, head, mode, _ in arcs if mode == 1}
 
     # Plot each arc without adding a legend label (to avoid duplicate legends)
     for tail, head, mode, route_id in arcs:
@@ -73,7 +74,17 @@ def plot_routes(arcs, coordinates, depot, output_file, bounds=(-1, 11, -1, 11)):
             ax.scatter(x, y, color=red, marker="s", s=60, zorder=2)
         else:
             # Green for nodes that are heads of mode 2 arcs, blue otherwise
-            node_color = (0.0, 1.0, 0.0) if node in mode2_heads else (0.0, 0.0, 1.0)
+            if node in mode2_heads:
+                if node in mode1_heads:
+                    node_color = (0.0, 0.5, 0.5)
+                else:
+                    node_color = (0.0, 0.5, 0.0)
+            else:
+                if node in mode1_heads:
+                    node_color = (0.0, 0.0, 0.5)
+                else:
+                    node_color = (0.5, 0.5, 0.5)
+
             ax.scatter(x, y, color=node_color, marker="o", s=60, zorder=2)
         # Optionally, you can uncomment the next line to add node labels:
         # ax.text(x + 0.1, y + 0.1, str(node), fontsize=9, color='blue')
@@ -100,13 +111,12 @@ def process_all_solutions(
         os.listdir(arcs_folder), desc="Processing files", unit="file", leave=False
     ):
         match = re.match(r"Arcs_(\w+)_\d+\.txt", filename)
-        if not match:
-            print(f"Skipped file (no match): {filename}")
+        # if not match:
+        # print(f"Skipped file (no match): {filename}")
         if match:
             number = int(match.group(1))
             if valid_range is None or number in valid_range:
                 instance = match.group(1)
-                print(instance)
                 arcs_file = os.path.join(arcs_folder, filename)
                 coordinates_file = os.path.join(
                     coordinates_folder, f"Coordinates_{instance}.txt"
