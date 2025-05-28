@@ -66,6 +66,7 @@ nouvelle config avec le nombre de boucle à pied <=1.
 - implémenter métriques pour la heatmap
 
 ## 27/05
+
 Zones de parking
 
 - grosse zone parking sans data augmentation. 1/4 de l'image
@@ -76,7 +77,7 @@ Zones de parking
   - pipeline complète (évaluation)
 - heuristique. solutions qui respectent la contrainte.
 - énumérer puis garder les x% meilleurs en terme de distance. Précalculer la matrice des distances (pour les arcs modifiés).
-- - contrainte voiture/piéton
+  - contrainte voiture/piéton
   - métriques
   - benchmark avec padding.
 - calculer différentes features, plus de features.

@@ -1,3 +1,5 @@
+# TODO : add to the whole pipeline
+
 from torchvision import transforms
 from src.data_loader_mask import CustomDataset
 
