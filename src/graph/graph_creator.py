@@ -48,12 +48,8 @@ def plot_routes(arcs, coordinates, depot, output_file, bounds=(-1, 11, -1, 11)):
     # Remove axis ticks and labels for a clean appearance
     ax.tick_params(left=False, bottom=False, labelleft=False, labelbottom=False)
 
-    # Optionally, if you ever need to use colors per route, you can uncomment the following lines.
-    # route_colors = {}
-    # unique_routes = set(route_id for _, _, _, route_id in arcs)
-    # colors = plt.cm.tab10(np.linspace(0, 1, len(unique_routes)))
-    # for route_id, color in zip(unique_routes, colors):
-    #     route_colors[route_id] = color
+    # Identify nodes that are heads of mode 2 arcs
+    mode2_heads = {head for _, head, mode, _ in arcs if mode == 2}
 
     # Plot each arc without adding a legend label (to avoid duplicate legends)
     for tail, head, mode, route_id in arcs:
@@ -70,12 +66,15 @@ def plot_routes(arcs, coordinates, depot, output_file, bounds=(-1, 11, -1, 11)):
             linewidth=4,
             zorder=1,
         )
+
     red = (1.0, 0.0, 0.0)
     for node, (x, y) in coordinates.items():
         if node == depot:
             ax.scatter(x, y, color=red, marker="s", s=60, zorder=2)
         else:
-            ax.scatter(x, y, color=red, marker="o", s=60, zorder=2)
+            # Green for nodes that are heads of mode 2 arcs, blue otherwise
+            node_color = (0.0, 1.0, 0.0) if node in mode2_heads else (0.0, 0.0, 1.0)
+            ax.scatter(x, y, color=node_color, marker="o", s=60, zorder=2)
         # Optionally, you can uncomment the next line to add node labels:
         # ax.text(x + 0.1, y + 0.1, str(node), fontsize=9, color='blue')
 
@@ -97,10 +96,12 @@ def process_all_solutions(
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    for filename in tqdm(os.listdir(arcs_folder), desc="Processing files", unit="file", leave=False):
+    for filename in tqdm(
+        os.listdir(arcs_folder), desc="Processing files", unit="file", leave=False
+    ):
         match = re.match(r"Arcs_(\w+)_\d+\.txt", filename)
         if not match:
-             print(f"Skipped file (no match): {filename}")
+            print(f"Skipped file (no match): {filename}")
         if match:
             number = int(match.group(1))
             if valid_range is None or number in valid_range:
