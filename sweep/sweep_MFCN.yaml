@@ -27,7 +27,7 @@ parameters:
     values: [16, 32, 64]
   
   data:
-    values: "config7_new"
+    values: ["config7_new"]
 
   model.params.learning_rate:
     values: [0.001, 0.0005, 0.0001]
