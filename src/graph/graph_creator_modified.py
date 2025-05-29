@@ -1,4 +1,4 @@
-# graph_creator_modified.py: Read enhanced arc/coordinate data and plot routes with arc types and depot markings
+# graph_creator_modified.py: Read enhanced arc/coordinate data and plot routes with arc types and depot markings TODO: adapt to new structure
 
 import matplotlib.pyplot as plt
 import numpy as np

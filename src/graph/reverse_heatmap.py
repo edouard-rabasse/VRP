@@ -1,17 +1,15 @@
+import sys
+from pathlib import Path
+
+# Add the root directory to the system path
+root_dir = Path(__file__).parent.parent.parent
+sys.path.append(str(root_dir))
+
 import numpy as np
+from src.graph.coordinates import read_coordinates
 
 ## TODO: Add configuration file for the parameters
 ## TODO: Adapt to the mask
-
-
-def read_arcs(file_path):
-    """Returns the arc file as a list of tuples (tail, head, mode, route_id)."""
-    arcs = []
-    with open(file_path, "r") as file:
-        for line in file:
-            tail, head, mode, route_id = map(int, line.strip().split(";"))
-            arcs.append((tail, head, mode, route_id))
-    return arcs
 
 
 def read_coordinates(file_path):
@@ -31,11 +29,6 @@ def read_coordinates(file_path):
 def get_arc_name(index):
     """Returns the arc name as a string."""
     return f"Arcs_{index}_1.txt"
-
-
-def get_coordinates_name(index):
-    """Returns the coordinates name as a string."""
-    return f"Coordinates_{index}.txt"
 
 
 def world_to_pixel(x, y, bounds, shape):
@@ -88,17 +81,9 @@ def arcs_in_zone(arcs, coordinates, heatmap, bounds, threshold=0.5, n_samples=15
     traverse une cellule de heat‑mask > threshold.
     """
     in_zone = []
-    rows, cols = heatmap.shape
 
     for arc in arcs:
         if is_arcs(arc, coordinates, heatmap, bounds, threshold, n_samples):
-            tail, head, mode, route_id = arc
-            p_tail = coordinates[tail]
-            p_head = coordinates[head]
-
-            # Convertir les coordonnées du segment en indices de la matrice
-            r1, c1 = world_to_pixel(p_tail[0], p_tail[1], bounds, (rows, cols))
-            r2, c2 = world_to_pixel(p_head[0], p_head[1], bounds, (rows, cols))
 
             # Ajouter l'arc à la liste avec les indices de la matrice
             in_zone.append(arc)

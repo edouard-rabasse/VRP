@@ -10,13 +10,8 @@ from torchvision import transforms
 from src.models import load_model
 from src.transform import image_transform_test, mask_transform, denormalize
 from src.visualization import get_heatmap, show_mask_on_image
-from src.graph.reverse_heatmap import (
-    reverse_heatmap,
-    get_arc_name,
-    get_coordinates_name,
-    read_arcs,
-    read_coordinates,
-)
+from src.graph import get_arc_name, get_coordinates_name, read_arcs, read_coordinates
+from src.graph.reverse_heatmap import reverse_heatmap
 from evaluate_seg import compute_bce_with_logits_mask
 import hydra
 from omegaconf import DictConfig, OmegaConf
