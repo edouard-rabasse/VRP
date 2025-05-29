@@ -21,7 +21,7 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 wandb login --relogin "$WANDB_API_KEY"
 
 # ── Configuration ────────────────────────────────────────────────────────────
-MODEL="deit_tiny"
+MODEL="vgg"
 SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep/sweep_${MODEL}.yaml"
 SWEEP_ID_FILE="$SLURM_SUBMIT_DIR/sweep/sweep_id_${MODEL}.txt"
 
