@@ -1,0 +1,4 @@
+method: gradcam
+args:
+  class_index: 1
+  target_layer: backbone.layer4.1.conv2

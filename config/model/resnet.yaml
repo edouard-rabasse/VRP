@@ -1,7 +1,7 @@
 # Model configuration for a CNN model
 defaults:
   - _self_            
-  - /heatmap: gradcam
+  - /heatmap: gradcam_resnet
 
 name: resnet
 load: ${..load_model}  # load model from checkpoint

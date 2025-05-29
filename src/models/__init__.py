@@ -102,7 +102,7 @@ def load_model(model_name: str, device: torch.device, cfgm) -> nn.Module:
         if not os.path.exists(cfgm.weight_path):
             raise FileNotFoundError(f"Weight file not found: {cfgm.weight_path}")
         print(f"Loading weights from {cfgm.weight_path}")
-        state = torch.load(cfgm.weight_path, map_location=device)
+        state = torch.load(cfgm.weight_path, map_location=device, weights_only=True)
         model.load_state_dict(state)
 
     return model

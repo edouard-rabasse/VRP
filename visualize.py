@@ -61,6 +61,7 @@ def main(cfg: DictConfig):
             interpolation=transforms.InterpolationMode.NEAREST,
         )
         mask = mask_transform(size=cfg.image_size)(mask)
+        print(model)
 
         # ── heatmap & overlay ────────────────────────────────────────────────
         hm = get_heatmap(
