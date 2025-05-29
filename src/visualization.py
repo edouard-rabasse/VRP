@@ -84,7 +84,9 @@ def get_heatmap(method, model, input_tensor, args, device="cpu"):
     elif method == "grad_rollout":
         from src.models.vit_explain.grad_rollout import VITAttentionGradRollout
 
-        grad_rollout = VITAttentionGradRollout(model, discard_ratio=args.discard_ratio)
+        grad_rollout = VITAttentionGradRollout(
+            model, discard_ratio=args.discard_ratio, device=device
+        )
 
         heatmap = grad_rollout(input_tensor, category_index=args.class_index)
         # print("Grad Rollout heatmap shape:", heatmap.shape)
