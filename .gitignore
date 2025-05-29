@@ -13,3 +13,4 @@ plots/
 instances/
 gurobi_lib/
 vit_explain/
+sweep_id*
