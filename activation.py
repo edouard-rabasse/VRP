@@ -17,7 +17,6 @@ def main(cfg: DictConfig) -> None:
     model = load_model(
         model_name="vgg", device=device, cfgm=cfg.model
     )  # Adjust model name as needed
-    print(model)
     # Choose the layer and channel to maximize
     target_layer = model.features[28]
     target_channel = 0  # try from 0 to 511
