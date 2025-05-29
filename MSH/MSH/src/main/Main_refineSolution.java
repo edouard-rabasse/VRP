@@ -29,15 +29,16 @@ public class Main_refineSolution {
 	
 			// Select the txt file, with the instance specifications: The txt files are located in the experiments folder.
 			
-				String fileName = "ExperimentsAllSets.txt"; 
+				String fileName = args[0]; // e.g. ExperimentsAllSets.txt
+
 				
 			// Select the instance you want to run, (i.e., the line of the txt file): 1-79
 			
-				int current_instance = 1; 
+				int current_instance = Integer.parseInt(args[1]); // e.g. 2
 				
 			// Configuration file name:
 				
-				String config_file = "configuration5.xml";
+				String config_file = args[2]; // e.g. default.xml
 			
 		// ------------------------------------------------------------------	
 			
