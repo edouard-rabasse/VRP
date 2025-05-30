@@ -46,8 +46,7 @@ def image_transform_train(size=(224, 224), mean=mean, std=std):
                 size, interpolation=transforms.InterpolationMode.NEAREST_EXACT
             ),
             transforms.ToTensor(),
-            # transforms.Normalize(mean=mean,
-            # std=std),
+            transforms.Normalize(mean=mean, std=std),
         ]
     )
 
