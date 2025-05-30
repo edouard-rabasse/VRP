@@ -29,7 +29,7 @@ def main(cfg: DictConfig):
     model = load_model(cfg.model.name, device, cfg.model).eval()
     print(f"[Viz] Model loaded: {cfg.model.name}")
 
-    output_dir = f"output/{cfg.heatmap.method}_{cfg.model.name}"
+    output_dir = cfg.heatmap_dir
     os.makedirs(output_dir, exist_ok=True)
 
     running_loss = 0.0
