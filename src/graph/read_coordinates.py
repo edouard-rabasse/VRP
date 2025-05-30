@@ -1,4 +1,18 @@
 def read_coordinates(file_path, type="original", keep_service_time=False):
+    """
+    Reads coordinates from a file and returns them as a dictionary.
+    The file should contain lines in the format:
+    node_id,x,y[,service_time][,co_type]
+    where:
+    - node_id: Integer representing the node ID
+    - x: Float representing the x-coordinate
+    - y: Float representing the y-coordinate
+    - service_time: Optional float representing the service time (if keep_service_time is True)
+    - co_type: Optional float representing the co_type (if type is "modified" and keep_service_time is True)
+    Returns:
+    - A dictionary where keys are node IDs and values are tuples of (x, y) or (x, y, service_time) or (x, y, service_time, co_type)
+    """
+
     coordinates = {}
     last_node = None
     if type not in ["original", "modified"]:

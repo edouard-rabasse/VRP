@@ -1,5 +1,5 @@
-from .arcs import read_arcs
-from .coordinates import read_coordinates
+from .read_arcs import read_arcs
+from .read_coordinates import read_coordinates
 import os
 import re
 from tqdm import tqdm
@@ -13,7 +13,19 @@ def process_all_solutions(
     bounds=(-1, 11, -1, 11),
     valid_range=None,
     type="original",
+    show_labels=False,
 ):
+    """Process all solutions by reading arcs and coordinates, and plotting the routes.
+
+    Parameters:
+        - arcs_folder (str): Path to the folder containing arcs files.
+        - coordinates_folder (str): Path to the folder containing coordinates files.
+        - output_folder (str): Path to the folder where output plots will be saved.
+        - bounds (tuple, optional): Geographic bounds for the plot. Defaults to (-1, 11, -1, 11).
+        - valid_range (list, optional): List of valid instance numbers to process. Defaults to None.
+        - type (str, optional): Type of the solution (e.g., "original", "refined"). Defaults to "original".
+        - show_labels (bool, optional): Whether to show labels on the plot. Defaults to False.
+    """
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -34,6 +46,14 @@ def process_all_solutions(
                 if os.path.exists(coordinates_file):
                     arcs = read_arcs(arcs_file, type=type)
                     coordinates, depot = read_coordinates(coordinates_file, type=type)
-                    plot_routes(arcs, coordinates, depot, output_file, bounds)
+                    plot_routes(
+                        arcs,
+                        coordinates,
+                        depot,
+                        output_file,
+                        bounds,
+                        route_type=type,
+                        show_labels=show_labels,
+                    )
                 else:
                     print(f"Warning: Coordinates file {coordinates_file} not found.")

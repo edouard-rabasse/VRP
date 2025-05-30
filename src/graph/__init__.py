@@ -1,5 +1,5 @@
-from .arcs import read_arcs, get_arc_name
-from .coordinates import read_coordinates, get_coordinates_name
+from .read_arcs import read_arcs, get_arc_name
+from .read_coordinates import read_coordinates, get_coordinates_name
 from .process_all import process_all_solutions
 from .plot_routes import plot_routes
 from .process_all import process_all_solutions

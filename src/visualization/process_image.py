@@ -18,6 +18,10 @@ import time
 
 
 def process_image(cfg, model, fname, device):
+    """
+    This function processes a single image, finds its mask, computes the heatmap,
+    overlays the heatmap on the image, saves the arcs, and saves the results.
+    """
     t_img, mask = load_and_transform_image_mask(cfg, fname, device)
     heatmap = get_heatmap(
         cfg.heatmap.method, model, t_img, cfg.heatmap.args, device=device

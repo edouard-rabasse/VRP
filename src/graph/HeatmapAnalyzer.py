@@ -7,8 +7,8 @@ root_dir = Path(__file__).parent.parent.parent
 sys.path.append(str(root_dir))
 
 import numpy as np
-from src.graph.coordinates import read_coordinates, get_coordinates_name
-from src.graph.arcs import read_arcs, get_arc_name
+from src.graph.read_coordinates import read_coordinates, get_coordinates_name
+from src.graph.read_arcs import read_arcs, get_arc_name
 
 
 ## TODO: Add configuration file for the parameters

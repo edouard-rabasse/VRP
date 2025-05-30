@@ -1,4 +1,14 @@
 def read_arcs(file_path, type="original"):
+    """
+    Reads arcs from a file and returns them as a list of tuples.
+
+    Args:
+        file_path (str): Path to the file containing arc data.
+        type (str, optional): Type of arcs to read. Defaults to "original".
+
+    Returns:
+        list: A list of tuples representing the arcs.
+    """
     arcs = []
     with open(file_path, "r") as file:
         if type == "original":
