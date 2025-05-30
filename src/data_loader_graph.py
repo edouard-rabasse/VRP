@@ -10,7 +10,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from src.graph.graph_creator import read_arcs, read_coordinates
+from src.graph import read_arcs, read_coordinates
 from src.mask import get_mask, get_mask_pixelised, get_removed_lines
 
 

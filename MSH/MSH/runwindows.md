@@ -15,9 +15,11 @@
 
     java -Xmx14000m -Djava.library.path="C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.CreateInstances 10 10 50 100 300
 
+## Dans powershell
 
+    java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_gurobi ExperimentsAllSets.txt 2 configuration1.xml 1 8
 
-
+# Boucle
 
     for /L %%i in (1,1,79) do (
     echo %%i 7 

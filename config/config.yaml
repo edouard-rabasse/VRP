@@ -25,3 +25,5 @@ mask_shape: [10, 10]
 
 
 experiment_name: ${model.name}_${batch_size}_${model.params.epochs}_${cfg_number}
+
+heatmap_dir: output/${heatmap.method}_${model.name}
