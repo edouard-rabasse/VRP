@@ -27,7 +27,8 @@ def read_coordinates(file_path):
         for line in file:
             parts = line.strip().split(",")
             node = int(parts[0])
-            x, y, co_type = map(float, parts[1:4])
+            x, y = map(float, parts[1:3])
+            co_type = int(parts[4])
             coordinates[node] = (x, y, co_type)
             last_node = node  # The last node is the depot
     return coordinates, last_node
@@ -129,13 +130,13 @@ def main(cfg: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    # numbers = [7]
-    # for number in numbers:
-    #     print("Processing configuration", number)
-    #     arcs_folder = f"data/results_modified/configuration{number}/"
-    #     coordinates_folder = "data/instances_modified/"
-    #     output_folder = f"data/plots_modified/configuration{number}/"
-    #
-    #     # Process all solutions
-    #     process_all_solutions(arcs_folder, coordinates_folder, output_folder)
-    main()
+    numbers = [7]
+    for number in numbers:
+        print("Processing configuration", number)
+        arcs_folder = f"data/results_modified/configuration{number}/"
+        coordinates_folder = "data/instances_modified/"
+        output_folder = f"data/plots_modified/configuration{number}/"
+
+        # Process all solutions
+        process_all_solutions(arcs_folder, coordinates_folder, output_folder)
+    # main()

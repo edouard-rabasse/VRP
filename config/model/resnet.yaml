@@ -8,7 +8,7 @@ load: ${..load_model}  # load model from checkpoint
 save: ${..save_model}  # save model to checkpoint
 kernel_size: 7
 
-weight_path: checkpoints/resnet_model.pth
+weight_path: checkpoints/${..experiment_name}.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}
 freeze: true

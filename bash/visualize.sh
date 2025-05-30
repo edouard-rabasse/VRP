@@ -16,4 +16,4 @@ source "$SLURM_TMPDIR/env/bin/activate"
 pip install --no-index --upgrade pip
 pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
-python visualize.py model.weight_path=checkpoints/stored/vgg_32_30.pth model=vgg 
+python visualize.py model.weight_path=checkpoints/deit_tiny_model.pth model=deit_tiny 
