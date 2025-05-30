@@ -8,64 +8,80 @@ import java.io.IOException;
 
 public class Manager {
 
-	public Manager() throws IOException, InterruptedException{
+	public Manager() throws IOException, InterruptedException {
 
 	}
-	
+
 	/**
 	 * Runs the MSH algorithm
 	 */
-	
-	public Solver_gurobi runMSH_gurobi(String instance_identifier)throws IOException, InterruptedException {
-		
+
+	public Solver_gurobi runMSH_gurobi(String instance_identifier) throws IOException, InterruptedException {
+
 		// Creates a solver instance:
-		
-			Solver_gurobi solver = new Solver_gurobi();
-		
+
+		Solver_gurobi solver = new Solver_gurobi();
+
 		// Runs the MSH:
-		
-			solver.MSH(instance_identifier);
-		
+
+		solver.MSH(instance_identifier);
+
 		// Returns the solver instance:
-		
-			return solver;
+
+		return solver;
 	}
-	
+
 	/**
 	 * Try to refine the solution
 	 */
-	
-	public Solver_gurobi runRefineSolution(String instance_identifier)throws IOException, InterruptedException {
-		
+
+	public Solver_gurobi runRefineSolution(String instance_identifier) throws IOException, InterruptedException {
+
 		// Creates a solver instance:
-		
-			Solver_gurobi solver = new Solver_gurobi();
-		
+
+		Solver_gurobi solver = new Solver_gurobi();
+
 		// Runs the MSH:
-		
-			solver.refineSolution(instance_identifier);
-		
+
+		solver.refineSolution(instance_identifier);
+
 		// Returns the solver instance:
-		
-			return solver;
+
+		return solver;
 	}
-	
+
 	/**
 	 * Try to refine the routes
 	 */
-	
-	public Solver_gurobi runRefineRoutes(String instance_identifier)throws IOException, InterruptedException {
-		
+
+	public Solver_gurobi runRefineRoutes(String instance_identifier) throws IOException, InterruptedException {
+
 		// Creates a solver instance:
-		
-			Solver_gurobi solver = new Solver_gurobi();
-		
+
+		Solver_gurobi solver = new Solver_gurobi();
+
 		// Runs the MSH:
-		
-			solver.refineRoutes(instance_identifier);
-		
+
+		solver.refineRoutes(instance_identifier);
+
 		// Returns the solver instance:
-		
-			return solver;
+
+		return solver;
+	}
+
+	public Solver_gurobi runRefineWithFixedEdges(String instance_identifier)
+			throws IOException, InterruptedException {
+
+		// Creates a solver instance:
+
+		Solver_gurobi solver = new Solver_gurobi();
+
+		// Runs the MSH:
+
+		solver.refineWithFixedEdges(instance_identifier);
+
+		// Returns the solver instance:
+
+		return solver;
 	}
 }

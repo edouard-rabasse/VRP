@@ -20,10 +20,12 @@ import model.Manager;
  * available
  * it immediately stops the algorithm.
  * 
+ * MAIN DIFFERENCE: WE CHANGE EACH ROUTE !!!
+ * 
  * @author nicolas.cabrera-malik
  *
  */
-public class Main_refineSolution {
+public class Main_refineSolutionFixedEdges {
 
 	public static void main(String[] args) {
 
@@ -84,7 +86,7 @@ public class Main_refineSolution {
 
 			// Runs the MSH:
 
-			manager.runRefineSolution(instance_identifier);
+			manager.runRefineWithFixedEdges(instance_identifier);
 
 			// Closes the code:
 

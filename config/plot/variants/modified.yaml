@@ -1,6 +1,6 @@
 # @package _global_
-arcs_folder: ${hydra:runtime.cwd}/MSH/MSH/results_modified/
+arcs_folder: ${hydra:runtime.cwd}/MSH/MSH/results/
 coordinates_folder: ${hydra:runtime.cwd}/MSH/MSH/instances/
 output_folder: ${hydra:runtime.cwd}/data/plots_modified2/
-valid_range: [5,6]
-numbers: [7]
+valid_range: [1,80]
+numbers: [8]
