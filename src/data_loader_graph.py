@@ -68,8 +68,8 @@ class VRPGraphDataset(Dataset):
 
     def __getitem__(self, idx):
         inst, orig_fp, mod_fp, coords_fp = self.instances[idx // 2]
-        label = idx % 2  # 0=original,1=modified
-        arcs_fp = orig_fp if label == 0 else mod_fp
+        label = idx % 2  # 1=original,0=modified
+        arcs_fp = orig_fp if label == 1 else mod_fp
 
         # read arcs and coordinates
 

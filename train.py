@@ -1,12 +1,10 @@
 # train.py : this script trains the model, all the parameters are in config.yaml and subfolders
 
-import os, sys
+import os
 import torch
 from src.data_loader import load_data
 from src.models import load_model
-from src.transform import image_transform_train, image_transform_test, mask_transform
 from src.train_functions import train
-from src.evaluation import get_confusion_matrix
 from src.utils.config_utils import load_selection_config
 import hydra
 import wandb
@@ -64,17 +62,6 @@ def main(cfg: DictConfig):
         wandb.log(epoch_metrics)
     # wandb.log({"final_seg_loss": loss})
     wandb.finish()
-
-    # confusion
-    # cm = get_confusion_matrix(model, test_loader, device=device)
-    # results.append(f"\nConfusion matrix:\n{cm}")
-
-    # # save results
-    # os.makedirs("results", exist_ok=True)
-    # out = f"results/{cfg.model.name}_{cfg.data.cfg_number}_{cfg.model.params.learning_rate}.txt"
-    # with open(out, "w") as f:
-    #     f.write("\n".join(results))
-    # print(f"[Train] Results written to {out}")
 
     # ── save model ──────────────────────────────────────────────────────────
     if cfg.save_model:
