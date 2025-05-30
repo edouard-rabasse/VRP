@@ -75,7 +75,6 @@ public class Main_refineSolution {
 
 		// Store the instance name file:
 
-
 		String instance_identifier = args[1];
 
 		// Runs the code:
@@ -105,35 +104,5 @@ public class Main_refineSolution {
 		}
 
 	}
-
-	try
-
-	{
-
-		// Loads the global parameters: some paths, the precision..
-
-		GlobalParametersReader.initialize("./config/" + config_file);
-
-		// Creates a Manager:
-
-		Manager manager = new Manager();
-
-		// Runs the MSH:
-
-		manager.runRefineSolution(instance_identifier);
-
-		// Closes the code:
-
-		System.exit(0);
-
-	}catch(
-	Exception e)
-	{
-
-		System.out.println("A problem running the code");
-		e.printStackTrace();
-	}
-
-}
 
 }
