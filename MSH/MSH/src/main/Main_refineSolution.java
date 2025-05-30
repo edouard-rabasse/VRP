@@ -9,11 +9,18 @@ import model.Manager;
 /**
  * This class is used when we want to impose a tighter constraint
  * to see how the solution will change. For example, instead of having a
+ * This class is used when we want to impose a tighter constraint
+ * to see how the solution will change. For example, instead of having a
  * maximum walking distance of 2km let's use 1km, or so on..
  * 
  * We will keep the order in which the customers are visited, but for the
+ * We will keep the order in which the customers are visited, but for the
  * rest..we will let the algorithm decide. (The split from villegas).
  * 
+ * This class relies on the fact that the MSH was already used to solve all
+ * instances,
+ * and that the solutions are available. To avoid errors, if the solution is not
+ * available
  * This class relies on the fact that the MSH was already used to solve all
  * instances,
  * and that the solutions are available. To avoid errors, if the solution is not
@@ -68,6 +75,7 @@ public class Main_refineSolution {
 
 		// Store the instance name file:
 
+
 		String instance_identifier = args[1];
 
 		// Runs the code:
@@ -97,5 +105,35 @@ public class Main_refineSolution {
 		}
 
 	}
+
+	try
+
+	{
+
+		// Loads the global parameters: some paths, the precision..
+
+		GlobalParametersReader.initialize("./config/" + config_file);
+
+		// Creates a Manager:
+
+		Manager manager = new Manager();
+
+		// Runs the MSH:
+
+		manager.runRefineSolution(instance_identifier);
+
+		// Closes the code:
+
+		System.exit(0);
+
+	}catch(
+	Exception e)
+	{
+
+		System.out.println("A problem running the code");
+		e.printStackTrace();
+	}
+
+}
 
 }
