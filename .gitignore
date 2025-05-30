@@ -5,12 +5,14 @@ MSH.zip
 output/
 checkpoints/
 results/
+results_modified/
 outputs/
 multirun/
 wandb/
 *.log
 plots/
 instances/
+instances_modified/
 gurobi_lib/
 vit_explain/
 sweep_id*
