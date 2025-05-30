@@ -2,6 +2,9 @@ import numpy as np
 import torch
 from .get_attr import recursive_getattr
 
+from .heatmap import GradCAM
+from src.models.vit_explain.grad_rollout import VITAttentionGradRollout
+
 
 def get_heatmap(method, model, input_tensor, args, device="cpu"):
     """
@@ -16,13 +19,12 @@ def get_heatmap(method, model, input_tensor, args, device="cpu"):
     input_tensor = input_tensor.to(device)
 
     if method == "gradcam":
-        from src.models.VisualScoringModel import GradCAM
 
         target_layer = recursive_getattr(model, args.target_layer)
+
         gradcam = GradCAM(model, target_layer)
         heatmap = gradcam(input_tensor, class_index=args.class_index)
     elif method == "grad_rollout":
-        from src.models.vit_explain.grad_rollout import VITAttentionGradRollout
 
         grad_rollout = VITAttentionGradRollout(
             model, discard_ratio=args.discard_ratio, device=device
@@ -47,7 +49,6 @@ def get_heatmap(method, model, input_tensor, args, device="cpu"):
             # heatmap = heatmap* 255  # Scale to [0, 255]
 
     elif method == "grad_cam_vgg":
-        from src.models.VisualScoringModel import GradCAM
 
         target_layer = model.features[29]  # Assuming the last layer is the target layer
         # target_layer = model.block5.conv3  # Assuming the last layer is the target layer

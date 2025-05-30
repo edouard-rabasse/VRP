@@ -4,6 +4,7 @@ import random
 import numpy as np
 from PIL import Image
 from typing import List, Optional, Tuple
+import cv2
 
 import torch
 from torch.utils.data import Dataset, DataLoader
