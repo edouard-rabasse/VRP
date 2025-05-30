@@ -15,7 +15,7 @@
 <entry key="THREADS">8</entry> 
 
 <entry key="MSH_MAX_POOL_SIZE">20000</entry> 
-<entry key="MSH_NUM_ITERATIONS">1</entry>
+<entry key="MSH_NUM_ITERATIONS">100</entry>
 <entry key="MSH_SAMPLING_TIME_LIMIT">60</entry>
 <entry key="MSH_RANDOM_FACTOR_HIGH">12</entry>
 <entry key="MSH_RANDOM_FACTOR_HIGH_RN">5</entry>
@@ -26,13 +26,13 @@
 <entry key="WALKING_SPEED">4</entry> 
 <entry key="FIXED_COST">300</entry> 
 <entry key="VARIABLE_COST">1</entry> 
-<entry key="MAX_WD_B2P">1.5</entry> 
+<entry key="MAX_WD_B2P">2.5</entry> 
 <entry key="SUBTOUR_TIME_LIMIT">30000</entry>
 <entry key="ROUTE_WALKING_DISTANCE_LIMIT">75</entry>
 <entry key="ROUTE_DURATION_LIMIT">420</entry>
 <entry key="PARKING_TIME_MIN">0</entry>
 
-<entry key="FIXED_ARCS_DISTANCE">-1</entry>
+<entry key="FIXED_ARCS_DISTANCE">-100</entry>
 
 
 </properties>
