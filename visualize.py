@@ -11,7 +11,7 @@ from src.models import load_model
 from src.transform import image_transform_test, mask_transform, denormalize
 from src.visualization import get_heatmap, show_mask_on_image
 from src.graph import get_arc_name, get_coordinates_name, read_arcs, read_coordinates
-from src.graph.reverse_heatmap import reverse_heatmap
+from src.graph.reverse_heatmap import HeatmapAnalyzer
 from evaluate_seg import compute_bce_with_logits_mask
 import hydra
 from omegaconf import DictConfig, OmegaConf
@@ -80,29 +80,26 @@ def main(cfg: DictConfig):
         arcs_p = os.path.join(arcs_dir, get_arc_name(number))
         coordinates, _ = read_coordinates(coordinates_p, keep_service_time=True)
         arcs = read_arcs(arcs_p)
-        arcs_with_zone, coordinates = reverse_heatmap(
-            arcs=arcs,
-            coordinates=coordinates,
+
+        hm_analyzer = HeatmapAnalyzer(
             heatmap=hm,
+            coordinates=coordinates,
+            arcs=arcs,
             bounds=list(cfg.arcs.bounds),
             threshold=cfg.arcs.threshold,
             n_samples=cfg.arcs.n_samples,
         )
+        arcs_with_zone, coordinates = hm_analyzer.reverse_heatmap()
         # ── save arcs ────────────────────────────────────────────────────────────
         arcs_out_p = cfg.arcs.arcs_out_dir
-        os.makedirs(arcs_out_p, exist_ok=True)
         coordinates_out_p = cfg.arcs.coord_out_dir
-        os.makedirs(coordinates_out_p, exist_ok=True)
         coordinates_out_p = os.path.join(
             coordinates_out_p, get_coordinates_name(number)
         )
         arcs_out_p = os.path.join(arcs_out_p, get_arc_name(number))
-        with open(arcs_out_p, "w") as f:
-            for arc in arcs_with_zone:
-                f.write(f"{arc[0]};{arc[1]};{arc[2]};{arc[3]};{arc[4]}\n")
-        with open(coordinates_out_p, "w") as f:
-            for node, coord in coordinates.items():
-                f.write(f"{node},{coord[0]},{coord[1]},{coord[2]},{coord[3]}\n")
+
+        hm_analyzer.write_arcs(arcs_with_zone, arcs_out_p)
+        hm_analyzer.write_coordinates(coordinates, coordinates_out_p)
 
         # --- compute loss
         loss = compute_bce_with_logits_mask(hm, mask)

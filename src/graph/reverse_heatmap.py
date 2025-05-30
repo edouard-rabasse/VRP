@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import os
 
 # Add the root directory to the system path
 root_dir = Path(__file__).parent.parent.parent
@@ -9,113 +10,88 @@ import numpy as np
 from src.graph.coordinates import read_coordinates, get_coordinates_name
 from src.graph.arcs import read_arcs, get_arc_name
 
+
 ## TODO: Add configuration file for the parameters
 ## TODO: Adapt to the mask
+class HeatmapAnalyzer:
+    def __init__(self, heatmap, bounds, arcs, coordinates, threshold=0.5, n_samples=15):
+        self.heatmap = heatmap
+        self.bounds = bounds
+        self.arcs = arcs
+        self.coordinates = coordinates
+        self.threshold = threshold
+        self.n_samples = n_samples
 
+    def world_to_pixel(self, x, y):
+        x_min, x_max, y_min, y_max = self.bounds
+        n_rows, n_cols = self.heatmap.shape
+        col = round((x - x_min) / (x_max - x_min) * (n_cols - 1))
+        row = round((y_max - y) / (y_max - y_min) * (n_rows - 1))
+        return max(0, min(row, n_rows - 1)), max(0, min(col, n_cols - 1))
 
-def world_to_pixel(x, y, bounds, shape):
-    """Convertit (x,y) réels ➜ indices de la matrice.
-    bounds : (x_min, x_max, y_min, y_max)
-    shape  : (n_rows, n_cols)"""
-    x_min, x_max, y_min, y_max = bounds
-    n_rows, n_cols = shape
-    col = round((x - x_min) / (x_max - x_min) * (n_cols - 1))
-    row = round((y_max - y) / (y_max - y_min) * (n_rows - 1))
-    # Clip dans les bornes
-    col = max(0, min(col, n_cols - 1))
-    row = max(0, min(row, n_rows - 1))
-    return row, col
+    def sample_segment(self, p1, p2):
+        x1, y1 = p1
+        x2, y2 = p2
+        for i in range(self.n_samples):
+            t = i / (self.n_samples - 1)
+            yield (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
 
+    def is_arc_in_zone(self, arc):
+        tail, head, _, _ = arc
+        p_tail = self.coordinates[tail][:2]
+        p_head = self.coordinates[head][:2]
+        for x, y in self.sample_segment(p_tail, p_head):
+            r, c = self.world_to_pixel(x, y)
+            if self.heatmap[r, c] >= self.threshold:
+                return True
+        return False
 
-def sample_segment(p1, p2, n=10):
-    """n points équidistants entre p1 et p2 (inclus)."""
-    x1, y1 = p1
-    x2, y2 = p2
-    for i in range(n):
-        t = i / (n - 1)
-        yield (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+    def arcs_in_zone(self):
+        return [arc for arc in self.arcs if self.is_arc_in_zone(arc)]
 
+    def route_in_zone(self, arcs_in_zone):
+        route_ids = set(route_id for _, _, _, route_id in arcs_in_zone)
+        points = set(tail for tail, _, _, _ in arcs_in_zone) | set(
+            head for _, head, _, _ in arcs_in_zone
+        )
+        return route_ids, points
 
-def is_arcs(arc, coordinates, heatmap, bounds, threshold=0.5, n_samples=15):
-    """
-    Retourne True si AU MOINS un point du segment
-    traverse une cellule de heat‑mask > threshold.
-    """
-    tail, head, mode, route_id = arc
-    p_tail = coordinates[tail][:2]
-    p_head = coordinates[head][:2]
+    def reverse_heatmap(self):
+        in_zone = self.arcs_in_zone()
+        route_ids, points = self.route_in_zone(in_zone)
 
-    # échantillonnage
-    for x, y in sample_segment(p_tail, p_head, n_samples):
-        r, c = world_to_pixel(x, y, bounds, heatmap.shape)
-        if heatmap[r, c] >= threshold:
-            return True  # inutile de tester d’autres points
-    # si on arrive ici, c’est que le segment ne traverse pas de cellule de heat‑mask > threshold
+        arcs_with_flag = [(*arc, 1 if arc in in_zone else 0) for arc in self.arcs]
 
-    return (
-        False  # aucun point du segment ne traverse une cellule de heat‑mask > threshold
-    )
+        new_coordinates = {}
 
+        for point in self.coordinates:
+            if point in points:
+                new_coordinates[point] = (*self.coordinates[point][:3], 1)
+            else:
+                new_coordinates[point] = (*self.coordinates[point][:3], 0)
 
-def arcs_in_zone(arcs, coordinates, heatmap, bounds, threshold=0.5, n_samples=15):
-    """
-    Retourne la liste des arcs dont AU MOINS un point du segment
-    traverse une cellule de heat‑mask > threshold.
-    """
-    in_zone = []
+        return arcs_with_flag, new_coordinates
 
-    for arc in arcs:
-        if is_arcs(arc, coordinates, heatmap, bounds, threshold, n_samples):
+    def write_arcs(self, arcs_with_zone, output_path):
+        """Écrit les arcs dans un fichier.
+        Args:
+            arcs_with_zone (list): Liste des arcs avec un indicateur de zone.
+            output_path (str): Chemin du fichier de sortie.
+        """
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w") as f:
+            for arc in arcs_with_zone:
+                f.write(f"{arc[0]};{arc[1]};{arc[2]};{arc[3]};{arc[4]}\n")
 
-            # Ajouter l'arc à la liste avec les indices de la matrice
-            in_zone.append(arc)
-
-    return in_zone
-
-
-def route_in_zone(arcs):
-    """
-    Returns the list of routes that have at least one point in the arcs.
-    """
-    route_ids = set(route_id for _, _, _, route_id in arcs)
-    points = set(tail for tail, _, _, _ in arcs) | set(head for _, head, _, _ in arcs)
-    return route_ids, points
-
-
-def reverse_heatmap(arcs, coordinates, heatmap, bounds, threshold=0.5, n_samples=15):
-    """
-    Returns list of arcs and coordinates with added column equal to 1 if they are in the heatmap, else 0.
-    """
-    in_zone = arcs_in_zone(arcs, coordinates, heatmap, bounds, threshold, n_samples)
-    route_ids, points = route_in_zone(in_zone)
-
-    # Create a new list of arcs with the added column
-    arcs_with_zone = []
-    for arc in arcs:
-        tail, head, mode, route_id = arc
-        if arc in in_zone:
-            arcs_with_zone.append((tail, head, mode, route_id, 1))  # In zone
-        else:
-            arcs_with_zone.append((tail, head, mode, route_id, 0))  # Not in zone
-    for point in coordinates:
-        assert (
-            len(coordinates[point]) >= 3
-        ), "Coordinates must have at least 3 elements (x, y, service_time)"
-        if point in points:
-            coordinates[point] = (
-                coordinates[point][0],
-                coordinates[point][1],
-                coordinates[point][2],
-                1,
-            )
-        else:
-            coordinates[point] = (
-                coordinates[point][0],
-                coordinates[point][1],
-                coordinates[point][2],
-                0,
-            )
-    return arcs_with_zone, coordinates
+    def write_coordinates(self, coordinates, output_path):
+        """Écrit les coordonnées dans un fichier.
+        Args:
+            coordinates (dict): Dictionnaire des coordonnées avec un indicateur de zone.
+            output_path (str): Chemin du fichier de sortie."""
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w") as f:
+            for node, coord in coordinates.items():
+                f.write(f"{node},{coord[0]},{coord[1]},{coord[2]},{coord[3]}\n")
 
 
 ### testing
@@ -224,10 +200,11 @@ if __name__ == "__main__":
     bounds = (-1, 11, -1, 11)  # Exemple de bornes
     threshold = 0.2  # Exemple de seuil
     n_samples = 10  # Exemple de nombre d'échantillons
-    in_zone = arcs_in_zone(arcs, coordinates, heatmap, bounds, threshold, n_samples)
-    print("Arcs in zone:", in_zone)
-    arcs_with_zone, coordinates = reverse_heatmap(
-        arcs, coordinates, heatmap, bounds, threshold, n_samples
+    Hm_analyzer = HeatmapAnalyzer(
+        heatmap, bounds, arcs, coordinates, threshold=threshold, n_samples=n_samples
     )
+    in_zone = Hm_analyzer.arcs_in_zone()
+    print("Arcs in zone:", in_zone)
+    arcs_with_zone, coordinates = Hm_analyzer.reverse_heatmap()
     print("Coordinates with zone:", coordinates)
     print("Arcs with zone:", arcs_with_zone)
