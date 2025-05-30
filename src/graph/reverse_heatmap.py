@@ -6,29 +6,11 @@ root_dir = Path(__file__).parent.parent.parent
 sys.path.append(str(root_dir))
 
 import numpy as np
-from src.graph.coordinates import read_coordinates
+from src.graph.coordinates import read_coordinates, get_coordinates_name
+from src.graph.arcs import read_arcs, get_arc_name
 
 ## TODO: Add configuration file for the parameters
 ## TODO: Adapt to the mask
-
-
-def read_coordinates(file_path):
-    """Returns the coordinates file as a dictionary {node: (x, y)}."""
-    coordinates = {}
-    last_node = None
-    with open(file_path, "r") as file:
-        for line in file:
-            parts = line.strip().split(",")
-            node = int(parts[0])
-            x, y = map(float, parts[1:3])
-            coordinates[node] = (x, y)
-            last_node = node  # The last node is the depot
-    return coordinates, last_node
-
-
-def get_arc_name(index):
-    """Returns the arc name as a string."""
-    return f"Arcs_{index}_1.txt"
 
 
 def world_to_pixel(x, y, bounds, shape):
@@ -60,8 +42,8 @@ def is_arcs(arc, coordinates, heatmap, bounds, threshold=0.5, n_samples=15):
     traverse une cellule de heat‑mask > threshold.
     """
     tail, head, mode, route_id = arc
-    p_tail = coordinates[tail]
-    p_head = coordinates[head]
+    p_tail = coordinates[tail][:2]
+    p_head = coordinates[head][:2]
 
     # échantillonnage
     for x, y in sample_segment(p_tail, p_head, n_samples):
@@ -116,10 +98,23 @@ def reverse_heatmap(arcs, coordinates, heatmap, bounds, threshold=0.5, n_samples
         else:
             arcs_with_zone.append((tail, head, mode, route_id, 0))  # Not in zone
     for point in coordinates:
+        assert (
+            len(coordinates[point]) >= 3
+        ), "Coordinates must have at least 3 elements (x, y, service_time)"
         if point in points:
-            coordinates[point] = (coordinates[point][0], coordinates[point][1], 1)
+            coordinates[point] = (
+                coordinates[point][0],
+                coordinates[point][1],
+                coordinates[point][2],
+                1,
+            )
         else:
-            coordinates[point] = (coordinates[point][0], coordinates[point][1], 0)
+            coordinates[point] = (
+                coordinates[point][0],
+                coordinates[point][1],
+                coordinates[point][2],
+                0,
+            )
     return arcs_with_zone, coordinates
 
 
@@ -129,7 +124,9 @@ if __name__ == "__main__":
     # arcs = read_arcs("MSH/MSH/results/configuration1/Arcs_58_1.txt")
     # print(arcs)
     arcs = [(27, 44, 2, 2)]
-    coordinates, _ = read_coordinates("MSH/MSH/instances/Coordinates_58.txt")
+    coordinates, _ = read_coordinates(
+        "MSH/MSH/instances/Coordinates_58.txt", keep_service_time=True
+    )
 
     heatmap = np.array(
         [

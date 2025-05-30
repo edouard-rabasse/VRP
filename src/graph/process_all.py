@@ -12,13 +12,12 @@ def process_all_solutions(
     output_folder,
     bounds=(-1, 11, -1, 11),
     valid_range=None,
+    type="original",
 ):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    for filename in tqdm(
-        os.listdir(arcs_folder), desc="Processing files", unit="file", leave=False
-    ):
+    for filename in os.listdir(arcs_folder):
         match = re.match(r"Arcs_(\w+)_\d+\.txt", filename)
         # if not match:
         # print(f"Skipped file (no match): {filename}")
@@ -33,8 +32,8 @@ def process_all_solutions(
                 output_file = os.path.join(output_folder, f"Plot_{instance}.png")
 
                 if os.path.exists(coordinates_file):
-                    arcs = read_arcs(arcs_file)
-                    coordinates, depot = read_coordinates(coordinates_file)
+                    arcs = read_arcs(arcs_file, type=type)
+                    coordinates, depot = read_coordinates(coordinates_file, type=type)
                     plot_routes(arcs, coordinates, depot, output_file, bounds)
                 else:
                     print(f"Warning: Coordinates file {coordinates_file} not found.")
