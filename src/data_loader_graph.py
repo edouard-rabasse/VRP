@@ -15,13 +15,6 @@ from src.mask import get_mask, get_mask_pixelised, get_removed_lines
 
 
 class VRPGraphDataset(Dataset):
-    """
-    Dataset that generates route plots and corresponding masks on the fly.
-    For each instance, emits two samples:
-      label=0: original configuration1 plot (zero mask)
-      label=1: modified configurationN plot (diff mask vs config1)
-    """
-
     def __init__(
         self,
         orig_arcs_folder: str,
@@ -32,7 +25,7 @@ class VRPGraphDataset(Dataset):
         mask_method: str = "removed_lines",
         image_transform=None,
         mask_transform=None,
-        valid_range=None,  # optional filter by instance IDs
+        valid_range=None,
     ):
         self.orig_folder = orig_arcs_folder
         self.mod_folder = mod_arcs_folder
@@ -43,7 +36,7 @@ class VRPGraphDataset(Dataset):
         self.image_transform = image_transform or transforms.ToTensor()
         self.mask_transform = mask_transform or transforms.ToTensor()
 
-        # collect matching instance files
+        # match instance files
         pat = re.compile(r"Arcs_(\w+)_\d+\.txt")
         instances = []
         for fn in os.listdir(self.orig_folder):
@@ -57,82 +50,55 @@ class VRPGraphDataset(Dataset):
             coords_fp = os.path.join(self.coords_folder, coords_fn)
             if os.path.exists(mod_fp) and os.path.exists(coords_fp):
                 instances.append((inst, orig_fp, mod_fp, coords_fp))
-        # apply selection filter if provided
+
         if valid_range is not None:
-            # valid_range is an iterable of int instance IDs
             instances = [t for t in instances if int(t[0]) in valid_range]
+
         self.instances = instances
 
     def __len__(self):
         return len(self.instances) * 2
 
-    def __getitem__(self, idx):
-        inst, orig_fp, mod_fp, coords_fp = self.instances[idx // 2]
-        label = idx % 2  # 1=original,0=modified
-        arcs_fp = orig_fp if label == 1 else mod_fp
-
-        # read arcs and coordinates
-
-        arcs = read_arcs(arcs_fp)
-        coords, depot = read_coordinates(coords_fp)
-
-        # plot the arcs into a PIL image buffer
-        fig, ax = plt.subplots(figsize=(10, 10))
-        ax.set_aspect("equal", adjustable="box")
+    def _plot_arcs(self, arcs, coords, depot, ax):
+        ax.set_aspect("equal")
         ax.set_xlim(self.bounds[0], self.bounds[1])
         ax.set_ylim(self.bounds[2], self.bounds[3])
         for t, h, mode, _ in arcs:
             x1, y1 = coords[t]
             x2, y2 = coords[h]
-            linestyle = "-"
             color = (0, 1, 0) if mode == 2 else (0, 0, 1)
-            ax.plot(
-                [x1, x2],
-                [y1, y2],
-                linestyle=linestyle,
-                color=color,
-                linewidth=4,
-                zorder=1,
-            )
-        red = (1, 0, 0)
+            ax.plot([x1, x2], [y1, y2], linestyle="-", color=color, linewidth=4)
         for node, (x, y) in coords.items():
             marker = "s" if node == depot else "o"
-            ax.scatter(x, y, color=red, marker=marker, s=60, zorder=2)
+            ax.scatter(x, y, color=(1, 0, 0), marker=marker, s=60)
         ax.axis("off")
 
+    def _render_image(self, arcs, coords, depot):
+        fig, ax = plt.subplots(figsize=(10, 10))
+        self._plot_arcs(arcs, coords, depot, ax)
         buf = io.BytesIO()
         fig.savefig(buf, format="png", bbox_inches="tight", pad_inches=0)
         plt.close(fig)
         buf.seek(0)
-        pil_img = Image.open(buf).convert("RGB")
+        image = Image.open(buf).convert("RGB")
         buf.close()
+        return image
 
-        # build mask
+    def __getitem__(self, idx):
+        inst, orig_fp, mod_fp, coords_fp = self.instances[idx // 2]
+        label = idx % 2  # 1 = original, 0 = modified
+        arcs_fp = orig_fp if label == 1 else mod_fp
+
+        arcs = read_arcs(arcs_fp)
+        coords, depot = read_coordinates(coords_fp)
+        pil_img = self._render_image(arcs, coords, depot)
+
         if label == 0:
             mask = Image.new("L", pil_img.size, 0)
         else:
-            # regenerate original image array
-            buf2 = io.BytesIO()
-            fig2, ax2 = plt.subplots(figsize=(10, 10))
-            ax2.set_aspect("equal", adjustable="box")
-            ax2.set_xlim(self.bounds[0], self.bounds[1])
-            ax2.set_ylim(self.bounds[2], self.bounds[3])
-            orig_arcs = read_arcs(orig_fp)
-            for t, h, mode, _ in orig_arcs:
-                x1, y1 = coords[t]
-                x2, y2 = coords[h]
-                ax2.plot(
-                    [x1, x2], [y1, y2], linestyle="-", color=(0, 0, 1), linewidth=4
-                )
-            ax2.scatter(coords[depot][0], coords[depot][1], color=red, marker="s", s=60)
-            ax2.axis("off")
-            fig2.savefig(buf2, format="png", bbox_inches="tight", pad_inches=0)
-            plt.close(fig2)
-            buf2.seek(0)
-            orig_arr = np.array(Image.open(buf2).convert("RGB"))
+            orig_img = self._render_image(read_arcs(orig_fp), coords, depot)
+            orig_arr = np.array(orig_img)
             mod_arr = np.array(pil_img)
-            buf2.close()
-
             if self.mask_method == "default":
                 mask_np = get_mask(orig_arr, mod_arr)
             elif self.mask_method == "removed_lines":
@@ -141,12 +107,9 @@ class VRPGraphDataset(Dataset):
                 mask_np = get_mask_pixelised(
                     orig_arr, mod_arr, pixel_size=self.pixel_size
                 )
-
-            if mask_np.ndim == 3:
-                mask_np = mask_np[..., 0]
+            mask_np = mask_np[..., 0] if mask_np.ndim == 3 else mask_np
             mask = Image.fromarray(mask_np.astype(np.uint8), mode="L")
 
-        # transforms to tensors
         img_t = self.image_transform(pil_img)
         mask_t = self.mask_transform(mask)
         return img_t, torch.tensor(label, dtype=torch.long), mask_t
@@ -167,3 +130,47 @@ def get_graph_dataloader(
     return DataLoader(
         ds, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers
     )
+
+
+def split_graph_dataset(dataset: VRPGraphDataset, train_ratio=0.8, seed=42):
+    """
+    Split a VRPGraphDataset into train/test datasets, keeping (original, modified) pairs together.
+    """
+    import random
+
+    # Step 1: Get list of instances
+    instances = dataset.instances.copy()
+    random.Random(seed).shuffle(instances)
+
+    # Step 2: Split instances
+    n_train = int(len(instances) * train_ratio)
+    train_instances = instances[:n_train]
+    test_instances = instances[n_train:]
+
+    # Step 3: Build new datasets
+    train_ds = VRPGraphDataset(
+        orig_arcs_folder=dataset.orig_folder,
+        mod_arcs_folder=dataset.mod_folder,
+        coords_folder=dataset.coords_folder,
+        bounds=dataset.bounds,
+        pixel_size=dataset.pixel_size,
+        mask_method=dataset.mask_method,
+        image_transform=dataset.image_transform,
+        mask_transform=dataset.mask_transform,
+    )
+    test_ds = VRPGraphDataset(
+        orig_arcs_folder=dataset.orig_folder,
+        mod_arcs_folder=dataset.mod_folder,
+        coords_folder=dataset.coords_folder,
+        bounds=dataset.bounds,
+        pixel_size=dataset.pixel_size,
+        mask_method=dataset.mask_method,
+        image_transform=dataset.image_transform,
+        mask_transform=dataset.mask_transform,
+    )
+
+    # Manually set instances
+    train_ds.instances = train_instances
+    test_ds.instances = test_instances
+
+    return train_ds, test_ds

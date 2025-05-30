@@ -3,6 +3,7 @@ defaults:
   - data: config7_new # ← then merge conf/data/data_config.yaml
   - model: cnn       # ← then merge conf/model/cnn.yaml
   - arcs: default    # ← then merge conf/arcs/default.yaml
+  - plot: default    # ← then merge conf/plot/default.yaml
   - _self_            # ← load THIS file’s keys 
 
 # now your keys are available for interpolation:

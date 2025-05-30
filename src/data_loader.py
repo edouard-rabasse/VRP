@@ -3,7 +3,7 @@ Unified data loader that chooses between mask-based and graph-based datasets.
 """
 
 from src.data_loader_mask import load_data_train_test
-from src.data_loader_graph import VRPGraphDataset
+from src.data_loader_graph import VRPGraphDataset, split_graph_dataset
 from torch.utils.data import random_split, DataLoader
 import torch
 from src.utils.config_utils import load_selection_config
@@ -54,11 +54,8 @@ def load_data(cfg):
             mask_transform=mask_transform(tuple(cfg.mask_shape)),
             valid_range=sel_range,
         )
-        total = len(full_ds)
-        n_train = int(cfg.data.train_ratio * total)
-        rng = torch.Generator().manual_seed(cfg.data.seed)
-        train_ds, test_ds = random_split(
-            full_ds, [n_train, total - n_train], generator=rng
+        train_ds, test_ds = split_graph_dataset(
+            full_ds, train_ratio=cfg.plot.train_ratio, seed=cfg.plot.random_state
         )
         # use single-process loading to avoid backend memory issues
         train_loader = DataLoader(
