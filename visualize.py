@@ -8,8 +8,7 @@ import torchvision.transforms.functional as TF
 from torchvision import transforms
 
 from src.models import load_model
-from src.visualization import process_image
-from evaluate_seg import compute_bce_with_logits_mask
+from src.visualization import process_image, compute_bce_with_logits_mask
 import hydra
 from omegaconf import DictConfig
 import time

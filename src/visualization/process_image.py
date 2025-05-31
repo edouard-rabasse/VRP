@@ -11,7 +11,7 @@ from .load_transform_image_name import load_and_transform_image_mask
 from .reverse_heatmap import reverse_heatmap
 from .save_overlay import save_overlay
 
-from evaluate_seg import compute_bce_with_logits_mask
+from .compute_bce_with_logits_mask import compute_bce_with_logits_mask
 import hydra
 from omegaconf import DictConfig
 import time

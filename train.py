@@ -9,7 +9,8 @@ from src.utils.config_utils import load_selection_config
 import hydra
 import wandb
 from omegaconf import DictConfig, OmegaConf
-from evaluate_seg import compute_seg_loss_from_loader
+
+# from visualize import compute_seg_loss_from_loader
 import time
 
 
