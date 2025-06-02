@@ -46,7 +46,7 @@ def image_transform_train(size=(224, 224), mean=mean, std=std):
                 size, interpolation=transforms.InterpolationMode.NEAREST_EXACT
             ),
             transforms.ToTensor(),
-            transforms.Normalize(mean=mean, std=std),
+            # transforms.Normalize(mean=mean, std=std),
         ]
     )
 
@@ -65,7 +65,7 @@ def image_transform_test(size=(224, 224), mean=mean, std=std):
                 size, interpolation=transforms.InterpolationMode.NEAREST_EXACT
             ),
             transforms.ToTensor(),
-            transforms.Normalize(mean=mean, std=std),
+            # transforms.Normalize(mean=mean, std=std),
         ]
     )
 
@@ -84,5 +84,5 @@ class MaxPoolResize:
         return mask
 
 
-def mask_transform(size):
+def mask_transform(size=(224, 224)):
     return transforms.Compose([transforms.ToTensor(), MaxPoolResize(size)])
