@@ -29,5 +29,7 @@ parameters:
     values: [0.0001, 0.00005, 0.00001]
   model.freeze:
     values: [false]
+  data:
+    values: ["config7_background"]
 
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas

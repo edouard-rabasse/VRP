@@ -3,4 +3,4 @@
 numbers: [1,2,7]
 valid_range: [1001, 3000]
 special: "_background"
-background: 
+background_image: data/fond/MTL.png

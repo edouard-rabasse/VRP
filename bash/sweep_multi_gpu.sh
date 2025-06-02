@@ -49,6 +49,7 @@ else
     echo "[Task $SLURM_ARRAY_TASK_ID] Waiting for sweep ID... in $SWEEP_ID_FILE"
     TIMEOUT=60
     WAITED=0
+    sleep 60 # Initial wait to allow task 0 to create the sweep ID file
     while [ ! -s "$SWEEP_ID_FILE" ]; do
         sleep 2
         WAITED=$((WAITED + 2))
