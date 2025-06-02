@@ -1,7 +1,7 @@
 import tempfile
 import os
 import numpy as np
-from src.graph.generate_plot_from_files import generate_plot_from_files
+from src.graph.generate_plot import generate_plot_from_files
 
 
 def test_generate_plot_from_files():
