@@ -21,7 +21,13 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 wandb login --relogin "$WANDB_API_KEY"
 
 # ── Configuration ────────────────────────────────────────────────────────────
-MODEL="vgg"
+# Ajoute ce bloc pour récupérer le modèle passé en argument
+if [ -z "$1" ]; then
+    echo "❌ ERROR: No model specified. Usage: sbatch launch_sweep.sh <model_name>"
+    exit 1
+fi
+
+MODEL="$1"  # 👈 récupère le modèle depuis la ligne de commande
 SWEEP_CONFIG="$SLURM_SUBMIT_DIR/sweep/sweep_${MODEL}.yaml"
 SWEEP_ID_FILE="$SLURM_SUBMIT_DIR/sweep/sweep_id_${MODEL}.txt"
 
