@@ -16,44 +16,36 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 # Import existing graph creator functions
-from src.graph.graph_creator import read_arcs, read_coordinates, plot_routes
+from src.graph import generate_plot_from_files
 from src.models import load_model
 from src.visualization import get_heatmap
 from src.transform import image_transform_test
 
 
-def generate_plot_from_arcs(
-    arcs_file: str, coords_file: str, bounds=(-1, 11, -1, 11), dpi=100
-) -> Tuple[np.ndarray, Dict, List, int]:
-    """
-    Generate a plot from arcs and coordinates files and return as a numpy array.
-    Uses existing plot_routes function from graph_creator.
+coord_path = "MSH/MSH/instances/Coordinates_5.txt"
+arc_path = "MSH/MSH/resulats/configuration1/Arcs_5_1.txt"
 
-    Args:
-        arcs_file: Path to the arcs file
-        coords_file: Path to the coordinates file
-        bounds: Plot bounds (x_min, x_max, y_min, y_max)
-        dpi: DPI for the plot (affects output resolution)
+model = (
+    load_model(
+        "resnet",
+        "cuda" if torch.cuda.is_available() else "cpu",
+        {"weight_path": "checkpoints/resnet_8_30_7.pth"},
+    ),
+)
 
-    Returns:
-        tuple: (image_array, coordinates_dict, arcs_list, depot_node)
-    """
-    # Read arcs and coordinates
-    arcs = read_arcs(arcs_file)
-    coordinates, depot = read_coordinates(coords_file)
+img = generate_plot_from_files(
+    arcs_file=arc_path, coords_file=coord_path, bounds=(-1, 11, -1, 11)
+)
 
-    # Create in-memory buffer for the image
-    buf = io.BytesIO()
 
-    # Use the existing plot_routes function to generate the plot
-    plot_routes(arcs, coordinates, depot, buf, bounds=bounds)
-
-    # Convert buffer to numpy array
-    buf.seek(0)
-    img = np.array(Image.open(buf).convert("RGB"))
-    buf.close()
-
-    return img, coordinates, arcs, depot
+heatmap = get_heatmap(
+    method="grad_cam",
+    img_tensor=image_transform_test()(Image.fromarray(img))
+    .unsqueeze(0)
+    .to("cuda" if torch.cuda.is_available() else "cpu"),
+    args={"class_index": 1},
+    device="cuda" if torch.cuda.is_available() else "cpu",
+)
 
 
 def extract_important_arcs(
@@ -191,7 +183,7 @@ def main():
 
     # Generate plot from arcs and coordinates
     print(f"Generating plot from {args.arcs} and {args.coords}")
-    image, coordinates, arcs, depot = generate_plot_from_arcs(
+    image, coordinates, arcs, depot = generate_plot_from_files(
         args.arcs, args.coords, bounds=bounds
     )
 

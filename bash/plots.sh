@@ -19,4 +19,4 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
 python src/graph/graph_creator.py +variants=special_2
 python src/mask.py +variants=special_2
-python src/test_train.py +variants=special_2
+python src/train_split.py +variants=special_2

@@ -29,7 +29,6 @@ class GradCAM:
         loss = output[:, class_index].sum()
 
         loss.backward()
-        print("model is on device", next(self.model.parameters()).device)
 
         assert (
             self.gradients is not None

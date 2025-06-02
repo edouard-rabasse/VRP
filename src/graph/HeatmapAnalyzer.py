@@ -42,7 +42,9 @@ class HeatmapAnalyzer:
         p_head = self.coordinates[head][:2]
         for x, y in self.sample_segment(p_tail, p_head):
             r, c = self.world_to_pixel(x, y)
+
             if self.heatmap[r, c] >= self.threshold:
+                print(arc, r, c, x, y)
                 return True
         return False
 
