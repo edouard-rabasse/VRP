@@ -16,4 +16,4 @@ mask_split_output_folder: ${hydra:runtime.cwd}/data/
 train_ratio: 0.75
 random_state: 123
 
-background_image: data/fond/MTL.png
+# background_image: data/fond/MTL.png

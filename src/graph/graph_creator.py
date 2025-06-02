@@ -16,7 +16,8 @@ from src.graph.process_all import process_all_solutions
 def main(cfg: DictConfig) -> None:
     numbers = cfg.numbers
     valid_range = range(cfg.valid_range[0], cfg.valid_range[1] + 1)
-    background_image = cfg.background_image if cfg.background_image else None
+    background_image = cfg.background_image if "background_image" in cfg else None
+
     print(cfg)
     bounds = tuple(cfg.bounds)
     for number in numbers:

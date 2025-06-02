@@ -23,11 +23,6 @@ from src.transform import image_transform_test
 
 from src.graph import HeatmapAnalyzer
 
-
-coord_path = "MSH/MSH/instances/Coordinates_5.txt"
-arc_path = "MSH/MSH/resulats/configuration1/Arcs_5_1.txt"
-modified_arcs_path = "MSH/MSH/resulats/configuration7/Arcs_5_1.txt"
-
 model = (
     load_model(
         "resnet",
@@ -36,26 +31,41 @@ model = (
     ),
 )
 
-original_img = generate_plot_from_files(
-    arcs_file=arc_path, coords_file=coord_path, bounds=(-1, 11, -1, 11)
-)
 
-modified_img = generate_plot_from_files(
-    arcs_file=modified_arcs_path, coords_file=coord_path, bounds=(-1, 11, -1, 11)
-)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Process graph data and visualize heatmaps."
+    )
 
+    coord_path = "MSH/MSH/instances/Coordinates_5.txt"
+    arc_path = "MSH/MSH/resulats/configuration1/Arcs_5_1.txt"
+    modified_arcs_path = "MSH/MSH/resulats/configuration7/Arcs_5_1.txt"
 
-heatmap = get_heatmap(
-    method="grad_cam",
-    img_tensor=image_transform_test()(Image.fromarray(original_img))
-    .unsqueeze(0)
-    .to("cuda" if torch.cuda.is_available() else "cpu"),
-    args={"class_index": 1},
-    device="cuda" if torch.cuda.is_available() else "cpu",
-)
-arcs = read_arcs(arc_path)
-coordinates, _ = read_coordinates(coord_path)
+    original_img = generate_plot_from_files(
+        arcs_file=arc_path, coords_file=coord_path, bounds=(-1, 11, -1, 11)
+    )
 
-hm_analyzer = HeatmapAnalyzer(heatmap=heatmap, arcs=arcs, coordinates=coordinates)
+    proba_of_needing_modif = torch.sigmoid(
+        model(image_transform_test()(Image.fromarray(original_img)))
+    )[1].item()
+    print(f"Probability of needing modification: {proba_of_needing_modif:.4f}")
 
-arcs_flagged, coord_flagged = hm_analyzer.reverse_heatmap()
+    modified_img = generate_plot_from_files(
+        arcs_file=modified_arcs_path, coords_file=coord_path, bounds=(-1, 11, -1, 11)
+    )
+
+    heatmap = get_heatmap(
+        model=model,
+        method="grad_cam",
+        img_tensor=image_transform_test()(Image.fromarray(original_img))
+        .unsqueeze(0)
+        .to("cuda" if torch.cuda.is_available() else "cpu"),
+        args={"class_index": 1},
+        device="cuda" if torch.cuda.is_available() else "cpu",
+    )
+    arcs = read_arcs(arc_path)
+    coordinates, _ = read_coordinates(coord_path)
+
+    hm_analyzer = HeatmapAnalyzer(heatmap=heatmap, arcs=arcs, coordinates=coordinates)
+
+    arcs_flagged, coord_flagged = hm_analyzer.reverse_heatmap()

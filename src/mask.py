@@ -59,7 +59,12 @@ def process_image_pairs(
                 else:
                     mask = get_mask_pixelised(original, modified, pixel_size=pixel_size)
             elif method == "removed_lines":
-                mask = get_removed_lines(original, modified, colored=colored)
+                if colored:
+                    mask = detect_blue_green_changes(
+                        original, modified, colored=colored
+                    )
+                else:
+                    mask = get_removed_lines(original, modified, colored=True)
             else:
                 raise ValueError(
                     "Invalid method specified. Use 'default' or 'removed_lines'."
@@ -71,6 +76,42 @@ def process_image_pairs(
 
         except Exception as e:
             print(f"Error processing {filename}: {str(e)}")
+
+
+import cv2
+import numpy as np
+
+
+def detect_blue_green_changes(
+    original_image, modified_image, threshold=20, colored=True
+):
+    # Convert original to HSV to filter green/blue zones
+    hsv = cv2.cvtColor(original_image, cv2.COLOR_BGR2HSV)
+
+    # Define HSV range for blue and green (tu peux ajuster les bornes)
+    lower_blue = np.array([90, 50, 50])
+    upper_blue = np.array([130, 255, 255])
+    lower_green = np.array([40, 50, 50])
+    upper_green = np.array([85, 255, 255])
+
+    # Create masks for green and blue zones in original image
+    mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
+    mask_green = cv2.inRange(hsv, lower_green, upper_green)
+    mask_color_regions = cv2.bitwise_or(mask_blue, mask_green)
+
+    # Detect all color changes (regardless of original color)
+    diff = cv2.absdiff(original_image, modified_image)
+    gray_diff = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+    _, mask_changed = cv2.threshold(gray_diff, threshold, 255, cv2.THRESH_BINARY)
+
+    # Keep only the changes that occurred in blue/green zones
+    mask_final = cv2.bitwise_and(mask_changed, mask_color_regions)
+
+    # Optional: remove noise
+    kernel = np.ones((3, 3), np.uint8)
+    mask_cleaned = cv2.morphologyEx(mask_final, cv2.MORPH_OPEN, kernel)
+
+    return mask_cleaned
 
 
 def get_mask(original_image, modified_image):

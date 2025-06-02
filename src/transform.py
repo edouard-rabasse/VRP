@@ -46,7 +46,7 @@ def image_transform_train(size=(224, 224), mean=mean, std=std):
                 size, interpolation=transforms.InterpolationMode.NEAREST_EXACT
             ),
             transforms.ToTensor(),
-            # transforms.Normalize(mean=mean, std=std),
+            transforms.Normalize(mean=mean, std=std),
         ]
     )
 
@@ -65,7 +65,7 @@ def image_transform_test(size=(224, 224), mean=mean, std=std):
                 size, interpolation=transforms.InterpolationMode.NEAREST_EXACT
             ),
             transforms.ToTensor(),
-            # transforms.Normalize(mean=mean, std=std),
+            transforms.Normalize(mean=mean, std=std),
         ]
     )
 
@@ -81,6 +81,7 @@ class MaxPoolResize:
         # --- re-binarisation pour le cas mono-canal ---
         if mask.size(0) == 1:
             mask = (mask > 0).float()
+
         return mask
 
 
