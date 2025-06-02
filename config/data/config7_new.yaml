@@ -17,3 +17,5 @@ test_mask_path:      "${path}/${mask}/test/mask${cfg_number}_2/"
 selection: ## index selection
   type: "range"
   value: [1001,3000]
+
+augment: false

@@ -127,6 +127,7 @@ def load_data(
     num_workers=4,
     range=None,
     return_filenames=False,
+    augment=False,
 ):
     dataset = CustomDataset(
         original_dir=original_path,
@@ -136,6 +137,7 @@ def load_data(
         mask_transform=mask_transform,
         range=range,
         return_filenames=return_filenames,
+        augment=augment,
     )
     return get_dataloader(dataset, batch_size=batch_size, num_workers=num_workers)
 
@@ -155,6 +157,7 @@ def load_data_train_test(
     num_workers=4,
     range=None,
     return_filenames=False,
+    augment=False,
 ):
     train_loader = load_data(
         original_path=train_original_path,
@@ -166,6 +169,7 @@ def load_data_train_test(
         num_workers=num_workers,
         range=range,
         return_filenames=return_filenames,
+        augment=augment,
     )
     test_loader = load_data(
         original_path=test_original_path,
@@ -177,6 +181,7 @@ def load_data_train_test(
         num_workers=num_workers,
         range=range,
         return_filenames=return_filenames,
+        augment=False,  # No augmentation for test data
     )
     return train_loader, test_loader
 

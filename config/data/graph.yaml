@@ -25,3 +25,5 @@ seed: 42
 selection:
   type: range
   value: [1, 10]
+
+augment: true  

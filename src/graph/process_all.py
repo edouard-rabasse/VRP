@@ -1,9 +1,26 @@
 from .read_arcs import read_arcs
 from .read_coordinates import read_coordinates
+from .plot_routes import plot_routes
 import os
 import re
 from tqdm import tqdm
-from .plot_routes import plot_routes
+
+
+def get_instance_number(filename):
+    match = re.match(r"Arcs_(\w+)_\d+\.txt", filename)
+    return match.group(1) if match else None
+
+
+def should_process_instance(instance_number, valid_range):
+    return valid_range is None or int(instance_number) in valid_range
+
+
+def process_single_solution(
+    arcs_file, coordinates_file, output_file, bounds, route_type, show_labels
+):
+    arcs = read_arcs(arcs_file, type=route_type)
+    coordinates, depot = read_coordinates(coordinates_file, type=route_type)
+    plot_routes(arcs, coordinates, depot, output_file, bounds, route_type, show_labels)
 
 
 def process_all_solutions(
@@ -15,45 +32,21 @@ def process_all_solutions(
     type="original",
     show_labels=False,
 ):
-    """Process all solutions by reading arcs and coordinates, and plotting the routes.
+    """Batch process all solution files."""
+    os.makedirs(output_folder, exist_ok=True)
 
-    Parameters:
-        - arcs_folder (str): Path to the folder containing arcs files.
-        - coordinates_folder (str): Path to the folder containing coordinates files.
-        - output_folder (str): Path to the folder where output plots will be saved.
-        - bounds (tuple, optional): Geographic bounds for the plot. Defaults to (-1, 11, -1, 11).
-        - valid_range (list, optional): List of valid instance numbers to process. Defaults to None.
-        - type (str, optional): Type of the solution (e.g., "original", "refined"). Defaults to "original".
-        - show_labels (bool, optional): Whether to show labels on the plot. Defaults to False.
-    """
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+    for filename in tqdm(os.listdir(arcs_folder), desc="Processing solutions"):
+        instance = get_instance_number(filename)
+        if instance and should_process_instance(instance, valid_range):
+            arcs_file = os.path.join(arcs_folder, filename)
+            coordinates_file = os.path.join(
+                coordinates_folder, f"Coordinates_{instance}.txt"
+            )
+            output_file = os.path.join(output_folder, f"Plot_{instance}.png")
 
-    for filename in os.listdir(arcs_folder):
-        match = re.match(r"Arcs_(\w+)_\d+\.txt", filename)
-        # if not match:
-        # print(f"Skipped file (no match): {filename}")
-        if match:
-            number = int(match.group(1))
-            if valid_range is None or number in valid_range:
-                instance = match.group(1)
-                arcs_file = os.path.join(arcs_folder, filename)
-                coordinates_file = os.path.join(
-                    coordinates_folder, f"Coordinates_{instance}.txt"
+            if os.path.exists(coordinates_file):
+                process_single_solution(
+                    arcs_file, coordinates_file, output_file, bounds, type, show_labels
                 )
-                output_file = os.path.join(output_folder, f"Plot_{instance}.png")
-
-                if os.path.exists(coordinates_file):
-                    arcs = read_arcs(arcs_file, type=type)
-                    coordinates, depot = read_coordinates(coordinates_file, type=type)
-                    plot_routes(
-                        arcs,
-                        coordinates,
-                        depot,
-                        output_file,
-                        bounds,
-                        route_type=type,
-                        show_labels=show_labels,
-                    )
-                else:
-                    print(f"Warning: Coordinates file {coordinates_file} not found.")
+            else:
+                print(f"⚠️ Coordinates file not found: {coordinates_file}")

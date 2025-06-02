@@ -34,6 +34,7 @@ def load_data(cfg):
             mask_transform_test=mask_transform(tuple(cfg.mask_shape)),
             num_workers=cfg.num_workers if hasattr(cfg, "num_workers") else 4,
             range=range_sel,
+            augment=cfg.data.augment if hasattr(cfg.data, "augment") else False,
         )
         return train_loader, test_loader
     elif loader_type == "graph":
