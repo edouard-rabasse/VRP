@@ -15,6 +15,16 @@ from src.graph.read_arcs import read_arcs, get_arc_name
 ## TODO: Adapt to the mask
 class HeatmapAnalyzer:
     def __init__(self, heatmap, bounds, arcs, coordinates, threshold=0.5, n_samples=15):
+        """Initialize the HeatmapAnalyzer.
+
+        Args:
+            heatmap (np.ndarray): The heatmap to analyze.
+            bounds (tuple): The spatial bounds of the heatmap (x_min, x_max, y_min, y_max).
+            arcs (list): The list of arcs to consider.
+            coordinates (dict): The dictionary of node coordinates.
+            threshold (float, optional): The threshold for considering an arc important. Defaults to 0.5.
+            n_samples (int, optional): The number of samples to take along each arc. Defaults to 15.
+        """
         self.heatmap = heatmap
         self.bounds = bounds
         self.arcs = arcs
