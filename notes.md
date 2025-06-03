@@ -74,7 +74,7 @@ Zones de parking
 - zones difficiles à stationner
 - changer la couleur des noeuds
 - réseau routier, en background
-  - pipeline complète (évaluation)
+  - pipeline complète (évaluation) --> dans graph flagging
 - heuristique. solutions qui respectent la contrainte.
 - énumérer puis garder les x% meilleurs en terme de distance. Précalculer la matrice des distances (pour les arcs modifiés).
   - contrainte voiture/piéton
