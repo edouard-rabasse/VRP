@@ -23,12 +23,24 @@ from src.transform import image_transform_test
 
 from src.graph import HeatmapAnalyzer
 
-model = (
-    load_model(
-        "resnet",
-        "cuda" if torch.cuda.is_available() else "cpu",
-        {"weight_path": "checkpoints/resnet_8_30_7.pth"},
-    ),
+from omegaconf import OmegaConf
+
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+cfgm = OmegaConf.create(
+    {
+        "weight_path": "checkpoints/resnet_8_30_7.pth",
+        "kernel_size": 7,
+        "freeze": False,
+        "load": True,
+    }
+)
+
+model = load_model(
+    "resnet",
+    "cuda" if torch.cuda.is_available() else "cpu",
+    cfgm=cfgm,
 )
 
 
@@ -37,30 +49,38 @@ if __name__ == "__main__":
         description="Process graph data and visualize heatmaps."
     )
 
-    coord_path = "MSH/MSH/instances/Coordinates_5.txt"
-    arc_path = "MSH/MSH/resulats/configuration1/Arcs_5_1.txt"
-    modified_arcs_path = "MSH/MSH/resulats/configuration7/Arcs_5_1.txt"
+    number = 6
+
+    coord_path = f"MSH/MSH/instances/Coordinates_{number}.txt"
+    arc_path = f"MSH/MSH/results/configuration1/Arcs_{number}_1.txt"
+    modified_arcs_path = f"MSH/MSH/results/configuration7/Arcs_{number}_1.txt"
 
     original_img = generate_plot_from_files(
         arcs_file=arc_path, coords_file=coord_path, bounds=(-1, 11, -1, 11)
     )
+    img_tensor = image_transform_test()(Image.fromarray(original_img))
+    img_tensor = img_tensor.unsqueeze(0).to(device)
 
-    proba_of_needing_modif = torch.sigmoid(
-        model(image_transform_test()(Image.fromarray(original_img)))
-    )[1].item()
+    proba_of_needing_modif = torch.sigmoid(model(img_tensor)).squeeze()[1].item()
     print(f"Probability of needing modification: {proba_of_needing_modif:.4f}")
 
     modified_img = generate_plot_from_files(
         arcs_file=modified_arcs_path, coords_file=coord_path, bounds=(-1, 11, -1, 11)
     )
 
+    args = OmegaConf.create(
+        {
+            "class_index": 1,  # Assuming class index 1 is the one of interest
+            "target_layer": "backbone.layer4.1.conv2",  # Adjust based on your model architecture
+            "discard_ratio": 0.9,  # Example value for Grad Rollout
+        }
+    )
+
     heatmap = get_heatmap(
         model=model,
-        method="grad_cam",
-        img_tensor=image_transform_test()(Image.fromarray(original_img))
-        .unsqueeze(0)
-        .to("cuda" if torch.cuda.is_available() else "cpu"),
-        args={"class_index": 1},
+        method="gradcam",
+        input_tensor=img_tensor,
+        args=args,
         device="cuda" if torch.cuda.is_available() else "cpu",
     )
     arcs = read_arcs(arc_path)

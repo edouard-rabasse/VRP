@@ -14,7 +14,15 @@ from src.graph.read_arcs import read_arcs, get_arc_name
 ## TODO: Add configuration file for the parameters
 ## TODO: Adapt to the mask
 class HeatmapAnalyzer:
-    def __init__(self, heatmap, bounds, arcs, coordinates, threshold=0.5, n_samples=15):
+    def __init__(
+        self,
+        heatmap,
+        arcs,
+        coordinates,
+        bounds=(-1, 11, -1, 11),
+        threshold=0.5,
+        n_samples=15,
+    ):
         """Initialize the HeatmapAnalyzer.
 
         Args:
@@ -54,7 +62,6 @@ class HeatmapAnalyzer:
             r, c = self.world_to_pixel(x, y)
 
             if self.heatmap[r, c] >= self.threshold:
-                print(arc, r, c, x, y)
                 return True
         return False
 
