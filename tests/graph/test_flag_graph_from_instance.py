@@ -45,8 +45,6 @@ def test_flag_graph_from_instance(monkeypatch):
             "src.graph.graph_flagging.read_coordinates",
             lambda _: read_coordinates(coord_path),
         )
-        print(read_arcs(arc_path))
-        print(read_coordinates(coord_path))
 
         # Dummy model
         model = DummyModel()

@@ -21,12 +21,6 @@ def _load_cnn(cfgm, device):
 
 
 def _load_deit_tiny(cfgm, device):
-    # timm already handles head replacement when you pass num_classes
-    # return timm.create_model(
-    #     'deit_tiny_patch16_224',
-    #     pretrained=True,
-    #     num_classes=2
-    # )
     return load_deit(
         model_name="deit_tiny",
         num_classes=2,

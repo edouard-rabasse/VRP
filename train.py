@@ -31,7 +31,6 @@ def main(cfg: DictConfig):
 
     # ── data loaders ────────────────────────────────────────────────────────
     start = time.perf_counter()
-    range = load_selection_config(cfg.data)
     train_loader, test_loader = load_data(cfg)
     print(
         f"[Train] Data loaded: {len(train_loader.dataset)} train / {len(test_loader.dataset)} test"
