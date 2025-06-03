@@ -1075,6 +1075,13 @@ public class Solver_gurobi {
 
 	}
 
+	/**
+	 * This method tries to refine the solution whuile having some edges fixed
+	 * 
+	 * @param instance_identif
+	 * @throws IOException
+	 */
+
 	public void refineWithFixedEdges(String instance_identif) throws IOException {
 
 		// 0. Store main attributes:

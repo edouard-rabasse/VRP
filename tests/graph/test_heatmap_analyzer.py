@@ -28,9 +28,15 @@ def test_heatmap_analyzer_basic():
     heatmap = mock_heatmap()
     bounds = (0, 10, 0, 10)
     arcs = mock_arcs()
+    print(arcs)
     coords = mock_coordinates()
     analyzer = HeatmapAnalyzer(
-        heatmap, bounds, arcs, coords, threshold=0.5, n_samples=20
+        heatmap=heatmap,
+        bounds=bounds,
+        arcs=arcs,
+        coordinates=coords,
+        threshold=0.5,
+        n_samples=20,
     )
     print(heatmap)
 

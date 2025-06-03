@@ -27,6 +27,32 @@ def generate_plot_from_files(
     arcs = read_arcs(arcs_file)
     coordinates, depot = read_coordinates(coords_file)
 
+    img = generate_plot_from_dict(
+        arcs=arcs,
+        coordinates=coordinates,
+        depot=depot,
+        bounds=bounds,
+        dpi=dpi,
+    )
+    return img
+
+
+def generate_plot_from_dict(
+    arcs, coordinates, depot, bounds=(-1, 11, -1, 11), dpi=100
+) -> np.ndarray:
+    """Generate a plot from list of arcs and dictionnary of coordinates and return as a numpy array.
+
+    Args:
+        arcs (list): List of arcs
+        coordinates (dict): Dictionary of coordinates
+        depot (int): Depot node identifier
+        bounds (tuple, optional): Plot bounds (x_min, x_max, y_min, y_max). Defaults to (-1, 11, -1, 11).
+        dpi (int, optional): DPI for the plot (affects output resolution). Defaults to 100.
+
+    Returns:
+        np.ndarray: Image as a numpy array
+    """
+
     # Create in-memory buffer for the image
     buf = io.BytesIO()
 

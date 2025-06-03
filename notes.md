@@ -84,3 +84,12 @@ Zones de parking
 - benchmark avec le rectangle.
 - faire le heatmap sans plot. Une classe par arc (avec padding)
 - ajouter des métriques pour évaluer les performances.
+
+## 03/06
+
+- Dans le TSP, garder les circuits comme ville de départ, ville d'arrivée.
+- plus proches voisins randomisé.
+- interdire arcs pointillé.
+- augmenter de façon artificielle le coût des arcs pointillés (1+lambda) par mode. Puis rerun.
+- mettre un coût initial pour les arcs à pied
+- faire la fonction de loss heatmap

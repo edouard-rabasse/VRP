@@ -76,6 +76,12 @@ class HeatmapAnalyzer:
         return route_ids, points
 
     def reverse_heatmap(self):
+        """Reverse the heatmap to find arcs and coordinates in the zone.
+
+        Returns:
+            arcs: List of arcs with an indicator of whether they are in the zone.
+            coordinates: Dictionary of coordinates with an indicator of whether they are in the zone.
+        """
         in_zone = self.arcs_in_zone()
         route_ids, points = self.route_in_zone(in_zone)
 
