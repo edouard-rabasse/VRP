@@ -45,8 +45,8 @@ def plot_arcs(ax, arcs, coordinates):
 
 def plot_nodes(ax, coordinates, depot, arcs, route_type="original", show_labels=False):
     """Plot nodes with styles depending on mode and type."""
-    mode2_heads = {arc[1] for arc in arcs if arc[-1] == 2}
-    mode1_heads = {arc[1] for arc in arcs if arc[-1] == 1}
+    mode2_heads = {arc[0] for arc in arcs if arc[2] == 2}  ## asuming mode is at index 2
+    mode1_heads = {arc[0] for arc in arcs if arc[2] == 1}
 
     for node, coord in coordinates.items():
         x, y = coord[:2]
