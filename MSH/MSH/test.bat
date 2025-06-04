@@ -1,18 +1,18 @@
 cd MSH/MSH
 
-@REM java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_refineSolutionFixedEdges ExperimentsAllSets.txt 17 configuration8.xml 1 8
+java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_refineSolutionFixedEdges ExperimentsAllSets.txt 17 configuration8.xml 1 8
 
 
 @REM java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_gurobi ExperimentsAllSets.txt 5 configuration1.xml 1 8
 
-for /L %%i in (1,8,79) do (
-    echo Running iteration %%i
-    java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_gurobi ExperimentsAllSets.txt %%i configuration8.xml 1 8
-)
+@REM for /L %%i in (1,8,79) do (
+@REM     echo Running iteration %%i
+@REM     java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_gurobi ExperimentsAllSets.txt %%i configuration8.xml 1 8
+@REM )
 
 
 
 cd .. 
 cd ..
 
-python src/graph/graph_creator.py +variants=modified
+python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_17.txt" -a "MSH\MSH\results\configuration8\Arcs_17_1.txt" 

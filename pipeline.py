@@ -32,14 +32,9 @@ with initialize(version_base=None, config_path="config"):
     )
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Process graph data and visualize heatmaps."
-    )
-    time_start = time.perf_counter()
-
+def initialise_model():
     model = load_model(
-        "resnet",
+        cfg.model.name,
         "cuda" if torch.cuda.is_available() else "cpu",
         cfgm=cfg.model,
     )
@@ -47,8 +42,16 @@ if __name__ == "__main__":
         device
     )  # Batch de taille 1 pour une image 224x224
     model(dummy_input)
+    return model
+
+
+def pipeline():
+
+    model = initialise_model()
 
     number = 6
+
+    time_start = time.perf_counter()
 
     coord_path = f"MSH/MSH/instances/Coordinates_{number}.txt"
     arc_path = f"MSH/MSH/results/configuration1/Arcs_{number}_1.txt"
