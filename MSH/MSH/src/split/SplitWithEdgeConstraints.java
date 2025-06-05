@@ -14,13 +14,16 @@ import core.VRPSolution;
 import dataStructures.DataHandler;
 import globalParameters.GlobalParameters;
 import pulseStructures.PulseHandler;
+import pulseStructures.PulseHandlerCC;
 import pulseStructures.PulseNode;
+import distanceMatrices.CustomArcCostMatrix;
 
 /**
  * Implements the split procedure as described in Cabrera et al. (2022).
+ * With a twist to add custom cost.
  * 
  */
-public class SplitPLRP implements Split {
+public class SplitWithEdgeConstraints implements Split {
 
 	/**
 	 * The distance matrix
@@ -43,18 +46,24 @@ public class SplitPLRP implements Split {
 	private final DataHandler data;
 
 	/**
+	 * The custom arc costs matrix
+	 */
+	private final CustomArcCostMatrix customArcCosts;
+
+	/**
 	 * This method creates a new instance of the HpMP split algorithm
 	 * 
 	 * @param distances
 	 * @param m
 	 * @param M
 	 */
-	public SplitPLRP(DistanceMatrix distances, DistanceMatrix d_times, DistanceMatrix w_times, DataHandler data) {
+	public SplitWithEdgeConstraints(DistanceMatrix distances, DistanceMatrix d_times, DistanceMatrix w_times,
+			DataHandler data, CustomArcCostMatrix customArcCosts) {
 		this.distances = distances;
 		this.driving_times = d_times;
 		this.walking_times = w_times;
 		this.data = data;
-
+		this.customArcCosts = customArcCosts;
 	}
 
 	@Override
@@ -114,7 +123,7 @@ public class SplitPLRP implements Split {
 
 			// Creates a pulse handler (an empty board for the pulse):
 
-			PulseHandler pH = new PulseHandler(data, distances, driving_times, walking_times, r);
+			PulseHandlerCC pH = new PulseHandlerCC(data, distances, driving_times, walking_times, r, customArcCosts);
 
 			// A counter to know if the network must be created from scratch or not:
 
@@ -158,6 +167,8 @@ public class SplitPLRP implements Split {
 						routeStrings.put((i + ";" + j), recoverRoute(pH.getPath(), r, (i + ";" + j)));
 						routeTimes.put((i + ";" + j), newWeights[1]);
 						routeCosts.put((i + ";" + j), newWeights[0]);
+						System.out.println("[Debug] Route: " + routeStrings.get((i + ";" + j))
+								+ " with cost: " + newWeights[0] + " and time: " + newWeights[1]);
 
 						// Updates labels:
 
@@ -213,6 +224,9 @@ public class SplitPLRP implements Split {
 			r.add(0);
 			r.setAttribute(RouteAttribute.SERVICE_TIME, service_time);
 			r.setAttribute(RouteAttribute.COST, routeCosts.get(tail + ";" + head));
+			// System.out.println("[Debug] Route: " + routeStrings.get(tail + ";" + head)
+			// + " with cost: " + routeCosts.get(tail + ";" + head) + " and time: "
+			// + routeTimes.get(tail + ";" + head));
 			r.setAttribute(RouteAttribute.DURATION, routeTimes.get(tail + ";" + head));
 			r.setAttribute(RouteAttribute.CHAIN, routeStrings.get(tail + ";" + head));
 
@@ -418,29 +432,29 @@ public class SplitPLRP implements Split {
 						double divTimeA = driving_times.getDistance(k2, L); // Ir del ps1 al ps2
 						double divDisA = distances.getDistance(k2, L); // Ir del ps1 al ps2
 
-						// Update total time
+						double totalCost = calculateTotalCost(k2, L, w, v, m, j, tspTour);
 
+						// Update total time
 						double totTimeA = walkTimeA + divTimeA + parkTime + servTime;
 
-						pH.addArc(l + "," + m, p + "," + j, divDisA * GlobalParameters.VARIABLE_COST, totTimeA,
-								walkTimeA);
+						pH.addArc(l + "," + m, p + "," + j, totalCost, totTimeA, walkTimeA);
 
 						PulseNode nodeI = pH.getNodes().get(l + "," + m);
 						PulseNode nodeF = pH.getNodes().get(p + "," + j);
 
 						if (totTimeA + nodeI.getMinTime()[1] < nodeF.getMinTime()[1]) {
-							nodeF.getMinTime()[0] = divDisA * GlobalParameters.VARIABLE_COST + nodeI.getMinTime()[0];
+							nodeF.getMinTime()[0] = totalCost + nodeI.getMinTime()[0];
 							nodeF.getMinTime()[1] = totTimeA + nodeI.getMinTime()[1];
 							nodeF.getMinTime()[2] = walkTimeA + nodeI.getMinTime()[2];
 						}
 						if (divDisA * GlobalParameters.VARIABLE_COST + nodeI.getMinCost()[0] < nodeF.getMinCost()[0]) {
-							nodeF.getMinCost()[0] = divDisA * GlobalParameters.VARIABLE_COST + nodeI.getMinCost()[0];
+							nodeF.getMinCost()[0] = totalCost + nodeI.getMinCost()[0];
 							nodeF.getMinCost()[1] = totTimeA + nodeI.getMinCost()[1];
 							nodeF.getMinCost()[2] = walkTimeA + nodeI.getMinCost()[2];
 						}
 
 						if (walkTimeA + nodeI.getMinDist()[2] < nodeF.getMinDist()[2]) {
-							nodeF.getMinDist()[0] = divDisA * GlobalParameters.VARIABLE_COST + nodeI.getMinDist()[0];
+							nodeF.getMinDist()[0] = totalCost + nodeI.getMinDist()[0];
 							nodeF.getMinDist()[1] = totTimeA + nodeI.getMinDist()[1];
 							nodeF.getMinDist()[2] = walkTimeA + nodeI.getMinDist()[2];
 						}
@@ -523,29 +537,30 @@ public class SplitPLRP implements Split {
 						// Driving time and distances
 
 						double divTimeA = driving_times.getDistance(k2, L); // Ir del ps1 al ps2
-						double divDisA = distances.getDistance(k2, L); // Ir del ps1 al ps2
 
 						// Update total time
 
 						double totTimeA = walkTimeA + divTimeA + parkTime + servTime;
 
-						pH.addArc(l + "," + m, p + "," + j, divDisA * GlobalParameters.VARIABLE_COST, totTimeA,
+						double totalCost = calculateTotalCost(k2, L, w, v, m, j, tspTour);
+
+						pH.addArc(l + "," + m, p + "," + j, totalCost, totTimeA,
 								walkTimeA);
 						PulseNode nodeI = pH.getNodes().get(l + "," + m);
 						PulseNode nodeF = pH.getNodes().get(p + "," + j);
 						if (totTimeA + nodeI.getMinTime()[1] < nodeF.getMinTime()[1]) {
-							nodeF.getMinTime()[0] = divDisA * GlobalParameters.VARIABLE_COST + nodeI.getMinTime()[0];
+							nodeF.getMinTime()[0] = totalCost + nodeI.getMinTime()[0];
 							nodeF.getMinTime()[1] = totTimeA + nodeI.getMinTime()[1];
 							nodeF.getMinTime()[2] = walkTimeA + nodeI.getMinTime()[2];
 						}
-						if (divDisA * GlobalParameters.VARIABLE_COST + nodeI.getMinCost()[0] < nodeF.getMinCost()[0]) {
-							nodeF.getMinCost()[0] = divDisA * GlobalParameters.VARIABLE_COST + nodeI.getMinCost()[0];
+						if (totalCost + nodeI.getMinCost()[0] < nodeF.getMinCost()[0]) {
+							nodeF.getMinCost()[0] = totalCost + nodeI.getMinCost()[0];
 							nodeF.getMinCost()[1] = totTimeA + nodeI.getMinCost()[1];
 							nodeF.getMinCost()[2] = walkTimeA + nodeI.getMinCost()[2];
 						}
 
 						if (walkTimeA + nodeI.getMinDist()[2] < nodeF.getMinDist()[2]) {
-							nodeF.getMinDist()[0] = divDisA * GlobalParameters.VARIABLE_COST + nodeI.getMinDist()[0];
+							nodeF.getMinDist()[0] = totalCost + nodeI.getMinDist()[0];
 							nodeF.getMinDist()[1] = totTimeA + nodeI.getMinDist()[1];
 							nodeF.getMinDist()[2] = walkTimeA + nodeI.getMinDist()[2];
 						}
@@ -559,8 +574,8 @@ public class SplitPLRP implements Split {
 	/**
 	 * This method adds only the new arcs !! This is excelent
 	 * 
-	 * @param i    vertical coordinate - parking spot
-	 * @param k    horizontal coordinate - client
+	 * @param l    vertical coordinate - parking spot
+	 * @param m    horizontal coordinate - client
 	 * @param last maximum horizontal coordinate
 	 * @param beg  initial vertical coordinate
 	 */
@@ -603,20 +618,20 @@ public class SplitPLRP implements Split {
 					// Update walking time
 
 					double walkTimeA = walkTime + walking_times.getDistance(L, w) + walking_times.getDistance(v, L); // Movimiento
-																														// de
-																														// ps2
-																														// a
-																														// un
-																														// cliente
-																														// +
-																														// De
-																														// vuelta
-																														// desde
-																														// el
-																														// last
-																														// client
-																														// al
-																														// ps2
+					// de
+					// ps2
+					// a
+					// un
+					// cliente
+					// +
+					// De
+					// vuelta
+					// desde
+					// el
+					// last
+					// client
+					// al
+					// ps2
 					double tourService = servTime;
 					if (l == m && l != p) {
 						tourService -= data.getService_times().get(tspTour.get(m - 1));
@@ -639,32 +654,37 @@ public class SplitPLRP implements Split {
 							// Driving time and distances
 
 							double divTimeA = driving_times.getDistance(k2, L); // Ir del ps1 al ps2
-							double divDisA = distances.getDistance(k2, L); // Ir del ps1 al ps2
+
+							// Coût de conduite standard
 
 							// Update total time
 
 							double totTimeA = walkTimeA + divTimeA + parkTime + servTime;
 
-							pH.addArc(l + "," + m, p + "," + j, divDisA * GlobalParameters.VARIABLE_COST, totTimeA,
-									walkTimeA);
+							// Coût total
+
+							double totalCost = calculateTotalCost(k2, L, w, v, m, j, tspTour);
+
+							pH.addArc(l + "," + m, p + "," + j, totalCost, totTimeA, walkTimeA);
+
 							PulseNode nodeI = pH.getNodes().get(l + "," + m);
 							PulseNode nodeF = pH.getNodes().get(p + "," + j);
 							if (totTimeA + nodeI.getMinTime()[1] < nodeF.getMinTime()[1]) {
-								nodeF.getMinTime()[0] = divDisA * GlobalParameters.VARIABLE_COST
+								nodeF.getMinTime()[0] = totalCost
 										+ nodeI.getMinTime()[0];
 								nodeF.getMinTime()[1] = totTimeA + nodeI.getMinTime()[1];
 								nodeF.getMinTime()[2] = walkTimeA + nodeI.getMinTime()[2];
 							}
-							if (divDisA * GlobalParameters.VARIABLE_COST
+							if (totalCost
 									+ nodeI.getMinCost()[0] < nodeF.getMinCost()[0]) {
-								nodeF.getMinCost()[0] = divDisA * GlobalParameters.VARIABLE_COST
+								nodeF.getMinCost()[0] = totalCost
 										+ nodeI.getMinCost()[0];
 								nodeF.getMinCost()[1] = totTimeA + nodeI.getMinCost()[1];
 								nodeF.getMinCost()[2] = walkTimeA + nodeI.getMinCost()[2];
 							}
 
 							if (walkTimeA + nodeI.getMinDist()[2] < nodeF.getMinDist()[2]) {
-								nodeF.getMinDist()[0] = divDisA * GlobalParameters.VARIABLE_COST
+								nodeF.getMinDist()[0] = totalCost
 										+ nodeI.getMinDist()[0];
 								nodeF.getMinDist()[1] = totTimeA + nodeI.getMinDist()[1];
 								nodeF.getMinDist()[2] = walkTimeA + nodeI.getMinDist()[2];
@@ -762,33 +782,30 @@ public class SplitPLRP implements Split {
 							// Driving time and distances
 
 							double divTimeA = driving_times.getDistance(k2, L); // Ir del ps1 al ps2
-							double divDisA = distances.getDistance(k2, L); // Ir del ps1 al ps2
+
+							double totalCost = calculateTotalCost(k2, L, w, v, m, j, tspTour);
 
 							// Update total time
 
 							double totTimeA = walkTimeA + divTimeA + parkTime + servTime;
 
-							pH.addArc(l + "," + m, p + "," + j, divDisA * GlobalParameters.VARIABLE_COST, totTimeA,
+							pH.addArc(l + "," + m, p + "," + j, totalCost, totTimeA,
 									walkTimeA);
 							PulseNode nodeI = pH.getNodes().get(l + "," + m);
 							PulseNode nodeF = pH.getNodes().get(p + "," + j);
 							if (totTimeA + nodeI.getMinTime()[1] < nodeF.getMinTime()[1]) {
-								nodeF.getMinTime()[0] = divDisA * GlobalParameters.VARIABLE_COST
-										+ nodeI.getMinTime()[0];
+								nodeF.getMinTime()[0] = totalCost + nodeI.getMinTime()[0];
 								nodeF.getMinTime()[1] = totTimeA + nodeI.getMinTime()[1];
 								nodeF.getMinTime()[2] = walkTimeA + nodeI.getMinTime()[2];
 							}
-							if (divDisA * GlobalParameters.VARIABLE_COST
-									+ nodeI.getMinCost()[0] < nodeF.getMinCost()[0]) {
-								nodeF.getMinCost()[0] = divDisA * GlobalParameters.VARIABLE_COST
-										+ nodeI.getMinCost()[0];
+							if (totalCost + nodeI.getMinCost()[0] < nodeF.getMinCost()[0]) {
+								nodeF.getMinCost()[0] = totalCost + nodeI.getMinCost()[0];
 								nodeF.getMinCost()[1] = totTimeA + nodeI.getMinCost()[1];
 								nodeF.getMinCost()[2] = walkTimeA + nodeI.getMinCost()[2];
 							}
 
 							if (walkTimeA + nodeI.getMinDist()[2] < nodeF.getMinDist()[2]) {
-								nodeF.getMinDist()[0] = divDisA * GlobalParameters.VARIABLE_COST
-										+ nodeI.getMinDist()[0];
+								nodeF.getMinDist()[0] = totalCost + nodeI.getMinDist()[0];
 								nodeF.getMinDist()[1] = totTimeA + nodeI.getMinDist()[1];
 								nodeF.getMinDist()[2] = walkTimeA + nodeI.getMinDist()[2];
 							}
@@ -860,4 +877,57 @@ public class SplitPLRP implements Split {
 		}
 		return route;
 	}
+
+	/**
+	 * Calculates the total cost for a route segment, including custom costs if
+	 * available.
+	 *
+	 * @param k2      The starting parking spot index.
+	 * @param L       The ending parking spot index.
+	 * @param w       The starting client index.
+	 * @param v       The ending client index.
+	 * @param m       The starting index for the TSP tour segment.
+	 * @param j       The ending index for the TSP tour segment.
+	 * @param tspTour The TSP tour containing the sequence of clients.
+	 * @return The total cost for the route segment.
+	 */
+	public double calculateTotalCost(int k2, int L, int w, int v, int m, int j, TSPSolution tspTour) {
+		// Standard driving cost
+		double divDisA = distances.getDistance(k2, L);
+		double divCostA = divDisA * GlobalParameters.VARIABLE_COST;
+
+		if (customArcCosts.hasCustomCost(k2, L, 1)) {
+			divCostA = customArcCosts.getCustomCost(k2, L, 1);
+		}
+
+		// Coût de marche total
+		double totalWalkingCost = 0;
+
+		// 1. Coût de marche du parking au premier client
+		if (customArcCosts.hasCustomCost(L, w, 2)) {
+			// System.out.println("[Debug] Custom walking cost from " + L + " to " + w + ":
+			// "
+			// + customArcCosts.getCustomCost(L, w, 2));
+			totalWalkingCost += customArcCosts.getCustomCost(L, w, 2);
+		}
+
+		// 2. Coûts de marche entre clients
+		int prevClient = w;
+		for (int idx = m; idx < j - 1; idx++) {
+			int nextClient = tspTour.get(idx);
+			if (customArcCosts.hasCustomCost(prevClient, nextClient, 2)) {
+				totalWalkingCost += customArcCosts.getCustomCost(prevClient, nextClient, 2);
+			}
+			prevClient = nextClient;
+		}
+
+		// 3. Coût de marche du dernier client au parking
+		if (customArcCosts.hasCustomCost(v, L, 2)) {
+			totalWalkingCost += customArcCosts.getCustomCost(v, L, 2);
+		}
+
+		// Total
+		return divCostA + totalWalkingCost;
+	}
+
 }

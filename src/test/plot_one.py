@@ -46,7 +46,9 @@ def main():
     bounds = tuple(map(int, args.bounds.strip("()").split(",")))
 
     # Generate the plot using the provided files and bounds
-    img_array = generate_plot_from_files(args.arcs, args.coords, bounds=bounds)
+    img_array = generate_plot_from_files(
+        args.arcs, args.coords, bounds=bounds, show_labels=True
+    )
 
     # Display the image using matplotlib
     plt.imshow(img_array)

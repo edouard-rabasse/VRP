@@ -4,7 +4,10 @@ import torch.nn.functional as F
 import torch
 from tqdm import tqdm
 
-from torch.utils.data import Dataset, DataLoader, TensorDataset
+from torch.utils.data import TensorDataset
+
+
+from timm.scheduler import CosineLRScheduler
 
 
 def load_deit(model_name, device, num_classes=2, freeze=True):
@@ -182,8 +185,6 @@ def train_deit_no_precompute(
     #     {'params': head_params,  'lr': 3e-4},
     #     {'params': block_params,'lr': 1e-5}
     # ], weight_decay=1e-4)
-
-    from timm.scheduler import CosineLRScheduler
 
     num_steps = num_epochs * len(train_loader)
     warm_steps = int(0.1 * num_steps)

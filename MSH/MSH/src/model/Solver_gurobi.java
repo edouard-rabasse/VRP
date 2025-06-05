@@ -26,12 +26,16 @@ import distanceMatrices.DepotToCustomersDistanceMatrixV2;
 import distanceMatrices.DepotToCustomersDrivingTimesMatrix;
 import distanceMatrices.DepotToCustomersWalkingTimesMatrix;
 import distanceMatrices.ArcModificationMatrix;
+import distanceMatrices.CustomArcCostMatrix;
 import globalParameters.GlobalParameters;
 import msh.AssemblyFunction;
 import msh.GurobiSetPartitioningSolver;
 import msh.MSH;
 import msh.OrderFirstSplitSecondSampling;
 import split.SplitPLRP;
+
+// temporary : TODO: Chnage SplitLRP to take this into account.
+import split.SplitWithEdgeConstraints;
 
 /**
  * This class contains the main logic of the MSH.
@@ -74,10 +78,31 @@ public class Solver_gurobi {
 	 */
 	private double cpu_msh_assembly;
 
+	/**
+	 * Custom cost matrix for Arcs
+	 */
+	private CustomArcCostMatrix customArcCosts;
+
 	// Methods:
 
 	// ------------------------------------------MAIN
 	// LOGIC-----------------------------------
+
+	/**
+	 * Constructeur avec coûts personnalisés
+	 * 
+	 * @param customArcCosts Matrice de coûts personnalisés
+	 */
+	public Solver_gurobi(CustomArcCostMatrix customArcCosts) {
+		this.customArcCosts = customArcCosts;
+	}
+
+	/**
+	 * Constructeur par défaut
+	 */
+	public Solver_gurobi() {
+		this.customArcCosts = new CustomArcCostMatrix();
+	}
 
 	/**
 	 * This method runs the MSH
@@ -1163,6 +1188,153 @@ public class Solver_gurobi {
 		// With a low level of randomization:
 
 		this.addSamplingFunctionsLowSE(data, fixed_arcs, pools, msh, split, num_iterations);
+
+		// 11. Stops the clock for the initialization time:
+
+		Double FinTime = (double) System.nanoTime();
+		cpu_initialization = (FinTime - IniTime) / 1000000000;
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("End of the initialization step...");
+		}
+
+		// 12. Sets the pools:
+
+		msh.setPools(pools);
+
+		// 13. Sampling phase of MSH:
+
+		Double IniTime_msh = (double) System.nanoTime();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("Start of the sampling step...");
+		}
+
+		// Sampling phase:
+
+		msh.run_sampling();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("End of the sampling step...");
+		}
+
+		Double FinTime_msh = (double) System.nanoTime();
+
+		cpu_msh_sampling = (FinTime_msh - IniTime_msh) / 1000000000;
+
+		// 15. Assembly phase of MSH:
+
+		// Starts the clock:
+
+		IniTime_msh = (double) System.nanoTime();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("Start of the assembly step...");
+		}
+
+		// Runs the assembly step:
+
+		msh.run_assembly();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("End of the assembly step...");
+		}
+
+		// Stops the clock:
+
+		FinTime_msh = (double) System.nanoTime();
+
+		cpu_msh_assembly = (FinTime_msh - IniTime_msh) / 1000000000;
+
+		// 16. Print summary
+
+		printSummary(msh, assembler, data);
+
+		// 17. Print solution
+
+		printSolution(msh, assembler, data);
+
+	}
+
+	public void runWithCustomCosts(String instance_identifier, String arcsFile) throws IOException {
+		this.instance_identifier = instance_identifier;
+		this.instance_name = instance_identifier.replace(".txt", "");
+		this.instance_name = this.instance_name.replace("Coordinates_", "");
+
+		// 1. Starts the clock for the initialization step:
+
+		Double IniTime = (double) System.nanoTime();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("Starting the initialization step...");
+		}
+
+		// Arc modification matrix
+
+		CustomArcCostMatrix arcCost = new CustomArcCostMatrix();
+		arcCost.loadFromFile(GlobalParameters.ARCS_MODIFIED_FOLDER + arcsFile);
+
+		// 2. Reads the instance
+
+		// Walking speed, driving speed, etc..
+
+		DataHandler data = new DataHandler(
+				GlobalParameters.INSTANCE_FOLDER + instance_identifier);
+
+		// Depot to customers distance matrix
+
+		ArrayDistanceMatrix distances = null;
+		distances = new DepotToCustomersDistanceMatrix(data);
+
+		// ArrayDistanceMatrix fixed_arcs = null;
+		// fixed_arcs = new DepotToCustomersDistanceMatrixV2(data,
+		// arcModificationMatrix);
+
+		// Depot to customers distance matrix
+
+		ArrayDistanceMatrix driving_times = null;
+		driving_times = new DepotToCustomersDrivingTimesMatrix(data);
+
+		// Depot to customers distance matrix
+
+		ArrayDistanceMatrix walking_times = null;
+		walking_times = new DepotToCustomersWalkingTimesMatrix(data);
+
+		// 3. Initializes an array to store all the route pools. We will have one pool
+		// for each satellite/tspHeuristic
+
+		ArrayList<RoutePool> pools = new ArrayList<RoutePool>();
+
+		// 4. Creates an assembler:
+
+		AssemblyFunction assembler = null;
+		assembler = new GurobiSetPartitioningSolver(data.getNbCustomers(), true, data);// GUROBI
+
+		// 5. Initializes the MSH object with the assembler and the # of threads:
+
+		MSH msh = new MSH(assembler, GlobalParameters.THREADS);
+
+		// 6. Initializes the split algorithm:
+
+		Split split = new SplitWithEdgeConstraints(distances, driving_times, walking_times, data,
+				arcCost);
+
+		// 7. Number of iterations for each TSP heuristc:
+
+		int num_iterations = (int) Math.ceil(GlobalParameters.MSH_NUM_ITERATIONS / 8);
+		if (num_iterations < 1) {
+			num_iterations = 1;
+		}
+
+		// 8. Set-up of the sampling functions:
+
+		// With a high level of randomization:
+
+		this.addSamplingFunctionsHighSE(data, distances, pools, msh, split, num_iterations);
+
+		// With a low level of randomization:
+
+		this.addSamplingFunctionsLowSE(data, distances, pools, msh, split, num_iterations);
 
 		// 11. Stops the clock for the initialization time:
 

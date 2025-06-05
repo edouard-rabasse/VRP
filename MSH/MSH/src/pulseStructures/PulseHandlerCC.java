@@ -8,14 +8,17 @@ import core.DistanceMatrix;
 import core.TSPSolution;
 import dataStructures.DataHandler;
 import globalParameters.GlobalParameters;
+import split.SplitWithEdgeConstraints;
+
+import distanceMatrices.CustomArcCostMatrix;
 
 /**
  * This class handles the pulse algorithm.
  * 
- * @author nick0
+ * @author Edouard Rabasse, added the part on custom costs
  *
  */
-public class PulseHandler {
+public class PulseHandlerCC extends PulseHandler {
 
 	/**
 	 * Number of nodes
@@ -148,11 +151,17 @@ public class PulseHandler {
 	private Double iniTime;
 
 	/**
+	 * The arc cost matrix
+	 */
+	private CustomArcCostMatrix arcCostMatrix;
+
+	/**
 	 * Creates a new empty pulse handler (This is like creating a board to put on
 	 * the network)
 	 */
-	public PulseHandler(DataHandler data, DistanceMatrix distances, DistanceMatrix driving_times,
-			DistanceMatrix walking_times, TSPSolution tsp) {
+	public PulseHandlerCC(DataHandler data, DistanceMatrix distances, DistanceMatrix driving_times,
+			DistanceMatrix walking_times, TSPSolution tsp, CustomArcCostMatrix arcCostMatrix) {
+		super(data, distances, driving_times, walking_times, tsp);
 		nodes = new Hashtable<String, PulseNode>();
 		Path = new ArrayList<String>();
 		this.dataHandler = data;
@@ -162,6 +171,7 @@ public class PulseHandler {
 		this.distances = distances;
 		this.driving_times = driving_times;
 		this.walking_times = walking_times;
+		this.arcCostMatrix = arcCostMatrix;
 	}
 
 	/**
@@ -1179,6 +1189,13 @@ public class PulseHandler {
 
 	public DistanceMatrix getWalking_times() {
 		return walking_times;
+	}
+
+	public double calculateCustomCost(int k2, int L, int w, int v, int m, int j, TSPSolution tspTour) {
+		SplitWithEdgeConstraints splitCostCalculator = new SplitWithEdgeConstraints(distances, driving_times,
+				walking_times,
+				dataHandler, arcCostMatrix);
+		return splitCostCalculator.calculateTotalCost(k2, L, w, v, m, j, tspTour);
 	}
 
 }
