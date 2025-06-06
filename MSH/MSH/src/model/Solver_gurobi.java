@@ -295,11 +295,13 @@ public class Solver_gurobi {
 						// Only driving:
 
 						if (parts[pos].contains("->") && !parts[pos].contains("---")) {
+							System.out.println("[Debug] Driving: " + parts[pos]);
 
 							parts[pos] = parts[pos].replace("->", ";");
 							String[] arcParts = parts[pos].split("[;]");
 							for (int arc = 0; arc < arcParts.length - 1; arc++) {
 								if (!arcParts[arc].equals(arcParts[arc + 1])) {
+
 									pw_arcs.println(arcParts[arc] + ";" + arcParts[arc + 1] + ";" + 1 + ";" + counter);
 								}
 							}
@@ -1269,17 +1271,20 @@ public class Solver_gurobi {
 			System.out.println("Starting the initialization step...");
 		}
 
-		// Arc modification matrix
-
-		CustomArcCostMatrix arcCost = new CustomArcCostMatrix();
-		arcCost.loadFromFile(GlobalParameters.ARCS_MODIFIED_FOLDER + arcsFile);
-
 		// 2. Reads the instance
 
 		// Walking speed, driving speed, etc..
 
 		DataHandler data = new DataHandler(
 				GlobalParameters.INSTANCE_FOLDER + instance_identifier);
+
+		int depot = data.getNbCustomers() + 1;
+
+		// Arc modification matrix
+
+		CustomArcCostMatrix arcCost = new CustomArcCostMatrix();
+		arcCost.addDepot(depot);
+		arcCost.loadFromFile(GlobalParameters.ARCS_MODIFIED_FOLDER + arcsFile);
 
 		// Depot to customers distance matrix
 

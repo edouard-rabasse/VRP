@@ -1,6 +1,6 @@
 cd MSH/MSH
 
-java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_customCosts Coordinates_2.txt Arcs_2_1.txt configurationCustomCosts.xml
+java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_customCosts Coordinates_1.txt Arcs_1_1.txt configurationCustomCosts.xml
 
 
 @REM java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_gurobi ExperimentsAllSets.txt 5 configuration1.xml 1 8
@@ -15,4 +15,4 @@ java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi
 cd .. 
 cd ..
 
-python src/test/plot_one.py -c "MSH\MSH\instancesCustomCosts\Coordinates_2.txt" -a "MSH\MSH\results\configurationCustomCosts\Arcs_2_1.txt" 
+python src/test/plot_one.py -c "MSH\MSH\instancesCustomCosts\Coordinates_1.txt" -a "MSH\MSH\results\configurationCustomCosts\Arcs_1_1.txt" 

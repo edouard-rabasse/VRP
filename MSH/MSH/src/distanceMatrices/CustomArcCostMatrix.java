@@ -14,11 +14,18 @@ public class CustomArcCostMatrix {
     // Map qui stocke les coûts personnalisés - clé: "tail;head;mode", valeur: coût
     private Map<String, Double> customCosts;
 
+    private int depot;
+
     /**
      * Constructeur
      */
     public CustomArcCostMatrix() {
         this.customCosts = new HashMap<>();
+
+    }
+
+    public void addDepot(int depot) {
+        this.depot = depot;
     }
 
     /**
@@ -30,6 +37,14 @@ public class CustomArcCostMatrix {
      * @param cost Coût personnalisé
      */
     public void addCustomCost(int tail, int head, int mode, double cost) {
+        if (tail == depot) {
+            String key = head + ";" + 0 + ";" + mode;
+            customCosts.put(key, cost);
+        }
+        if (head == depot) {
+            String key = 0 + ";" + tail + ";" + mode;
+            customCosts.put(key, cost);
+        }
         String key = tail + ";" + head + ";" + mode;
         customCosts.put(key, cost);
     }

@@ -241,7 +241,9 @@ public class PulseHandlerCC extends PulseHandler {
 	 * @param beg
 	 * @param last
 	 * @param timeC   time constraint
-	 * @param endNode id of the start node (Or the end node for the backwards pulse)
+	 * @param endNode id of the start node (Or the end node for the backward pulse)
+	 * @param se      the strategy used (1 = MT, 2 = MC, 3 = MD) MT = Minimum Time,
+	 *                MC = Minimum Cost, MD = Minimum Distance
 	 */
 	public void runPulse(int beg, int last, double timeC, double distC, String endNode, int se) {
 
@@ -278,34 +280,40 @@ public class PulseHandlerCC extends PulseHandler {
 		nodes.put("s", node);
 		node.setLabels();
 
+		// Remplacer le code qui crée les arcs du nœud "s":
 		if (se == 1) {
 			for (int i = beg + 1; i <= last; i++) {
-				this.addArc((i + "," + last), "s",
-						distances.getDistance(tspTour.get(i - 1), 0) * GlobalParameters.VARIABLE_COST,
-						driving_times.getDistance(tspTour.get(i - 1), 0), 0);
+				// Utilisation des coûts personnalisés
+				double drivingCost = distances.getDistance(tspTour.get(i - 1), 0) * GlobalParameters.VARIABLE_COST;
+
+				// Vérifier s'il existe un coût personnalisé pour cet arc de conduite
+				if (arcCostMatrix != null && arcCostMatrix.hasCustomCost(tspTour.get(i - 1), 0, 1)) {
+					drivingCost = arcCostMatrix.getCustomCost(tspTour.get(i - 1), 0, 1);
+				}
+
+				this.addArc((i + "," + last), "s", drivingCost, driving_times.getDistance(tspTour.get(i - 1), 0), 0);
 				PulseNode nodeAux = nodes.get((i + "," + last));
 
+				// Mettre à jour les labels en utilisant drivingCost au lieu du coût standard
 				if (nodeAux.getMinTime()[1] + driving_times.getDistance(tspTour.get(i - 1), 0) < node.getMinTime()[1]) {
 					node.getMinTime()[1] = nodeAux.getMinTime()[1] + driving_times.getDistance(tspTour.get(i - 1), 0);
-					node.getMinTime()[0] = nodeAux.getMinTime()[0]
-							+ distances.getDistance(tspTour.get(i - 1), 0) * GlobalParameters.VARIABLE_COST;
+					node.getMinTime()[0] = nodeAux.getMinTime()[0] + drivingCost;
 					node.getMinTime()[2] = nodeAux.getMinTime()[2];
 				}
+				// De même pour les autres labels
 				if (nodeAux.getMinDist()[2] < node.getMinDist()[2]) {
 					node.getMinDist()[1] = nodeAux.getMinDist()[1] + driving_times.getDistance(tspTour.get(i - 1), 0);
-					node.getMinDist()[0] = nodeAux.getMinDist()[0]
-							+ distances.getDistance(tspTour.get(i - 1), 0) * GlobalParameters.VARIABLE_COST;
+					node.getMinDist()[0] = nodeAux.getMinDist()[0] + drivingCost;
 					node.getMinDist()[2] = nodeAux.getMinDist()[2];
 				}
-				if (nodeAux.getMinCost()[0] + distances.getDistance(tspTour.get(i - 1), 0)
-						* GlobalParameters.VARIABLE_COST < node.getMinCost()[0]) {
+				if (nodeAux.getMinCost()[0] + drivingCost < node.getMinCost()[0]) {
 					node.getMinCost()[1] = nodeAux.getMinCost()[1] + driving_times.getDistance(tspTour.get(i - 1), 0);
-					node.getMinCost()[0] = nodeAux.getMinCost()[0]
-							+ distances.getDistance(tspTour.get(i - 1), 0) * GlobalParameters.VARIABLE_COST;
+					node.getMinCost()[0] = nodeAux.getMinCost()[0] + drivingCost;
 					node.getMinCost()[2] = nodeAux.getMinCost()[2];
 				}
 			}
 		} else {
+			System.out.println("[Debug] wrong place");
 			for (int i = beg + 1; i <= last; i++) {
 				this.addArc((i + "," + last), "s", 0, 0, 0);
 				PulseNode nodeAux = nodes.get((i + "," + last));
@@ -473,6 +481,7 @@ public class PulseHandlerCC extends PulseHandler {
 		// Check if was a MC or a MT path completion
 
 		if (best == 1) {
+			System.out.println("[Debug] best path is MT");
 
 			// Completes the path with the MT path
 
@@ -482,6 +491,7 @@ public class PulseHandlerCC extends PulseHandler {
 				path.add(auxPath.get(i));
 			}
 		} else if (best == 2) {
+			System.out.println("[Debug] best path is MC");
 
 			// Completes the path with the MC path
 			ArrayList<String> auxPath = recoverFrontMC(beg);
@@ -1191,7 +1201,7 @@ public class PulseHandlerCC extends PulseHandler {
 		return walking_times;
 	}
 
-	public double calculateCustomCost(int k2, int L, int w, int v, int m, int j, TSPSolution tspTour) {
+	public double calculateTotalCost(int k2, int L, int w, int v, int m, int j, TSPSolution tspTour) {
 		SplitWithEdgeConstraints splitCostCalculator = new SplitWithEdgeConstraints(distances, driving_times,
 				walking_times,
 				dataHandler, arcCostMatrix);
