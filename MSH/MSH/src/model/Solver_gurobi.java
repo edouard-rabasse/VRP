@@ -295,7 +295,6 @@ public class Solver_gurobi {
 						// Only driving:
 
 						if (parts[pos].contains("->") && !parts[pos].contains("---")) {
-							System.out.println("[Debug] Driving: " + parts[pos]);
 
 							parts[pos] = parts[pos].replace("->", ";");
 							String[] arcParts = parts[pos].split("[;]");

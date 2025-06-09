@@ -313,7 +313,6 @@ public class PulseHandlerCC extends PulseHandler {
 				}
 			}
 		} else {
-			System.out.println("[Debug] wrong place");
 			for (int i = beg + 1; i <= last; i++) {
 				this.addArc((i + "," + last), "s", 0, 0, 0);
 				PulseNode nodeAux = nodes.get((i + "," + last));
@@ -481,7 +480,6 @@ public class PulseHandlerCC extends PulseHandler {
 		// Check if was a MC or a MT path completion
 
 		if (best == 1) {
-			System.out.println("[Debug] best path is MT");
 
 			// Completes the path with the MT path
 
@@ -491,7 +489,6 @@ public class PulseHandlerCC extends PulseHandler {
 				path.add(auxPath.get(i));
 			}
 		} else if (best == 2) {
-			System.out.println("[Debug] best path is MC");
 
 			// Completes the path with the MC path
 			ArrayList<String> auxPath = recoverFrontMC(beg);

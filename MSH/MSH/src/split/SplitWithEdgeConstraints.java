@@ -137,9 +137,6 @@ public class SplitWithEdgeConstraints implements Split {
 				routeStrings.put((i + ";" + j), "-> " + customer);
 				routeTimes.put((i + ";" + j), singleRouteTime);
 				routeCosts.put((i + ";" + j), candidateCost);
-				// System.out.println("[Debug] Putting Route: " + routeStrings.get((i + ";" +
-				// j)) + r.get(0)
-				// + " with cost: " + candidateCost + " and time: " + singleRouteTime);
 
 			}
 
@@ -928,8 +925,6 @@ public class SplitWithEdgeConstraints implements Split {
 		// Check for custom driving cost
 		if (customArcCosts.hasCustomCost(k2, L, 1)) {
 			divCostA = customArcCosts.getCustomCost(k2, L, 1);
-			// System.out.println("[Debug] Custom driving cost from " + k2 + " to " + L + ":
-			// " + divCostA);
 		}
 
 		// Coût de marche total
@@ -939,14 +934,12 @@ public class SplitWithEdgeConstraints implements Split {
 		if (customArcCosts.hasCustomCost(L, w, 2)) {
 			totalWalkingCost += customArcCosts.getCustomCost(L, w, 2);
 		}
-
 		// 2. Coûts de marche entre clients
 		int prevClient = w;
 		for (int idx = m + 1; idx < j; idx++) {
 			int nextClient = tspTour.get(idx);
 			if (customArcCosts.hasCustomCost(prevClient, nextClient, 2)) {
 				totalWalkingCost += customArcCosts.getCustomCost(prevClient, nextClient, 2);
-
 			}
 			prevClient = nextClient;
 		}
@@ -955,11 +948,6 @@ public class SplitWithEdgeConstraints implements Split {
 		if (customArcCosts.hasCustomCost(v, L, 2)) {
 			totalWalkingCost += customArcCosts.getCustomCost(v, L, 2);
 		}
-
-		String tour = "From " + k2 + " to " + L + " with clients from " + w + " to " + v
-				+ " in TSP tour segment";
-		System.out.println("[Debug] Total walking cost for " + tour + " is: " + totalWalkingCost);
-		System.out.println("[Debug] Driving cost from " + k2 + " to " + L + " is: " + divCostA);
 
 		// Total
 		return divCostA + totalWalkingCost;
