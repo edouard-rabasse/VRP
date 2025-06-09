@@ -59,7 +59,7 @@ def pipeline():
     arcs = read_arcs(arc_path)
     coordinates, depot = read_coordinates(coord_path)
 
-    flag_graph_from_data(
+    flagged_arcs, flagged_coordinates = flag_graph_from_data(
         arcs,
         coordinates,
         depot,
