@@ -30,7 +30,7 @@ def generate_plot_from_files(
         tuple: (image_array, coordinates_dict, arcs_list, depot_node)
     """
     # Read arcs and coordinates
-    arcs = read_arcs(arcs_file)
+    arcs = read_arcs(arcs_file, type=route_type)
     coordinates, depot = read_coordinates(coords_file)
 
     img = generate_plot_from_dict(

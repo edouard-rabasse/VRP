@@ -38,15 +38,26 @@ public class Main_customCosts {
 
 		// Select the instance you want to run, (i.e., the line of the txt file): 1-79
 
-		String arcsFile = args[1]; // e.g. "Arcs_1_1.txt"
+		String costFile = args[1]; // e.g. "Costs_1_1.txt"
 
 		// Configuration file name:
 
 		String config_file = args[2]; // e.g. default.xml
 
-		// ------------------------------------------------------------------
+		String arcsFile = "None"; // Default value if not provided
 
-		// Main logic:
+		if (args.length > 3) {
+
+			arcsFile = args[3]; // e.g. "Arcs_1_1.txt"
+		}
+
+		int suffix = 1; // Default value if not provided
+
+		if (args.length > 4) {
+			suffix = Integer.parseInt(args[4]); // e.g. 1
+		}
+
+		// ----------------- MAIN LOGIC ---------------------------------
 
 		// Create a buffered reader:
 
@@ -66,7 +77,7 @@ public class Main_customCosts {
 
 			// Runs the MSH:
 
-			manager.runWithCustomCosts(coordinatesFile, arcsFile);
+			manager.runWithCustomCosts(coordinatesFile, costFile, arcsFile, suffix);
 
 			// Closes the code:
 

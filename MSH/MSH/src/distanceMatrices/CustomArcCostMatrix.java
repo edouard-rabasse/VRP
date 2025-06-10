@@ -6,6 +6,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import core.ArrayDistanceMatrix;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.File;
+import globalParameters.GlobalParameters;
+
 /**
  * Cette classe permet de stocker les coûts personnalisés pour certains arcs
  */
@@ -83,6 +90,10 @@ public class CustomArcCostMatrix {
      * @throws IOException
      */
     public void loadFromFile(String filePath) throws IOException {
+        if (!new File(filePath).isFile()) {
+            System.out.println("[CustomCost creation] No custom cost file " + filePath + " provided, skipping update.");
+            return;
+        }
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
         String line;
 
@@ -105,5 +116,122 @@ public class CustomArcCostMatrix {
         for (Map.Entry<String, Double> entry : customCosts.entrySet()) {
             System.out.println("Arc: " + entry.getKey() + " - Cost: " + entry.getValue());
         }
+    }
+
+    /**
+     * Saves the custom costs to a file
+     * Format: tail;head;mode;cost
+     * 
+     * @param filePath
+     */
+    public void saveFile(String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (Map.Entry<String, Double> entry : customCosts.entrySet()) {
+                String[] parts = entry.getKey().split(";");
+                int tail = Integer.parseInt(parts[0]);
+                int head = Integer.parseInt(parts[1]);
+                int mode = Integer.parseInt(parts[2]);
+                double cost = entry.getValue();
+                writer.write(tail + ";" + head + ";" + mode + ";" + cost);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Updates the custom costs from a flagged file
+     * 
+     * @param filePath  Path to the flagged file. Each line is expected to be in the
+     *                  format:
+     *                  "tail;head;mode;route number; flagged (1 or 0)"
+     * @param lambda    Multiplier factor for flagged arcs (cost *= 1 + lambda)
+     * @param distances Distance matrix for calculating default driving costs
+     * @param alpha     Default cost for walking arcs (mode 2)
+     * @throws IOException
+     */
+    public void updateFromFlaggedFile(String filePath, double lambda,
+            ArrayDistanceMatrix distances, double alpha) throws IOException {
+
+        // check if the filePath corresponds to a valid file
+
+        if (!new File(filePath).isFile()) {
+            System.out.println("[CustomCost update] No flagged file " + filePath + " provided, skipping update.");
+            return;
+        }
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        String line;
+        System.out.println("[CustomCost update] Updating custom costs from flagged file: " + filePath);
+
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.isEmpty())
+                continue;
+
+            String[] parts = line.split(";");
+            if (parts.length >= 5) {
+                try {
+                    int tail = Integer.parseInt(parts[0]);
+                    int head = Integer.parseInt(parts[1]);
+                    int mode = Integer.parseInt(parts[2]);
+                    // parts[3] is route number - not used for cost calculation
+                    int flagged = Integer.parseInt(parts[4]);
+
+                    if (flagged == 1) {
+                        String key = tail + ";" + head + ";" + mode;
+
+                        if (hasCustomCost(tail, head, mode)) {
+                            // Arc already has custom cost - multiply by (1 + lambda)
+                            double currentCost = getCustomCost(tail, head, mode);
+                            double newCost = currentCost * (1.0 + lambda);
+                            customCosts.put(key, newCost);
+
+                            System.out.println("[CustomCost] Updated arc " + tail + "->" + head +
+                                    " (mode " + mode + ") from " + currentCost + " to " + newCost);
+                        } else {
+                            // Arc doesn't have custom cost yet - create default cost
+                            double defaultCost;
+                            if (mode == 1) {
+                                // Driving mode - use distance * VARIABLE_COST
+                                System.out.println("[CustomCost] Creating new arc " + tail + "->" + head +
+                                        " (mode " + mode + ") with default cost based on distance.");
+                                defaultCost = distances.getDistance(tail % this.depot, head % this.depot)
+                                        * GlobalParameters.VARIABLE_COST;
+                            } else {
+                                // Walking mode - use alpha
+                                defaultCost = alpha;
+                            }
+
+                            // Apply the lambda factor immediately since it's flagged
+                            double newCost = defaultCost * (1.0 + lambda);
+                            customCosts.put(key, newCost);
+
+                            System.out.println("[CustomCost] Created new arc " + tail + "->" + head +
+                                    " (mode " + mode + ") with cost " + newCost +
+                                    " (default: " + defaultCost + ", lambda: " + lambda + ")");
+                        }
+                    }
+                    if (flagged == 0) { // TODO : remove
+                        // If the arc is not flagged, we set the cost to -1
+                        String key = tail + ";" + head + ";" + mode;
+                        customCosts.put(key, -1.0);
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("[CustomCost] Error parsing line: " + line + " - " + e.getMessage());
+                }
+            }
+        }
+
+        reader.close();
+    }
+
+    /**
+     * Overloaded method with default parameters
+     */
+    public void updateFromFlaggedFile(String filePath) throws IOException {
+        // You'll need to pass these parameters from the calling code
+        throw new UnsupportedOperationException("Use updateFromFlaggedFile(filePath, lambda, distances, alpha)");
     }
 }

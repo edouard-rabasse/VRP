@@ -1,0 +1,49 @@
+# File: src/pipeline/solver_client.py
+import subprocess
+from pathlib import Path
+
+
+class SolverError(Exception):
+    pass
+
+
+class SolverClient:
+    """
+    Wrapper de l'appel au solveur Java (MSH + Gurobi).
+    """
+
+    def __init__(self, msh_dir: Path, java_lib: Path):
+        self.msh_dir = msh_dir
+        self.java_lib = java_lib
+
+    def run(
+        self,
+        instance: int,
+        config_name: str,
+        arc_suffix: str = "1",
+        timeout: int = 300,
+    ) -> None:
+        cmd = [
+            "java",
+            "-Xmx14000m",
+            f"-Djava.library.path={self.java_lib}",
+            "-cp",
+            f"bin;{self.java_lib.parent / 'lib' / 'gurobi.jar'}",
+            "main.Main_customCosts",
+            f"Coordinates_{instance}.txt",
+            f"Costs_{instance}_{arc_suffix}.txt",
+            config_name,
+            f"Arcs_{instance}_{arc_suffix}.txt",
+            f"{arc_suffix}",
+        ]
+        print(f"[Debug] Running command: {' '.join(cmd)} from {self.msh_dir}")
+        result = subprocess.run(
+            cmd,
+            cwd=self.msh_dir,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        if result.returncode != 0:
+            raise SolverError(f"Solver failed ({result.returncode})\n{result.stderr}")
+        return

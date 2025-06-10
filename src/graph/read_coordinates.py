@@ -1,4 +1,6 @@
-def read_coordinates(file_path, type="original", keep_service_time=True):
+def read_coordinates(
+    file_path, type="original", keep_service_time=True
+) -> tuple[dict, int]:
     """Reads coordinates from a file and returns them as a dictionary.
 
     Args:

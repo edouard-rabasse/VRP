@@ -85,7 +85,7 @@ public class Manager {
 		return solver;
 	}
 
-	public Solver_gurobi runWithCustomCosts(String coordinatesFile, String arcsFile)
+	public Solver_gurobi runWithCustomCosts(String coordinatesFile, String CostFile, String arcsFile, int suffix)
 			throws IOException, InterruptedException {
 		// Creates a solver instance:
 
@@ -93,7 +93,7 @@ public class Manager {
 
 		// Runs the MSH with custom costs:
 
-		solver.runWithCustomCosts(coordinatesFile, arcsFile);
+		solver.runWithCustomCosts(coordinatesFile, CostFile, arcsFile, suffix);
 
 		// Returns the solver instance:
 
