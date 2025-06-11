@@ -14,7 +14,55 @@ import java.io.File;
 import globalParameters.GlobalParameters;
 
 /**
- * Cette classe permet de stocker les coûts personnalisés pour certains arcs
+ * CustomArcCostMatrix is a class for managing custom arc costs in a network,
+ * supporting multiple transportation modes (e.g., driving, walking).
+ * 
+ * <p>
+ * It allows adding, retrieving, and updating custom costs for arcs between
+ * nodes,
+ * with special handling for depot nodes. Costs can be loaded from or saved to
+ * files,
+ * and updated based on flagged arcs (e.g., for penalizing certain routes).
+ * </p>
+ * 
+ * <p>
+ * Key features:
+ * <ul>
+ * <li>Store and retrieve custom costs for arcs, indexed by tail, head, and
+ * mode.</li>
+ * <li>Support for loading and saving custom costs from/to files.</li>
+ * <li>Update costs based on flagged arcs, with support for cost
+ * multipliers.</li>
+ * <li>Special handling for depot arcs.</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * Usage example:
+ * 
+ * <pre>
+ * CustomArcCostMatrix matrix = new CustomArcCostMatrix();
+ * matrix.addDepot(0);
+ * matrix.addCustomCost(1, 2, 1, 10.0);
+ * double cost = matrix.getCustomCost(1, 2, 1);
+ * </pre>
+ * </p>
+ * 
+ * <p>
+ * File formats:
+ * <ul>
+ * <li>Custom cost file: <code>tail;head;mode;cost</code></li>
+ * <li>Flagged file:
+ * <code>tail;head;mode;route number;flagged (1 or 0)</code></li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * Thread safety: This class is not thread-safe.
+ * </p>
+ * 
+ * @author edouard-rabasse
+ * @version 1.0
  */
 public class CustomArcCostMatrix {
 
@@ -24,7 +72,7 @@ public class CustomArcCostMatrix {
     private int depot;
 
     /**
-     * Constructeur
+     * Constructor
      */
     public CustomArcCostMatrix() {
         this.customCosts = new HashMap<>();
@@ -182,8 +230,8 @@ public class CustomArcCostMatrix {
                     if (flagged == 1) {
                         String key = tail + ";" + head + ";" + mode;
 
-                        if (hasCustomCost(tail, head, mode)) {
-                            // Arc already has custom cost - multiply by (1 + lambda)
+                        if (hasCustomCost(tail, head, mode) && customCosts.get(key) > 0.0) {
+                            // Arc already has positive custom cost - multiply by (1 + lambda)
                             double currentCost = getCustomCost(tail, head, mode);
                             double newCost = currentCost * (1.0 + lambda);
                             customCosts.put(key, newCost);

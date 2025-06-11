@@ -1,3 +1,11 @@
+# This module provides functions to read node coordinates from a file and to generate coordinate file names.
+# Functions:
+#     read_coordinates(file_path, type="original", keep_service_time=True) -> tuple[dict, int]:
+#         Reads coordinates from a file and returns them as a dictionary along with the last node ID (depot).
+#         Supports two types of coordinate formats: "original" and "modified".
+#         Optionally includes service time and coordinate type information.
+#     get_coordinates_name(index):
+#         Returns the coordinates file name as a string based on the given index.
 def read_coordinates(
     file_path, type="original", keep_service_time=True
 ) -> tuple[dict, int]:

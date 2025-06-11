@@ -10,13 +10,20 @@ class FileService:
     Gestion centralisée des chemins et I/O de fichiers pour les instances et solutions.
     """
 
-    def __init__(self, base_dir: Path):
+    def __init__(
+        self,
+        base_dir: Path,
+        instance_folder: str = "instancesCustomCosts",
+        results_folder: str = "results",
+    ):
         self.base_dir = base_dir
+        self.instance_folder = instance_folder
+        self.results_folder = results_folder
 
     def coord_path(self, instance: int) -> Path:
         # TODO: modify
         coord_path = (
-            self.base_dir / "instancesCustomCosts" / f"Coordinates_{instance}.txt"
+            self.base_dir / self.instance_folder / f"Coordinates_{instance}.txt"
         )
         if not coord_path.exists():
             raise FileNotFoundError(f"The file {coord_path} does not exist.")
@@ -25,7 +32,7 @@ class FileService:
     def arc_path(self, instance: int, config: str = "1", suffix: str = "1") -> Path:
         return (
             self.base_dir
-            / "results"
+            / self.results_folder
             / f"configuration{config}"
             / f"Arcs_{instance}_{suffix}.txt"
         )
@@ -35,7 +42,7 @@ class FileService:
     ) -> Path:
         return (
             self.base_dir
-            / "results"
+            / self.results_folder
             / f"configuration{config}"
             / f"Arcs_{instance}_{suffix}.txt"
         )
