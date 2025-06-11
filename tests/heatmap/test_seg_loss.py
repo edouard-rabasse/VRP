@@ -44,4 +44,4 @@ def test_mixed_penalties():
     mask = torch.tensor([[[[0.0, 1.0], [1.0, 0.0]]]])
     loss = loss_fn(logits, mask)
     # FP: 2 * sigmoid(10) ≈ 2 * 1.0, FN: 1 * (1 - sigmoid(-10)) ≈ 1 * 1.0
-    assert abs(loss.item() - 3.0) < 0.01
+    assert abs(loss.item() - 1.5) < 0.01

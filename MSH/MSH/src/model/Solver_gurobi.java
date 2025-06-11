@@ -33,6 +33,7 @@ import msh.GurobiSetPartitioningSolver;
 import msh.MSH;
 import msh.OrderFirstSplitSecondSampling;
 import split.SplitPLRP;
+import util.SolutionPrinter;
 
 // temporary : TODO: Chnage SplitLRP to take this into account.
 import split.SplitWithEdgeConstraints;
@@ -1342,11 +1343,13 @@ public class Solver_gurobi {
 		distances = new DepotToCustomersDistanceMatrix(data);
 
 		// Arc modification matrix
-		ArcModificationMatrix arcModificationMatrix = new ArcModificationMatrix();
-		arcModificationMatrix.loadFromFile(GlobalParameters.RESULT_FOLDER + arc_path);
+		// ArcModificationMatrix arcModificationMatrix = new ArcModificationMatrix();
+		// arcModificationMatrix.loadFromFile(GlobalParameters.RESULT_FOLDER +
+		// arc_path);
 
-		ArrayDistanceMatrix fixed_arcs = null;
-		fixed_arcs = new DepotToCustomersDistanceMatrixV2(data, arcModificationMatrix);
+		// ArrayDistanceMatrix fixed_arcs = null;
+		// fixed_arcs = new DepotToCustomersDistanceMatrixV2(data,
+		// arcModificationMatrix);
 
 		CustomArcCostMatrix arcCost = new CustomArcCostMatrix();
 		arcCost.addDepot(depot);
@@ -1481,7 +1484,11 @@ public class Solver_gurobi {
 
 		// 17. Print solution
 
-		printSolution(msh, assembler, data, suffix + 1);
+		// printSolution(msh, assembler, data, suffix + 1);
+		System.out.println("Printing the solution with custom costs...");
+		customArcCosts.printCustomCosts();
+		SolutionPrinter.printSolutionWithCostAnalysis(assembler, data, instance_name, suffix, distances,
+				walking_times);
 
 	}
 
