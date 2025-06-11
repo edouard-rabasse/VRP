@@ -49,6 +49,7 @@ class OptimizedVRPPipeline:
         tensor = (
             image_transform_test()(Image.fromarray(img)).unsqueeze(0).to(self.device)
         )
+        self.model.eval()
         with torch.no_grad():
             out = self.model(tensor)
             score = torch.sigmoid(out).squeeze().cpu()[1].item()
@@ -92,7 +93,8 @@ class OptimizedVRPPipeline:
             arcs = self.files.read_arcs(
                 instance, config="CustomCosts", suffix=iteration
             )
-            score = self.score(flagged_coords, flagged_arcs, depot)
+            # score = self.score(flagged_coords, flagged_arcs, depot)
+            score = self.score(coords, arcs, depot)
             dt = current_time() - t0
             results["iterations"].append(
                 {"iter": iteration, "score": score, "time": dt}

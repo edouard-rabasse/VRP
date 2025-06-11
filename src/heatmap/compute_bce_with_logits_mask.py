@@ -2,10 +2,15 @@ import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
+
+from src.transform import ProportionalThresholdResize
 
 
 def compute_bce_with_logits_mask(
-    heatmap_logits: torch.Tensor, mask: torch.Tensor
+    heatmap_logits: torch.Tensor,
+    mask: torch.Tensor,
+    criterion: nn.Module = nn.BCEWithLogitsLoss(reduction="mean"),
 ) -> float:
     """
     Resize the binary `mask` to the spatial size of `heatmap_logits` and compute
@@ -45,8 +50,17 @@ def compute_bce_with_logits_mask(
 
     # 3) Resize mask to heatmap size using nearest/neighbour or max pooling
     H, W = hm.shape[-2:]
-    m_resized = F.interpolate(m.float(), size=(H, W), mode="nearest")
+    m_resized = ProportionalThresholdResize(size=(H, W))(m)
+
+    # plt.figure(figsize=(10, 5))
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(m_resized.squeeze().cpu().numpy(), cmap="gray")
+    # plt.title("Resized Mask")
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(hm.squeeze().cpu().numpy(), cmap="hot")
+    # plt.title("Heatmap Logits")
+    # plt.show()
 
     # 4) Compute BCEWithLogitsLoss
-    loss = nn.BCEWithLogitsLoss(reduction="mean")(hm, m_resized)
+    loss = criterion(hm, m_resized)
     return loss.item()

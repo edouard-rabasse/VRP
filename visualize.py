@@ -1,4 +1,19 @@
-# visualize.py : this script is used to visualize the heatmap and the overlay
+"""
+visualize.py
+This script visualizes heatmaps and overlays for a given dataset using a pre-trained model.
+It loads a model specified in the configuration, processes each image in the test dataset,
+computes the loss, and saves the resulting heatmaps to the specified output directory.
+Functions:
+    main(cfg: DictConfig):
+        Hydra main function that:
+            - Loads configuration and model.
+            - Iterates over test images in the specified directory.
+            - Processes each image to compute and accumulate loss.
+            - Saves heatmaps to the output directory.
+            - Prints timing and loss statistics.
+Usage:
+    Run this script as a standalone module. Configuration is handled via Hydra.
+"""
 
 import os
 import torch

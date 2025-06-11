@@ -1,3 +1,29 @@
+"""
+This module provides functions to generate a plot of routes from VRP (Vehicle Routing Problem) data files or in-memory data structures.
+
+It leverages the `plot_routes` function to visualize routes based on arcs and coordinates, and returns the resulting plot as a numpy array.
+Functions:
+
+    - generate_plot_from_files(
+        Reads arcs and coordinates from specified files, generates a plot of the routes, and returns the image as a numpy array.
+            arcs_file (str): Path to the arcs file.
+            coords_file (str): Path to the coordinates file.
+            route_type (str, optional): Type of route to plot. Defaults to "original".
+            show_labels (bool, optional): Whether to show node labels. Defaults to False.
+            background_image (optional): Background image for the plot. Defaults to None.
+            np.ndarray: Image as a numpy array.
+
+    - generate_plot_from_dict(
+        Generates a plot from a list of arcs and a dictionary of coordinates, and returns the image as a numpy array.
+            arcs (list): List of arcs representing the routes.
+            coordinates (dict): Dictionary mapping node identifiers to coordinates.
+            depot (int): Depot node identifier.
+            route_type (str, optional): Type of route to plot. Defaults to "original".
+            show_labels (bool, optional): Whether to show node labels. Defaults to False.
+            background_image (optional): Background image for the plot. Defaults to None.
+            np.ndarray: Image as a numpy array.
+"""
+
 import io
 from .read_coordinates import read_coordinates
 from .read_arcs import read_arcs

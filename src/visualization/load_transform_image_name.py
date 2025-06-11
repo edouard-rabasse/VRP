@@ -32,5 +32,6 @@ def load_and_transform_image_mask(cfg, fname: str, device: str):
         interpolation=transforms.InterpolationMode.NEAREST,
     )
     mask = mask_transform(size=cfg.image_size)(mask)
+    # mask = mask_transform(cfg.mask_shape)(mask)
 
     return t_img, mask

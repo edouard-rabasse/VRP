@@ -8,7 +8,7 @@ from .load_transform_image_name import load_and_transform_image_mask
 from .reverse_heatmap import reverse_heatmap
 from .save_overlay import save_overlay
 from .process_image import process_image
-from .compute_bce_with_logits_mask import compute_bce_with_logits_mask
+from ..heatmap.compute_bce_with_logits_mask import compute_bce_with_logits_mask
 
 
 __all__ = [

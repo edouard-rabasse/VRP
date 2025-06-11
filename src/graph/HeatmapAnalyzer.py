@@ -1,3 +1,36 @@
+# HeatmapAnalyzer.py
+"""
+HeatmapAnalyzer module for analyzing arcs and coordinates with respect to a spatial heatmap.
+Classes:
+    HeatmapAnalyzer: Analyzes a heatmap to determine which arcs and coordinates fall within specified zones.
+Functions:
+
+    __init__(self, heatmap, arcs, coordinates, bounds=(-1, 11, -1, 11), threshold=0.5, n_samples=15)
+        Initializes the HeatmapAnalyzer with the given heatmap, arcs, coordinates, spatial bounds, threshold, and number of samples.
+    world_to_pixel(self, x, y)
+        Converts world coordinates (x, y) to pixel indices in the heatmap array.
+    sample_segment(self, p1, p2)
+        Generates sample points along the segment between two points p1 and p2.
+    is_arc_in_zone(self, arc)
+        Determines if any part of the given arc passes through a zone in the heatmap above the threshold.
+    arcs_in_zone(self)
+        Returns a list of arcs that pass through zones in the heatmap above the threshold.
+    route_in_zone(self, arcs_in_zone)
+        Returns the set of route IDs and points that are part of the arcs in the zone.
+    reverse_heatmap(self)
+        Determines which arcs and coordinates are in the zone and returns them with zone indicators.
+    write_arcs(self, arcs_with_zone, output_path)
+        Writes the arcs with zone indicators to a specified output file.
+    write_coordinates(self, coordinates, output_path)
+        Writes the coordinates with zone indicators to a specified output file.
+
+Usage Example:
+
+    Instantiate HeatmapAnalyzer with a heatmap, arcs, and coordinates, then use its methods to analyze and export results.
+
+"""
+
+
 import sys
 from pathlib import Path
 import os

@@ -21,6 +21,7 @@ def get_heatmap(
     input_tensor = input_tensor.to(device)
 
     if method == "gradcam":
+        model.eval()  # Set model to evaluation mode
 
         target_layer = recursive_getattr(model, args.target_layer)
 
@@ -51,6 +52,7 @@ def get_heatmap(
             # heatmap = heatmap* 255  # Scale to [0, 255]
 
     elif method == "grad_cam_vgg":
+        model.eval()  # Set model to evaluation mode
 
         target_layer = model.features[29]  # Assuming the last layer is the target layer
         # target_layer = model.block5.conv3  # Assuming the last layer is the target layer

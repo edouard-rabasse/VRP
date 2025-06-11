@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from src.visualization.compute_bce_with_logits_mask import compute_bce_with_logits_mask
+from src.heatmap import compute_bce_with_logits_mask
 
 
 def test_compute_bce_with_logits_mask_basic():
