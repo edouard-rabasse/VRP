@@ -166,4 +166,12 @@ public class GlobalParameters {
 	public static final String ARCS_MODIFIED_FOLDER = GlobalParametersReader.<String>get("ARCS_MODIFIED_FOLDER",
 			String.class, "./results_modified/configuration7/");
 
+	/* The rate at which we update the cost of flagged arcs */
+	public static final double CUSTOM_COST_MULTIPLIER = GlobalParametersReader.<Double>get("CUSTOM_COST_MULTIPLIER",
+			Double.class, 0.5);
+
+	/* Default walking cost for alpha */
+	public static final double DEFAULT_WALK_COST = GlobalParametersReader.<Double>get("DEFAULT_WALK_COST", Double.class,
+			1.0);
+
 }

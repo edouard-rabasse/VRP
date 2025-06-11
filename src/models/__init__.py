@@ -1,6 +1,5 @@
 # src/models/__init__.py
 import os
-import timm
 import torch
 import torch.nn as nn
 

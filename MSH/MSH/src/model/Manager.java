@@ -84,4 +84,19 @@ public class Manager {
 
 		return solver;
 	}
+
+	public Solver_gurobi runWithCustomCosts(String coordinatesFile, String CostFile, String arcsFile, int suffix)
+			throws IOException, InterruptedException {
+		// Creates a solver instance:
+
+		Solver_gurobi solver = new Solver_gurobi();
+
+		// Runs the MSH with custom costs:
+
+		solver.runWithCustomCosts(coordinatesFile, CostFile, arcsFile, suffix);
+
+		// Returns the solver instance:
+
+		return solver;
+	}
 }

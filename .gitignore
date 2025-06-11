@@ -16,3 +16,5 @@ instances_modified/
 gurobi_lib/
 vit_explain/
 sweep_id*
+costs/
+arcsCustom/

@@ -8,7 +8,13 @@ from PIL import Image
 
 
 def generate_plot_from_files(
-    arcs_file: str, coords_file: str, bounds=(-1, 11, -1, 11), dpi=100
+    arcs_file: str,
+    coords_file: str,
+    bounds=(-1, 11, -1, 11),
+    dpi=100,
+    route_type="original",
+    show_labels=False,
+    background_image=None,
 ) -> np.ndarray:
     """
     Generate a plot from arcs and coordinates files and return as a numpy array.
@@ -24,7 +30,7 @@ def generate_plot_from_files(
         tuple: (image_array, coordinates_dict, arcs_list, depot_node)
     """
     # Read arcs and coordinates
-    arcs = read_arcs(arcs_file)
+    arcs = read_arcs(arcs_file, type=route_type)
     coordinates, depot = read_coordinates(coords_file)
 
     img = generate_plot_from_dict(
@@ -33,12 +39,22 @@ def generate_plot_from_files(
         depot=depot,
         bounds=bounds,
         dpi=dpi,
+        route_type=route_type,
+        show_labels=show_labels,
+        background_image=background_image,
     )
     return img
 
 
 def generate_plot_from_dict(
-    arcs, coordinates, depot, bounds=(-1, 11, -1, 11), dpi=100
+    arcs,
+    coordinates,
+    depot,
+    bounds=(-1, 11, -1, 11),
+    dpi=100,
+    route_type="original",
+    show_labels=False,
+    background_image=None,
 ) -> np.ndarray:
     """Generate a plot from list of arcs and dictionnary of coordinates and return as a numpy array.
 
@@ -57,7 +73,16 @@ def generate_plot_from_dict(
     buf = io.BytesIO()
 
     # Use the existing plot_routes function to generate the plot
-    plot_routes(arcs, coordinates, depot, buf, bounds=bounds)
+    plot_routes(
+        arcs,
+        coordinates,
+        depot,
+        buf,
+        bounds=bounds,
+        route_type=route_type,
+        show_labels=show_labels,
+        background_image=background_image,
+    )
 
     # Convert buffer to numpy array
     buf.seek(0)

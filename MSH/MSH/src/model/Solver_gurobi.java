@@ -26,12 +26,16 @@ import distanceMatrices.DepotToCustomersDistanceMatrixV2;
 import distanceMatrices.DepotToCustomersDrivingTimesMatrix;
 import distanceMatrices.DepotToCustomersWalkingTimesMatrix;
 import distanceMatrices.ArcModificationMatrix;
+import distanceMatrices.CustomArcCostMatrix;
 import globalParameters.GlobalParameters;
 import msh.AssemblyFunction;
 import msh.GurobiSetPartitioningSolver;
 import msh.MSH;
 import msh.OrderFirstSplitSecondSampling;
 import split.SplitPLRP;
+
+// temporary : TODO: Chnage SplitLRP to take this into account.
+import split.SplitWithEdgeConstraints;
 
 /**
  * This class contains the main logic of the MSH.
@@ -74,10 +78,31 @@ public class Solver_gurobi {
 	 */
 	private double cpu_msh_assembly;
 
+	/**
+	 * Custom cost matrix for Arcs
+	 */
+	private CustomArcCostMatrix customArcCosts;
+
 	// Methods:
 
 	// ------------------------------------------MAIN
 	// LOGIC-----------------------------------
+
+	/**
+	 * Constructeur avec coûts personnalisés
+	 * 
+	 * @param customArcCosts Matrice de coûts personnalisés
+	 */
+	public Solver_gurobi(CustomArcCostMatrix customArcCosts) {
+		this.customArcCosts = customArcCosts;
+	}
+
+	/**
+	 * Constructeur par défaut
+	 */
+	public Solver_gurobi() {
+		this.customArcCosts = new CustomArcCostMatrix();
+	}
 
 	/**
 	 * This method runs the MSH
@@ -232,10 +257,24 @@ public class Solver_gurobi {
 	 */
 	public void printSolution(MSH msh, AssemblyFunction assembler, DataHandler data) {
 
+		printSolution(msh, assembler, data, GlobalParameters.SEED);
+	}
+
+	/**
+	 * This method prints the solution in console and in a txt file
+	 * 
+	 * @param msh       the msh object that contains information of the route pools
+	 * @param assembler the assembler used to solve the set partitioning model
+	 * @param data      DataHandler object that contains information of the instance
+	 */
+	public void printSolution(MSH msh, AssemblyFunction assembler, DataHandler data, int suffix) {
+
 		// 1. Defines the path for the txt file:
 
 		String path_arcs = globalParameters.GlobalParameters.RESULT_FOLDER + "Arcs_" + instance_name + "_"
-				+ GlobalParameters.SEED + ".txt";
+				+ suffix + ".txt";
+
+		System.out.println("Saving the solution in: " + path_arcs);
 
 		// 2. Prints the txt file:
 
@@ -275,6 +314,7 @@ public class Solver_gurobi {
 							String[] arcParts = parts[pos].split("[;]");
 							for (int arc = 0; arc < arcParts.length - 1; arc++) {
 								if (!arcParts[arc].equals(arcParts[arc + 1])) {
+
 									pw_arcs.println(arcParts[arc] + ";" + arcParts[arc + 1] + ";" + 1 + ";" + counter);
 								}
 							}
@@ -787,15 +827,34 @@ public class Solver_gurobi {
 	 * a tsp that follows that order
 	 * 
 	 * @param data
-	 * @param distances_satellite_customers
+	 * @param distances
 	 * @param pools
 	 * @param msh
-	 * @param splits
+	 * @param split
 	 * @param num_iterations
 	 * @return
 	 */
 	public void addSamplingFunctionsRefiner(DataHandler data, ArrayDistanceMatrix distances, ArrayList<RoutePool> pools,
 			MSH msh, Split split, int num_iterations) {
+		String path = GlobalParameters.INSTANCE_FOLDER + instance_identifier + "_refiner.txt";
+		this.addSamplingFunctionsRoutesRefiner(data, distances, pools, msh, split, num_iterations, path);
+	}
+
+	/**
+	 * This methods adds the sampling function that will read a solution and return
+	 * a tsp that follows that order
+	 * 
+	 * @param data
+	 * @param distances
+	 * @param pools
+	 * @param msh
+	 * @param split
+	 * @param num_iterations
+	 * @param path
+	 * @return
+	 */
+	public void addSamplingFunctionsRefiner(DataHandler data, ArrayDistanceMatrix distances, ArrayList<RoutePool> pools,
+			MSH msh, Split split, int num_iterations, String path) {
 
 		// Sets the seed for the generation of random numbers:
 
@@ -805,7 +864,7 @@ public class Solver_gurobi {
 
 		// RNN:
 
-		RefinerHeuristic nn = new RefinerHeuristic(distances, this.instance_name);
+		RefinerHeuristic nn = new RefinerHeuristic(distances, this.instance_name, path);
 		nn.setRandomized(true);
 		nn.setRandomGen(random_nn);
 		nn.setRandomizationFactor(GlobalParameters.MSH_RANDOM_FACTOR_HIGH_RN);
@@ -986,10 +1045,10 @@ public class Solver_gurobi {
 	 * a tsp that follows that order
 	 * 
 	 * @param data
-	 * @param distances_satellite_customers
+	 * @param distances
 	 * @param pools
 	 * @param msh
-	 * @param splits
+	 * @param split
 	 * @param num_iterations
 	 * @return
 	 */
@@ -1001,6 +1060,29 @@ public class Solver_gurobi {
 		// Option 1: Read the solution and build the tsp
 
 		String path = "./results/configuration1/Arcs_" + this.instance_name + "_" + GlobalParameters.SEED + ".txt";
+		this.addSamplingFunctionsRoutesRefiner(data, distances, pools, msh, split, num_iterations, path);
+	}
+
+	/**
+	 * This methods adds the sampling function that will read a solution and return
+	 * a tsp that follows that order
+	 * 
+	 * @param data
+	 * @param distances
+	 * @param pools
+	 * @param msh
+	 * @param split
+	 * @param num_iterations
+	 * @param path
+	 * @return
+	 */
+	public void addSamplingFunctionsRoutesRefiner(DataHandler data, ArrayDistanceMatrix distances,
+			ArrayList<RoutePool> pools, MSH msh, Split split, int num_iterations, String path) {
+
+		// Captures the number of routes in the solution:
+
+		// Option 1: Read the solution and build the tsp
+
 		int num_routes = 0;
 
 		try {
@@ -1108,7 +1190,7 @@ public class Solver_gurobi {
 
 		// Walking speed, driving speed, etc..
 
-		DataHandlerHighlighted data = new DataHandlerHighlighted(
+		DataHandler data = new DataHandler(
 				GlobalParameters.COORDINATES_FOLDER + instance_identifier);
 
 		// Depot to customers distance matrix
@@ -1228,6 +1310,178 @@ public class Solver_gurobi {
 		// 17. Print solution
 
 		printSolution(msh, assembler, data);
+
+	}
+
+	public void runWithCustomCosts(String instance_identifier, String costFile, String arc_path, int suffix)
+			throws IOException {
+		this.instance_identifier = instance_identifier;
+		this.instance_name = instance_identifier.replace(".txt", "");
+		this.instance_name = this.instance_name.replace("Coordinates_", "");
+
+		// 1. Starts the clock for the initialization step:
+
+		Double IniTime = (double) System.nanoTime();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("Starting the initialization step...");
+		}
+
+		// 2. Reads the instance
+
+		// Walking speed, driving speed, etc..
+
+		DataHandler data = new DataHandler(
+				GlobalParameters.INSTANCE_FOLDER + instance_identifier);
+
+		int depot = data.getNbCustomers() + 1;
+
+		// Depot to customers distance matrix
+
+		ArrayDistanceMatrix distances = null;
+		distances = new DepotToCustomersDistanceMatrix(data);
+
+		// Arc modification matrix
+		ArcModificationMatrix arcModificationMatrix = new ArcModificationMatrix();
+		arcModificationMatrix.loadFromFile(GlobalParameters.RESULT_FOLDER + arc_path);
+
+		ArrayDistanceMatrix fixed_arcs = null;
+		fixed_arcs = new DepotToCustomersDistanceMatrixV2(data, arcModificationMatrix);
+
+		CustomArcCostMatrix arcCost = new CustomArcCostMatrix();
+		arcCost.addDepot(depot);
+		arcCost.loadFromFile(GlobalParameters.ARCS_MODIFIED_FOLDER + costFile);
+
+		arcCost.updateFromFlaggedFile(GlobalParameters.RESULT_FOLDER + arc_path,
+				GlobalParameters.CUSTOM_COST_MULTIPLIER, distances,
+				GlobalParameters.DEFAULT_WALK_COST);
+
+		arcCost.saveFile(GlobalParameters.ARCS_MODIFIED_FOLDER + "Costs_" + instance_name + "_" + (suffix + 1)
+				+ ".txt");
+
+		// Depot to customers distance matrix
+
+		ArrayDistanceMatrix driving_times = null;
+		driving_times = new DepotToCustomersDrivingTimesMatrix(data);
+
+		// Depot to customers distance matrix
+
+		ArrayDistanceMatrix walking_times = null;
+		walking_times = new DepotToCustomersWalkingTimesMatrix(data);
+
+		// 3. Initializes an array to store all the route pools. We will have one pool
+		// for each satellite/tspHeuristic
+
+		ArrayList<RoutePool> pools = new ArrayList<RoutePool>();
+
+		// 4. Creates an assembler:
+
+		AssemblyFunction assembler = null;
+		assembler = new GurobiSetPartitioningSolver(data.getNbCustomers(), true, data);// GUROBI
+
+		// 5. Initializes the MSH object with the assembler and the # of threads:
+
+		MSH msh = new MSH(assembler, GlobalParameters.THREADS);
+
+		// 6. Initializes the split algorithm:
+
+		Split split = new SplitWithEdgeConstraints(distances, driving_times, walking_times, data,
+				arcCost);
+
+		// 7. Number of iterations for each TSP heuristc:
+
+		int num_iterations = (int) Math.ceil(GlobalParameters.MSH_NUM_ITERATIONS / 8);
+		if (num_iterations < 1) {
+			num_iterations = 1;
+		}
+
+		// 8. Set-up of the sampling functions:
+
+		// With a high level of randomization:
+
+		// this.addSamplingFunctionsHighSE(data, distances, pools, msh, split,
+		// num_iterations);
+
+		// // With a low level of randomization:
+
+		// this.addSamplingFunctionsLowSE(data, distances, pools, msh, split,
+		// num_iterations);
+		arc_path = GlobalParameters.RESULT_FOLDER + arc_path;
+		System.out.println(
+				"[Solver_gurobi.runWithCustomCosts] The file with the arcs to be fixed : " + arc_path
+						+ " is provided. We will run the MSH with fixing arcs.");
+
+		if (!new File(arc_path).isFile()) {
+			System.out.println(
+					"[Solver_gurobi.run] The file with the arcs to be fixed : " + arc_path
+							+ " does not exist or is not provided. We will run the MSH without fixing arcs.");
+			this.addSamplingFunctionsHighSE(data, distances, pools, msh, split, num_iterations);
+			this.addSamplingFunctionsLowSE(data, distances, pools, msh, split, num_iterations);
+		} else {
+
+			this.addSamplingFunctionsRefiner(data, distances, pools, msh, split, num_iterations, arc_path);
+		}
+
+		// 11. Stops the clock for the initialization time:
+
+		Double FinTime = (double) System.nanoTime();
+		cpu_initialization = (FinTime - IniTime) / 1000000000;
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("End of the initialization step...");
+		}
+
+		// 12. Sets the pools:
+
+		msh.setPools(pools);
+
+		// 13. Sampling phase of MSH:
+
+		Double IniTime_msh = (double) System.nanoTime();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("Start of the sampling step...");
+		}
+
+		// Sampling phase:
+
+		msh.run_sampling();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("End of the sampling step...");
+		}
+
+		Double FinTime_msh = (double) System.nanoTime();
+
+		cpu_msh_sampling = (FinTime_msh - IniTime_msh) / 1000000000;
+
+		// 15. Assembly phase of MSH:
+
+		// Starts the clock:
+
+		IniTime_msh = (double) System.nanoTime();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("Start of the assembly step...");
+		}
+
+		// Runs the assembly step:
+
+		msh.run_assembly();
+
+		if (GlobalParameters.PRINT_IN_CONSOLE) {
+			System.out.println("End of the assembly step...");
+		}
+
+		// Stops the clock:
+
+		FinTime_msh = (double) System.nanoTime();
+
+		cpu_msh_assembly = (FinTime_msh - IniTime_msh) / 1000000000;
+
+		// 17. Print solution
+
+		printSolution(msh, assembler, data, suffix + 1);
 
 	}
 

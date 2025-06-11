@@ -19,7 +19,7 @@ def setup_plot(ax, bounds, background_image=None):
         ax.imshow(img, extent=bounds, aspect="auto", zorder=0)
 
 
-def plot_arcs(ax, arcs, coordinates):
+def plot_arcs(ax, arcs, coordinates, type="original"):
     """Plot arcs (edges) between nodes on the given axes."""
     arc_has_type = len(arcs[0]) == 5
 
@@ -30,7 +30,7 @@ def plot_arcs(ax, arcs, coordinates):
         x1, y1 = coordinates[tail][:2]
         x2, y2 = coordinates[head][:2]
 
-        linestyle = "-" if arc_type == 0 else ":"
+        linestyle = ":" if arc_type == 1 and type == "modified" else "-"
         arccolor = (0.0, 1.0, 0.0) if mode == 2 else (0.0, 0.0, 1.0)
 
         ax.plot(
@@ -94,7 +94,7 @@ def plot_routes(
     """
     fig, ax = plt.subplots(figsize=(10, 10))
     setup_plot(ax, bounds, background_image)
-    plot_arcs(ax, arcs, coordinates)
+    plot_arcs(ax, arcs, coordinates, type=route_type)
     plot_nodes(ax, coordinates, depot, arcs, route_type, show_labels)
     plt.savefig(output_file, bbox_inches="tight", pad_inches=0)
     plt.close()

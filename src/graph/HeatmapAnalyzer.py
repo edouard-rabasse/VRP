@@ -55,7 +55,7 @@ class HeatmapAnalyzer:
             yield (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
 
     def is_arc_in_zone(self, arc):
-        tail, head, _, _ = arc
+        tail, head = arc[:2]
         p_tail = self.coordinates[tail][:2]
         p_head = self.coordinates[head][:2]
         for x, y in self.sample_segment(p_tail, p_head):
@@ -69,9 +69,9 @@ class HeatmapAnalyzer:
         return [arc for arc in self.arcs if self.is_arc_in_zone(arc)]
 
     def route_in_zone(self, arcs_in_zone):
-        route_ids = set(route_id for _, _, _, route_id in arcs_in_zone)
-        points = set(tail for tail, _, _, _ in arcs_in_zone) | set(
-            head for _, head, _, _ in arcs_in_zone
+        route_ids = set(arc[3] for arc in arcs_in_zone)
+        points = set(arc[0] for arc in arcs_in_zone) | set(
+            arc[1] for arc in arcs_in_zone
         )
         return route_ids, points
 
@@ -85,7 +85,7 @@ class HeatmapAnalyzer:
         in_zone = self.arcs_in_zone()
         route_ids, points = self.route_in_zone(in_zone)
 
-        arcs_with_flag = [(*arc, 1 if arc in in_zone else 0) for arc in self.arcs]
+        arcs_with_flag = [(*arc[:4], 1 if arc in in_zone else 0) for arc in self.arcs]
 
         new_coordinates = {}
 

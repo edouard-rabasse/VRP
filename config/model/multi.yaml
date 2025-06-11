@@ -8,6 +8,7 @@ load: ${..load_model}  # load model from checkpoint
 save: ${..save_model}  # save model to checkpoint
 
 weight_path: checkpoints/multi_task_model.pth
+save_path: checkpoints/multi_task_model.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}
 

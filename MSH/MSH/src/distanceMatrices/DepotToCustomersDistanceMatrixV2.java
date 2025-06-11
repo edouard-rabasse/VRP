@@ -3,7 +3,7 @@ package distanceMatrices;
 import java.io.IOException;
 
 import core.ArrayDistanceMatrix;
-import dataStructures.DataHandlerHighlighted;
+import dataStructures.DataHandler;
 import globalParameters.GlobalParameters;
 import util.EuclideanCalculator;
 import distanceMatrices.ArcModificationMatrix;
@@ -24,7 +24,7 @@ public class DepotToCustomersDistanceMatrixV2 extends ArrayDistanceMatrix {
 	 * @throws IOException
 	 */
 
-	public DepotToCustomersDistanceMatrixV2(DataHandlerHighlighted data, ArcModificationMatrix arcModificationMatrix)
+	public DepotToCustomersDistanceMatrixV2(DataHandler data, ArcModificationMatrix arcModificationMatrix)
 			throws IOException {
 
 		super();

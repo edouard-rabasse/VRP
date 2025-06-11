@@ -93,3 +93,19 @@ Zones de parking
 - augmenter de façon artificielle le coût des arcs pointillés (1+lambda) par mode. Puis rerun.
 - mettre un coût initial pour les arcs à pied
 - faire la fonction de loss heatmap
+
+
+
+## 10/06
+Solutions qui n'augeentent pas le prix.
+
+Mesurer le nombre de fois qu'on a SP = SI = SPI
+idem pour SP != SI = SPI -> mesurer le delta. Combien on perd en qualité de la solution.
+SP != SI != PI 
+- cas dans lequel f(SI) < f(SPI)
+- autre cas.
+filtre les instances qui changent pas.
+
+Planificateur bête : 
+- Si l'arc est trop long, prend la voiture pour cet arc. Veiller à ce qu'on ait toujours assez de distances pour evenir à la voiture à pied.
+
