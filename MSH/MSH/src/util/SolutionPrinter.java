@@ -25,6 +25,9 @@ public class SolutionPrinter {
         String pathCosts = GlobalParameters.RESULT_FOLDER + "CostAnalysis_" + instanceName + "_" + suffix + ".txt";
 
         try {
+
+            createDirectoriesIfNeeded(pathArcs);
+            createDirectoriesIfNeeded(pathCosts);
             PrintWriter pwArcs = new PrintWriter(new File(pathArcs));
             PrintWriter pwCosts = new PrintWriter(new File(pathCosts));
 
@@ -192,6 +195,22 @@ public class SolutionPrinter {
 
             }
 
+        }
+    }
+
+    /**
+     * Creates parent directories for a file path if they don't exist
+     * 
+     * @param filePath The file path
+     */
+    private static void createDirectoriesIfNeeded(String filePath) {
+        File file = new File(filePath);
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            boolean created = parentDir.mkdirs();
+            if (!created) {
+                System.err.println("Warning: Could not create directory: " + parentDir.getAbsolutePath());
+            }
         }
     }
 }
