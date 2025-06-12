@@ -11,6 +11,8 @@ import core.RouteAttribute;
 
 /**
  * Utility class for printing solutions with cost analysis
+ * 
+ * @author Edouard Rabasse
  */
 public class SolutionPrinter {
 
@@ -47,15 +49,15 @@ public class SolutionPrinter {
                 totalCustomCost += breakdown.getCustomCost();
 
                 // Print route analysis
-                String chain = (String) route.getAttribute(RouteAttribute.CHAIN);
+                // String chain = (String) route.getAttribute(RouteAttribute.CHAIN);
                 System.out.printf("Route %d: Real=%.2f, Custom=%.2f, Penalty=%.2f (%.1f%%)%n",
                         routeCounter, breakdown.getRealCost(), breakdown.getCustomCost(),
                         breakdown.getPenalty(), breakdown.getPenaltyPercentage());
 
-                // Save to cost analysis file
-                pwCosts.printf("%d;%.2f;%.2f;%.2f;%.1f;%s%n",
-                        routeCounter, breakdown.getRealCost(), breakdown.getCustomCost(),
-                        breakdown.getPenalty(), breakdown.getPenaltyPercentage(), chain);
+                // // Save to cost analysis file
+                // pwCosts.printf("%d;%.2f;%.2f;%.2f;%.1f;%s%n",
+                // routeCounter, breakdown.getRealCost(), breakdown.getCustomCost(),
+                // breakdown.getPenalty(), breakdown.getPenaltyPercentage(), chain);
 
                 // Generate arcs (existing logic)
                 generateArcsFromRoute(route, data, pwArcs, routeCounter);

@@ -1487,7 +1487,7 @@ public class Solver_gurobi {
 		// printSolution(msh, assembler, data, suffix + 1);
 		System.out.println("Printing the solution with custom costs...");
 		customArcCosts.printCustomCosts();
-		SolutionPrinter.printSolutionWithCostAnalysis(assembler, data, instance_name, suffix, distances,
+		SolutionPrinter.printSolutionWithCostAnalysis(assembler, data, instance_name, suffix + 1, distances,
 				walking_times);
 
 	}

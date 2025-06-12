@@ -15,6 +15,8 @@ public class CostCalculator {
     /**
      * Calculate the real cost of a route using original distances
      * (without custom costs or penalties)
+     * 
+     * @author Edouard Rabasse
      */
     public static double calculateRealRouteCost(Route route, DataHandler data,
             ArrayDistanceMatrix originalDistances,
@@ -155,11 +157,9 @@ public class CostCalculator {
         int to = convertNodeToInt(toStr);
 
         if (from != -1 && to != -1 && from != to) {
-            System.out.println("[CostCalculator]   Adding driving arc: " + fromStr + " -> " + toStr +
-                    " (" + from + " -> " + to + ")");
+
             double arcCost = originalDistances.getDistance(from, to) * GlobalParameters.VARIABLE_COST;
-            System.out.println("[CostCalculator]   Driving arc: " + fromStr + " -> " + toStr +
-                    " (" + from + " -> " + to + ") cost: " + String.format("%.2f", arcCost));
+
             return arcCost;
         }
 
@@ -170,7 +170,7 @@ public class CostCalculator {
      * Add a walking arc (no cost, just logging)
      */
     private static void addWalkingArc(String fromStr, String toStr) {
-        System.out.println("[CostCalculator]   Walking arc: " + fromStr + " --- " + toStr + " (no cost)");
+
     }
 
     /**
@@ -191,7 +191,7 @@ public class CostCalculator {
         try {
             return Integer.parseInt(nodeStr);
         } catch (NumberFormatException e) {
-            System.err.println("[CostCalculator] Error parsing node: " + nodeStr);
+
             return -1;
         }
     }

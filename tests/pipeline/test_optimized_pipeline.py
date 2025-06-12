@@ -24,6 +24,15 @@ def stub_dependencies(monkeypatch, tmp_path):
         save_model=False,
         experiment_name="exp",
         data_cfg_number=1,
+        solver=SimpleNamespace(
+            java_lib="dummy_solver.jar",
+            config_name="conf.xml",
+            max_iterations=10,
+            threshold=0.1,
+            config="1",
+            program_name="main.Main_customCosts",
+            custom_args=["-Xmx14000m", "-Djava.library.path=dummy_solver.jar"],
+        ),
     )
     monkeypatch.setattr(op, "get_cfg", lambda overrides=None: fake_cfg)
 
@@ -41,15 +50,15 @@ def stub_dependencies(monkeypatch, tmp_path):
 
     # Stub FileService
     fs = SimpleNamespace(
-        read_coordinates=lambda ins: ([(0.0, 0.0), (1.0, 1.0)], 0),
-        read_arcs=lambda ins, config, suffix: [(0, 1, 1, 0)],
+        load_coordinates=lambda ins: ([(0.0, 0.0), (1.0, 1.0)], 0),
+        load_arcs=lambda ins, config_number, suffix: [(0, 1, 1, 0)],
         save_arcs=lambda *args, **kw: None,
     )
     monkeypatch.setattr(op, "FileService", lambda base: fs)
 
     # Stub SolverClient
     sc = SimpleNamespace(run=lambda *args, **kw: None)
-    monkeypatch.setattr(op, "SolverClient", lambda msh_dir, java_lib: sc)
+    monkeypatch.setattr(op, "SolverClient", lambda *args, **kwargs: sc)
 
     # Stub graph and plotting
     monkeypatch.setattr(
@@ -78,7 +87,9 @@ def stub_dependencies(monkeypatch, tmp_path):
 
 def test_flag_arcs_returns_flagged(monkeypatch):
     pipeline = OptimizedVRPPipeline()
-    flagged, flagged_coords = pipeline.flag_arcs(instance=123, suffix="1", config="cfg")
+    flagged, flagged_coords = pipeline.flag_arcs(
+        instance=123, suffix="1", config_number="1"
+    )
     # we stubbed flag_graph_from_data to return input arcs and coords
     assert flagged == [(0, 1, 1, 0)]
     assert flagged_coords == [(0.0, 0.0), (1.0, 1.0)]
@@ -114,7 +125,9 @@ def test_iterative_optimization_stops_on_threshold():
     scores = [0.5, 0.1]
     pipeline.score = lambda *args, **kwargs: scores.pop(0)
     called = []
-    pipeline.run_vrp_solver = lambda inst, arc_suffix=None: called.append(arc_suffix)
+    pipeline.run_vrp_solver = lambda inst, config_name, arc_suffix=None: called.append(
+        arc_suffix
+    )
 
     results = pipeline.iterative_optimization(instance=7, max_iter=3, thresh=0.2)
 

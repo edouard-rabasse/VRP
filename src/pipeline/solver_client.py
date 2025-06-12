@@ -1,6 +1,7 @@
 # File: src/pipeline/solver_client.py
 import subprocess
 from pathlib import Path
+from omegaconf import DictConfig
 
 
 class SolverError(Exception):
@@ -12,9 +13,27 @@ class SolverClient:
     Wrapper de l'appel au solveur Java (MSH + Gurobi).
     """
 
-    def __init__(self, msh_dir: Path, java_lib: Path):
+    def __init__(
+        self,
+        msh_dir: Path,
+        java_lib: Path,
+        program_name: str = "main.Main_customCosts",
+        custom_args: list | None = None,
+    ):
+
         self.msh_dir = msh_dir
         self.java_lib = java_lib
+        self.program_name = program_name
+
+        if custom_args is not None:
+            self.custom_arguments = custom_args
+        else:
+            self.custom_arguments = [
+                "-Xmx14000m",
+                f"-Djava.library.path={self.java_lib}",
+                "-cp",
+                f"bin;{self.java_lib.parent / 'lib' / 'gurobi.jar'}",
+            ]
 
     def run(
         self,
@@ -25,11 +44,8 @@ class SolverClient:
     ) -> None:
         cmd = [
             "java",
-            "-Xmx14000m",
-            f"-Djava.library.path={self.java_lib}",
-            "-cp",
-            f"bin;{self.java_lib.parent / 'lib' / 'gurobi.jar'}",
-            "main.Main_customCosts",
+            *self.custom_arguments,
+            self.program_name,
             f"Coordinates_{instance}.txt",
             f"Costs_{instance}_{arc_suffix}.txt",
             config_name,

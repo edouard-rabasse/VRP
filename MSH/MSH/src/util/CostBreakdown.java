@@ -2,6 +2,8 @@ package util;
 
 /**
  * Data class to hold cost breakdown information
+ * 
+ * @author Edouard Rabasse
  */
 public class CostBreakdown {
     private final double realCost;
