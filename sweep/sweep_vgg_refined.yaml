@@ -1,6 +1,6 @@
 # sweep.yaml
 program: train.py
-name: sweep_vgg_2  # 👈 Nom explicite ici
+name: sweep_vgg_background  # 👈 Nom explicite ici
 project: VRP
 
 command:

@@ -116,7 +116,7 @@ def train_vgg_seg(
     metrics = []  # list to collect metrics per epoch
 
     optimizer = torch.optim.Adam(
-        filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate
+        filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate,weight_decay=1e-5
     )
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 

@@ -20,6 +20,8 @@ pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 # ── WandB login ──────────────────────────────────────────────────────────────
 wandb login --relogin "$WANDB_API_KEY"
 
+sleep 7200
+
 # ── Configuration ────────────────────────────────────────────────────────────
 # Ajoute ce bloc pour récupérer le modèle passé en argument
 if [ -z "$1" ]; then
