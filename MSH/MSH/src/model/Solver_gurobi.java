@@ -34,7 +34,8 @@ import msh.MSH;
 import msh.OrderFirstSplitSecondSampling;
 import split.SplitPLRP;
 import util.SolutionPrinter;
-
+import validation.RouteConstraintValidator;
+import validation.RouteConstraintValidator.ValidationResult;
 // temporary : TODO: Chnage SplitLRP to take this into account.
 import split.SplitWithEdgeConstraints;
 
@@ -1489,6 +1490,15 @@ public class Solver_gurobi {
 		customArcCosts.printCustomCosts();
 		SolutionPrinter.printSolutionWithCostAnalysis(assembler, data, instance_name, suffix + 1, distances,
 				walking_times);
+
+		// Créer le validateur avec la même instance
+		RouteConstraintValidator validator = new RouteConstraintValidator(this.instance_identifier);
+
+		// Valider toute la solution
+		ArrayList<RouteConstraintValidator.ValidationResult> solutionResult = validator
+				.validateRoutes(assembler.solution);
+
+		// System.out.println(solutionResult.toString());
 
 	}
 
