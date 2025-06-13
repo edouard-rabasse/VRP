@@ -1486,17 +1486,15 @@ public class Solver_gurobi {
 		// 17. Print solution
 
 		// printSolution(msh, assembler, data, suffix + 1);
-		System.out.println("Printing the solution with custom costs...");
-		customArcCosts.printCustomCosts();
-		SolutionPrinter.printSolutionWithCostAnalysis(assembler, data, instance_name, suffix + 1, distances,
-				walking_times);
-
-		// Créer le validateur avec la même instance
-		RouteConstraintValidator validator = new RouteConstraintValidator(this.instance_identifier);
 
 		// Valider toute la solution
-		ArrayList<RouteConstraintValidator.ValidationResult> solutionResult = validator
-				.validateRoutes(assembler.solution);
+
+		// Créer le validateur avec la même instance
+		RouteConstraintValidator validator = new RouteConstraintValidator(this.instance_identifier,
+				"./config/configuration7.xml");
+
+		SolutionPrinter.printSolutionWithCostAnalysis(assembler, data, instance_name, suffix + 1, distances,
+				walking_times, validator);
 
 		// System.out.println(solutionResult.toString());
 

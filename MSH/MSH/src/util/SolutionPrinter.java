@@ -6,6 +6,7 @@ import core.Route;
 import msh.AssemblyFunction;
 import dataStructures.DataHandler;
 import globalParameters.GlobalParameters;
+import validation.RouteConstraintValidator;
 import core.ArrayDistanceMatrix;
 import core.RouteAttribute;
 
@@ -19,7 +20,8 @@ public class SolutionPrinter {
     public static void printSolutionWithCostAnalysis(AssemblyFunction assembler, DataHandler data,
             String instanceName, int suffix,
             ArrayDistanceMatrix originalDistances,
-            ArrayDistanceMatrix originalWalkingTimes) {
+            ArrayDistanceMatrix originalWalkingTimes,
+            RouteConstraintValidator routeValidator) {
 
         String pathArcs = GlobalParameters.RESULT_FOLDER + "Arcs_" + instanceName + "_" + suffix + ".txt";
         String pathCosts = GlobalParameters.RESULT_FOLDER + "CostAnalysis_" + instanceName + "_" + suffix + ".txt";
@@ -32,7 +34,7 @@ public class SolutionPrinter {
             PrintWriter pwCosts = new PrintWriter(new File(pathCosts));
 
             // Headers
-            pwCosts.println("Route;RealCost;CustomCost;Penalty;PenaltyPercentage;Chain");
+            pwCosts.println("Route;RealCost;CustomCost;Penalty;PenaltyPercentage;Chain;Valid");
 
             System.out.println("-----------------------------------------------");
             System.out.println("SOLUTION WITH COST ANALYSIS");
@@ -50,12 +52,13 @@ public class SolutionPrinter {
 
                 totalRealCost += breakdown.getRealCost();
                 totalCustomCost += breakdown.getCustomCost();
+                boolean isValidRoute = routeValidator.validateRoute(route).isValid;
 
                 // Print route analysis
                 // String chain = (String) route.getAttribute(RouteAttribute.CHAIN);
-                System.out.printf("Route %d: Real=%.2f, Custom=%.2f, Penalty=%.2f (%.1f%%)%n",
+                System.out.printf("Route %d: Real=%.2f, Custom=%.2f, Penalty=%.2f (%.1f%%)%n Valid=%b",
                         routeCounter, breakdown.getRealCost(), breakdown.getCustomCost(),
-                        breakdown.getPenalty(), breakdown.getPenaltyPercentage());
+                        breakdown.getPenalty(), breakdown.getPenaltyPercentage(), isValidRoute);
 
                 // // Save to cost analysis file
                 // pwCosts.printf("%d;%.2f;%.2f;%.2f;%.1f;%s%n",
@@ -73,6 +76,7 @@ public class SolutionPrinter {
 
                 routeCounter++;
             }
+            boolean isValid = routeValidator.validateGlobalConstraints(assembler.solution);
 
             // Summary
             double totalPenalty = totalCustomCost - totalRealCost;
@@ -81,9 +85,9 @@ public class SolutionPrinter {
                     totalRealCost, totalCustomCost, totalPenalty,
                     totalRealCost > 0 ? (totalPenalty / totalRealCost * 100) : 0);
 
-            pwCosts.printf("TOTAL;%.2f;%.2f;%.2f;%.1f;%n",
+            pwCosts.printf("TOTAL;%.2f;%.2f;%.2f;%.1f;%b%n",
                     totalRealCost, totalCustomCost, totalPenalty,
-                    totalRealCost > 0 ? (totalPenalty / totalRealCost * 100) : 0);
+                    totalRealCost > 0 ? (totalPenalty / totalRealCost * 100) : 0, isValid);
 
             pwArcs.close();
             pwCosts.close();
