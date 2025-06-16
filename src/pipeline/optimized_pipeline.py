@@ -64,7 +64,6 @@ class OptimizedVRPPipeline:
         with torch.no_grad():
             out = self.model(tensor)
             score = torch.sigmoid(out).squeeze().cpu()[1].item()
-        print(f"[Debug] Scoring for instance: {score}")
         return score
 
     def run_vrp_solver(
@@ -135,8 +134,8 @@ class OptimizedVRPPipeline:
                     show_labels=True,
                 )
                 if iteration > 1 and score < thresh:
-                    results["converged"] = True
 
+                    results = self.check_final(results, instance, iteration)
                     break
 
             self.run_vrp_solver(
@@ -144,4 +143,36 @@ class OptimizedVRPPipeline:
             )
             iteration += 1
         results["total_time"] = current_time() - start
+        return results
+
+    def check_final(self, results: dict, instance: int, iteration: int) -> None:
+        """Check final results for convergence and cost analysis.
+
+        Args:
+            results (dict): Dictionary to store results.
+            instance (int): Instance number.
+            iteration (int): Current iteration number.
+
+        Returns:
+            dict: Updated results dictionary with convergence status and cost analysis.
+        """
+        results["converged"] = True
+        cost_analysis = self.files.load_results(instance, iteration)
+        cost_analysis_init = self.files.load_results(instance, 2)
+
+        arcs_init = self.files.load_arcs(
+            instance, config_number=self.cfg.solver.org_config, suffix="1"
+        )
+        arcs_final = self.files.load_arcs(
+            instance,
+            config_number=self.cfg.solver.config,
+            suffix=iteration,  # the last index
+        )
+        results["initial_costs"] = cost_analysis_init["RealCost"]
+        results["final_costs"] = cost_analysis["RealCost"]
+        results["cost_delta"] = (
+            results["initial_costs"] - results["final_costs"]
+        ) / results["initial_costs"]
+        results["valid"] = cost_analysis["Valid"]
+        results["equal"] = self.files.compare_arcs(arcs_init, arcs_final)
         return results

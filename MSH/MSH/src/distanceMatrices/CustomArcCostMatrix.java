@@ -268,11 +268,11 @@ public class CustomArcCostMatrix {
                                     " (default: " + defaultCost + ", lambda: " + lambda + ")");
                         }
                     }
-                    if (flagged == 0) { // TODO : remove
-                        // If the arc is not flagged, we set the cost to -1
-                        String key = tail + ";" + head + ";" + mode;
-                        customCosts.put(key, -1.0);
-                    }
+                    // if (flagged == 0) { // TODO : remove
+                    // // If the arc is not flagged, we set the cost to -1
+                    // String key = tail + ";" + head + ";" + mode;
+                    // customCosts.put(key, -1.0);
+                    // }
                 } catch (NumberFormatException e) {
                     System.err.println("[CustomCost] Error parsing line: " + line + " - " + e.getMessage());
                 }

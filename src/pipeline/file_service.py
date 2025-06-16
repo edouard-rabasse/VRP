@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 
-from src.graph import read_coordinates, read_arcs
+from src.graph import read_coordinates, read_arcs, load_set_arc
 
 
 class FileService:
@@ -12,18 +12,12 @@ class FileService:
     """
 
     ""
-    DEFAULT_INSTANCE_FOLDER = "instancesCustomCosts"
-    DEFAULT_RESULTS_FOLDER = "results"
-    DEFAULT_CONFIG = "1"
-    DEFAULT_SUFFIX = "1"
-    ORIGINAL_CONFIG = "1"
-    CUSTOM_COSTS_CONFIG = "CustomCosts"
 
     def __init__(
         self,
         base_dir: Path,
-        instance_folder: str = DEFAULT_INSTANCE_FOLDER,
-        results_folder: str = DEFAULT_RESULTS_FOLDER,
+        instance_folder: str,
+        results_folder: str,
     ):
         self.base_dir = Path(base_dir)
         self.instance_folder = instance_folder
@@ -73,6 +67,30 @@ class FileService:
             / self.results_folder
             / f"configuration{config_number}"
             / f"Arcs_{instance}_{suffix}.txt"
+        )
+
+    def get_results_path(
+        self,
+        instance: int,
+        config_number: str,
+        suffix: str,
+    ) -> Path:
+        """
+        Get the path to the results file for a given instance and configuration.
+
+        Args:
+            instance: Instance number
+            config: Configuration identifier
+            suffix: File suffix
+
+        Returns:
+            Path to the results file
+        """
+        return (
+            self.base_dir
+            / self.results_folder
+            / f"configuration{config_number}"
+            / f"CostAnalysis_{instance}_{suffix}.txt"
         )
 
     # def get_solution_arcs_path(
@@ -171,8 +189,8 @@ class FileService:
         self,
         instance: int,
         arcs: List[Tuple],
-        config_number: str = DEFAULT_CONFIG,
-        suffix: str = DEFAULT_SUFFIX,
+        config_number: str,
+        suffix: str,
     ) -> None:
         """
         Save arcs to file for a given instance and configuration.
@@ -202,8 +220,8 @@ class FileService:
     def create_copy(
         self,
         instance,
-        org_cfg_number: str = ORIGINAL_CONFIG,
-        cfg_number: str = CUSTOM_COSTS_CONFIG,
+        org_cfg_number: str,
+        cfg_number: str,
     ) -> None:
         """Creates a copy of the results file for a given instance."""
         original_path = self.get_arcs_path(
@@ -218,3 +236,94 @@ class FileService:
         with open(original_path, "r", encoding="utf-8") as original_file:
             with open(copy_path, "w", encoding="utf-8") as copy_file:
                 copy_file.write(original_file.read())
+
+    def load_results(self, instance, iteration):
+        """
+        Load results for a given instance and iteration.
+
+        Args:
+            instance: Instance number
+            iteration: Iteration number
+
+        Returns:
+            Tuple of (arcs, coordinates, depot)
+        """
+        path = self.get_results_path(
+            instance, config_number=self.CUSTOM_COSTS_CONFIG, suffix=iteration
+        )
+        if not path.exists():
+            raise FileNotFoundError(f"Results file not found: {path}")
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+            # Get headers and data
+            headers = lines[0].strip().split(";")
+            values = lines[1].strip().split(";")
+
+            # Replace comma by dot in numeric values
+            values = [v.replace(",", ".") for v in values]
+
+            # Convert numeric fields if needed (optional)
+            def try_cast(value):
+                try:
+                    return float(value)
+                except ValueError:
+                    return (
+                        value.lower() == "true"
+                        if value.lower() in ["true", "false"]
+                        else value
+                    )
+
+            # Build dictionary
+            data = {key: try_cast(val) for key, val in zip(headers, values)}
+
+        return data
+
+    def compare_arcs(
+        self,
+        arc_1: List[Tuple],
+        arc_2: List[Tuple],
+    ) -> List[Tuple]:
+        """
+        Compare arcs from the original configuration with those from a custom configuration.
+
+        Args:
+            arc_1: List of tuples representing the original arcs
+            arc_2: List of tuples representing the custom arcs
+
+        Returns:
+            Boolean indicating whether the arcs are the same
+        """
+        arc_1 = load_set_arc(arc_1)
+        arc_2 = load_set_arc(arc_2)
+
+        # Find the difference between the two sets of arcs
+        diff_arcs = arc_1.symmetric_difference(arc_2)
+        return len(diff_arcs) == 0
+
+    def delete_intermediate_files(
+        self,
+        instance: int,
+        iter: int,
+        config_number: str,
+    ) -> None:
+        """
+        Delete intermediate files for a given instance and configuration.
+
+        Args:
+            instance: Instance number
+            config_number: Configuration identifier
+            suffix: File suffix
+        """
+
+        for suffix in range(1, int(iter)):
+            if suffix == 1:
+                continue
+
+            arcs_path = self.get_arcs_path(instance, config_number, suffix)
+            results_path = self.get_results_path(instance, config_number, suffix)
+
+            if arcs_path.exists():
+                arcs_path.unlink()
+            if results_path.exists():
+                results_path.unlink()

@@ -146,29 +146,29 @@ public class RouteConstraintValidator {
                 .anyMatch(node -> node > 0 && node <= data.getNbCustomers());
 
         if (hasCustomerVisits) {
-            totalCost += Integer.parseInt(parameters.get("FIXED_COST").toString());
+            totalCost += Double.valueOf(parameters.get("FIXED_COST").toString());
         }
 
         // Calculer la durée totale (marche + conduite + service + stationnement)
         double totalDuration = totalWalkingTime + totalDrivingTime + totalServiceTime + totalParkingTime;
 
         // Vérifier les contraintes globales
-        if (totalWalkingDistance > Integer.parseInt(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString())) {
+        if (totalWalkingDistance > Double.valueOf(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString())) {
             result.violations.add(String.format(
                     "Distance de marche totale (%.2f) dépasse ROUTE_WALKING_DISTANCE_LIMIT (%.2f)",
-                    totalWalkingDistance, Integer.parseInt(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString())));
+                    totalWalkingDistance, Double.valueOf(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString())));
         }
 
-        if (totalDuration > Integer.parseInt(parameters.get("ROUTE_DURATION_LIMIT").toString())) {
+        if (totalDuration > Double.valueOf(parameters.get("ROUTE_DURATION_LIMIT").toString())) {
             result.violations.add(String.format(
                     "Durée totale (%.2f min) dépasse ROUTE_DURATION_LIMIT (%.2f min)",
-                    totalDuration, Integer.parseInt(parameters.get("ROUTE_DURATION_LIMIT").toString())));
+                    totalDuration, Double.valueOf(parameters.get("ROUTE_DURATION_LIMIT").toString())));
         }
 
-        if (totalDrivingTime > Integer.parseInt(parameters.get("SUBTOUR_TIME_LIMIT").toString())) {
+        if (totalDrivingTime > Double.valueOf(parameters.get("SUBTOUR_TIME_LIMIT").toString())) {
             result.violations.add(String.format(
-                    "Temps de conduite (%.2f min) dépasse SUBTOUR_TIME_LIMIT (%d min)",
-                    totalDrivingTime, Integer.parseInt(parameters.get("SUBTOUR_TIME_LIMIT").toString())));
+                    "Temps de conduite (%.2f min) dépasse SUBTOUR_TIME_LIMIT (%.2f min)",
+                    totalDrivingTime, Double.valueOf(parameters.get("SUBTOUR_TIME_LIMIT").toString())));
         }
 
         // Stocker les valeurs calculées
@@ -214,12 +214,12 @@ public class RouteConstraintValidator {
 
                     // Add parking time only once per segment (at the end)
                     if (arc == arcParts.length - 2) {
-                        result.parkingTime += Integer.parseInt(parameters.get("PARKING_TIME_MIN").toString());
+                        result.parkingTime += Double.valueOf(parameters.get("PARKING_TIME_MIN").toString());
                     }
 
                     // Add variable cost based on distance
                     result.cost += distances.getDistance(from, to)
-                            * Integer.parseInt(parameters.get("VARIABLE_COST").toString());
+                            * Double.valueOf(parameters.get("VARIABLE_COST").toString());
 
                 } catch (NumberFormatException e) {
                     result.violations
@@ -249,10 +249,10 @@ public class RouteConstraintValidator {
                 double walkingTime = walkingTimes.getDistance(from, to);
 
                 // Vérifier MAX_WD_B2P pour chaque arc marché
-                if (walkingDistance > Integer.parseInt(parameters.get("MAX_WD_B2P").toString())) {
+                if (walkingDistance > Double.valueOf(parameters.get("MAX_WD_B2P").toString())) {
                     result.violations.add(String.format(
                             "Distance de marche entre %d et %d (%.2f) dépasse MAX_WD_B2P (%.2f)",
-                            from, to, walkingDistance, Integer.parseInt(parameters.get("MAX_WD_B2P").toString())));
+                            from, to, walkingDistance, Double.valueOf(parameters.get("MAX_WD_B2P").toString())));
                 }
 
                 result.walkingDistance += walkingDistance;
@@ -291,7 +291,7 @@ public class RouteConstraintValidator {
                 double drivingTime = drivingTimes.getDistance(from, to);
                 result.drivingTime += drivingTime;
                 result.cost += distances.getDistance(from, to)
-                        * Integer.parseInt(parameters.get("VARIABLE_COST").toString());
+                        * Double.valueOf(parameters.get("VARIABLE_COST").toString());
 
             } else if (mode == 2) {
                 // Arc marché
@@ -299,10 +299,10 @@ public class RouteConstraintValidator {
                 double walkingTime = walkingTimes.getDistance(from, to);
 
                 // Vérifier MAX_WD_B2P
-                if (walkingDistance > Integer.parseInt(parameters.get("MAX_WD_B2P").toString())) {
+                if (walkingDistance > Double.valueOf(parameters.get("MAX_WD_B2P").toString())) {
                     result.violations.add(String.format(
                             "Distance de marche entre %d et %d (%.2f) dépasse MAX_WD_B2P (%.2f)",
-                            from, to, walkingDistance, Integer.parseInt(parameters.get("MAX_WD_B2P").toString())));
+                            from, to, walkingDistance, Double.valueOf(parameters.get("MAX_WD_B2P").toString())));
                 }
 
                 result.walkingDistance += walkingDistance;
@@ -385,7 +385,7 @@ public class RouteConstraintValidator {
 
         // Add parking time once per mixed segment if it contains driving arcs
         if (hasDrivingArcs) {
-            result.parkingTime += Integer.parseInt(parameters.get("PARKING_TIME_MIN").toString());
+            result.parkingTime += Double.valueOf(parameters.get("PARKING_TIME_MIN").toString());
         }
 
         return result;
@@ -534,10 +534,10 @@ public class RouteConstraintValidator {
             sb.append("\n--- MÉTRIQUES ---\n");
             sb.append("Coût total: ").append(String.format("%.2f", totalCost)).append("\n");
             sb.append("Distance MARCHÉE: ").append(String.format("%.2f", totalWalkingDistance))
-                    .append(" / ").append(Integer.parseInt(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString()))
+                    .append(" / ").append(Double.valueOf(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString()))
                     .append(" km\n");
             sb.append("Durée TOTALE: ").append(String.format("%.2f", totalDuration))
-                    .append(" / ").append(Integer.parseInt(parameters.get("ROUTE_DURATION_LIMIT").toString()))
+                    .append(" / ").append(Double.valueOf(parameters.get("ROUTE_DURATION_LIMIT").toString()))
                     .append(" min\n");
             sb.append("  - Temps marche: ").append(String.format("%.2f", totalWalkingTime)).append(" min\n");
             sb.append("  - Temps conduite: ").append(String.format("%.2f", totalDrivingTime)).append(" min\n");
@@ -562,8 +562,8 @@ public class RouteConstraintValidator {
                     isValid ? "OK" : "KO",
                     violations.size(),
                     totalCost,
-                    totalWalkingDistance, Integer.parseInt(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString()),
-                    totalDuration, Integer.parseInt(parameters.get("ROUTE_DURATION_LIMIT").toString()));
+                    totalWalkingDistance, Double.valueOf(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString()),
+                    totalDuration, Double.valueOf(parameters.get("ROUTE_DURATION_LIMIT").toString()));
         }
     }
 }

@@ -22,6 +22,16 @@ public class SolutionPrinter {
             ArrayDistanceMatrix originalDistances,
             ArrayDistanceMatrix originalWalkingTimes,
             RouteConstraintValidator routeValidator) {
+        printSolutionWithCostAnalysis(assembler, data, instanceName, suffix, originalDistances, originalWalkingTimes,
+                routeValidator, null);
+    }
+
+    public static void printSolutionWithCostAnalysis(AssemblyFunction assembler, DataHandler data,
+            String instanceName, int suffix,
+            ArrayDistanceMatrix originalDistances,
+            ArrayDistanceMatrix originalWalkingTimes,
+            RouteConstraintValidator routeValidator,
+            Double RealCost) {
 
         String pathArcs = GlobalParameters.RESULT_FOLDER + "Arcs_" + instanceName + "_" + suffix + ".txt";
         String pathCosts = GlobalParameters.RESULT_FOLDER + "CostAnalysis_" + instanceName + "_" + suffix + ".txt";
@@ -53,6 +63,7 @@ public class SolutionPrinter {
                 totalRealCost += breakdown.getRealCost();
                 totalCustomCost += breakdown.getCustomCost();
                 boolean isValidRoute = routeValidator.validateRoute(route).isValid;
+                System.out.println(routeValidator.validateRoute(route).violations);
 
                 // Print route analysis
                 // String chain = (String) route.getAttribute(RouteAttribute.CHAIN);
@@ -78,6 +89,10 @@ public class SolutionPrinter {
             }
             boolean isValid = routeValidator.validateGlobalConstraints(assembler.solution);
 
+            if (RealCost != null) {
+                totalRealCost = RealCost;
+            }
+
             // Summary
             double totalPenalty = totalCustomCost - totalRealCost;
             System.out.println("-----------------------------------------------");
@@ -85,9 +100,9 @@ public class SolutionPrinter {
                     totalRealCost, totalCustomCost, totalPenalty,
                     totalRealCost > 0 ? (totalPenalty / totalRealCost * 100) : 0);
 
-            pwCosts.printf("TOTAL;%.2f;%.2f;%.2f;%.1f;%b%n",
+            pwCosts.printf("TOTAL;%.2f;%.2f;%.2f;%.1f;%s;%b%n",
                     totalRealCost, totalCustomCost, totalPenalty,
-                    totalRealCost > 0 ? (totalPenalty / totalRealCost * 100) : 0, isValid);
+                    totalRealCost > 0 ? (totalPenalty / totalRealCost * 100) : 0, "", isValid);
 
             pwArcs.close();
             pwCosts.close();

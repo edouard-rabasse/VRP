@@ -20,9 +20,9 @@ import model.Manager;
  * available
  * it immediately stops the algorithm.
  * 
- * MAIN DIFFERENCE: WE CHANGE EACH ROUTE !!!
+ * We apply a custom cost to flagged arcs
  * 
- * @author nicolas.cabrera-malik
+ * @author edouard.rabasse
  *
  */
 public class Main_customCosts {
