@@ -1,0 +1,1 @@
+python .\visualize.py model=vgg data=config7 model.weight_path=checkpoints/vgg_32_50_7.pth

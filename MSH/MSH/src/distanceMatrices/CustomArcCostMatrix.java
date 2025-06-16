@@ -173,15 +173,22 @@ public class CustomArcCostMatrix {
      * @param filePath
      */
     public void saveFile(String filePath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            for (Map.Entry<String, Double> entry : customCosts.entrySet()) {
-                String[] parts = entry.getKey().split(";");
-                int tail = Integer.parseInt(parts[0]);
-                int head = Integer.parseInt(parts[1]);
-                int mode = Integer.parseInt(parts[2]);
-                double cost = entry.getValue();
-                writer.write(tail + ";" + head + ";" + mode + ";" + cost);
-                writer.newLine();
+        try {
+            File file = new File(filePath);
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                for (Map.Entry<String, Double> entry : customCosts.entrySet()) {
+                    String[] parts = entry.getKey().split(";");
+                    int tail = Integer.parseInt(parts[0]);
+                    int head = Integer.parseInt(parts[1]);
+                    int mode = Integer.parseInt(parts[2]);
+                    double cost = entry.getValue();
+                    writer.write(tail + ";" + head + ";" + mode + ";" + cost);
+                    writer.newLine();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -261,11 +268,11 @@ public class CustomArcCostMatrix {
                                     " (default: " + defaultCost + ", lambda: " + lambda + ")");
                         }
                     }
-                    if (flagged == 0) { // TODO : remove
-                        // If the arc is not flagged, we set the cost to -1
-                        String key = tail + ";" + head + ";" + mode;
-                        customCosts.put(key, -1.0);
-                    }
+                    // if (flagged == 0) { // TODO : remove
+                    // // If the arc is not flagged, we set the cost to -1
+                    // String key = tail + ";" + head + ";" + mode;
+                    // customCosts.put(key, -1.0);
+                    // }
                 } catch (NumberFormatException e) {
                     System.err.println("[CustomCost] Error parsing line: " + line + " - " + e.getMessage());
                 }

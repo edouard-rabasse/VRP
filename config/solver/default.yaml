@@ -1,0 +1,22 @@
+
+
+
+java_parent: C:/gurobi1201/win64
+java_lib: ${solver.java_parent}/lib
+java_bin: ${solver.java_parent}/bin
+config_name: "configurationCustomCosts2.xml" #Located in the MSH/MSH/folder, for the Java run
+
+program_name: "main.Main_customCosts"
+
+custom_args:
+- "-Xmx14000m"
+- "-Djava.library.path=${solver.java_bin}"
+- "-cp"
+- "bin;${solver.java_lib}/gurobi.jar"
+
+config: "CustomCosts" # suffix for the result folder
+org_config: "1"
+
+plot_output_folder: "output/test/"
+instance_folder: "instances/"
+result_folder: "results/"

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<entry key="INSTANCE_FOLDER">./instancesCustomCosts/</entry>
+<entry key="INSTANCE_FOLDER">./instances/</entry>
 <entry key="RESULT_FOLDER">./results/configurationCustomCosts/</entry> 
+"
 
-<entry key="COORDINATES_FOLDER">./instances/</entry>
-<entry key="ARCS_MODIFIED_FOLDER">./costs/</entry>
+<entry key="ARCS_MODIFIED_FOLDER">./results/configurationCustomCosts/</entry>
+<entry key="COMPARISON_FOLDER">./results/configuration7/</entry>
 
 <entry key="PRINT_IN_CONSOLE">false</entry>
 <entry key="PRINT_POOLS_TO_FILE">true</entry>
@@ -34,7 +35,7 @@
 
 <entry key="FIXED_ARCS_DISTANCE">-100</entry>
 <entry key="CUSTOM_COST_MULTIPLIER">0.5</entry>
-<entry key="DEFAULT_WALK_COST">1.0</entry>
+<entry key="DEFAULT_WALK_COST">2.0</entry>
 
 
 </properties>

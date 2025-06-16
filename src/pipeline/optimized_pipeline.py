@@ -1,5 +1,8 @@
 # File: src/pipeline/optimized_pipeline.py
 
+## TODO: Create a copy before launching in the right folder
+## TODO: retrieve costs with java and all
+
 
 import time
 from pathlib import Path
@@ -27,15 +30,23 @@ class OptimizedVRPPipeline:
 
         # Services
         self.model = ModelLoader(self.cfg.model, self.device).load()
-        self.files = FileService(BASE_DIR)
+        self.files = FileService(
+            BASE_DIR, self.cfg.solver.instance_folder, self.cfg.solver.result_folder
+        )
         self.solver = SolverClient(
             msh_dir=BASE_DIR,
-            java_lib=Path("C:/gurobi1201/win64/bin"),
+            java_lib=Path(self.cfg.solver.java_lib),
+            program_name=self.cfg.solver.program_name,
+            custom_args=self.cfg.solver.custom_args,
         )
 
-    def flag_arcs(self, instance: int, suffix: str, config="1") -> tuple[list, list]:
-        coords, depot = self.files.read_coordinates(instance)
-        arcs = self.files.read_arcs(instance, config=config, suffix=suffix)
+    def flag_arcs(
+        self, instance: int, suffix: str, config_number="1"
+    ) -> tuple[list, list]:
+        coords, depot = self.files.load_coordinates(instance)
+        arcs = self.files.load_arcs(
+            instance, config_number=config_number, suffix=suffix
+        )
         flagged, flagged_coords = flag_graph_from_data(
             arcs, coords, depot, self.model, self.cfg, device=self.device
         )
@@ -49,10 +60,10 @@ class OptimizedVRPPipeline:
         tensor = (
             image_transform_test()(Image.fromarray(img)).unsqueeze(0).to(self.device)
         )
+        self.model.eval()
         with torch.no_grad():
             out = self.model(tensor)
             score = torch.sigmoid(out).squeeze().cpu()[1].item()
-        print(f"[Debug] Scoring for instance: {score}")
         return score
 
     def run_vrp_solver(
@@ -71,49 +82,101 @@ class OptimizedVRPPipeline:
         self,
         instance: int,
         max_iter: int = 5,
-        thresh: float = 0.2,
+        thresh: float = 0.5,
     ) -> dict:
         results = {"best_score": 1, "iterations": []}
         start = current_time()
         iteration = 1
         score = 0
+
+        # Create copy of the arc file
+        self.files.create_copy(
+            instance,
+            org_cfg_number=self.cfg.solver.org_config,
+            cfg_number=self.cfg.solver.config,
+        )
+
         while iteration < max_iter + 1:
             print(f"[Debug] Iteration {iteration} for instance {instance}")
             t0 = current_time()
 
             flagged_arcs, flagged_coords = self.flag_arcs(
-                instance, suffix=iteration, config="CustomCosts"
+                instance, suffix=iteration, config_number=self.cfg.solver.config
             )
 
             self.files.save_arcs(
-                instance, flagged_arcs, config="CustomCosts", suffix=iteration
+                instance,
+                flagged_arcs,
+                config_number=self.cfg.solver.config,
+                suffix=iteration,
             )
-            coords, depot = self.files.read_coordinates(instance)
-            arcs = self.files.read_arcs(
-                instance, config="CustomCosts", suffix=iteration
+            coords, depot = self.files.load_coordinates(instance)
+            arcs = self.files.load_arcs(
+                instance, config_number=self.cfg.solver.config, suffix=iteration
             )
-            score = self.score(flagged_coords, flagged_arcs, depot)
+            # score = self.score(flagged_coords, flagged_arcs, depot)
+            score = self.score(coords, arcs, depot)
             dt = current_time() - t0
             results["iterations"].append(
                 {"iter": iteration, "score": score, "time": dt}
             )
-            plot_routes(
-                flagged_arcs,
-                flagged_coords,
-                depot,
-                output_file=f"output/test/instance_{instance}_iter_{iteration}.png",
-                bounds=tuple(self.cfg.plot.bounds),
-                route_type="modified",
-                show_labels=True,
-            )
+
             if score < results["best_score"]:
                 improvement = -(results["best_score"] - score) / results["best_score"]
                 results["best_score"] = score
+                plot_routes(
+                    flagged_arcs,
+                    flagged_coords,
+                    depot,
+                    output_file=f"{self.cfg.solver.plot_output_folder}/instance_{instance}_iter_{iteration}.png",
+                    bounds=tuple(self.cfg.plot.bounds),
+                    route_type="modified",
+                    show_labels=True,
+                )
                 if iteration > 1 and score < thresh:
-                    results["converged"] = True
+
+                    results = self.check_final(results, instance, iteration)
                     break
 
-            self.run_vrp_solver(instance, arc_suffix=iteration)
+            self.run_vrp_solver(
+                instance, arc_suffix=iteration, config_name=self.cfg.solver.config_name
+            )
             iteration += 1
         results["total_time"] = current_time() - start
+        # self.files.delete_intermediate_files(
+        #     instance, config_number=self.cfg.solver.config, iter=iteration
+        # )
+        return results
+
+    def check_final(self, results: dict, instance: int, iteration: int) -> None:
+        """Check final results for convergence and cost analysis.
+
+        Args:
+            results (dict): Dictionary to store results.
+            instance (int): Instance number.
+            iteration (int): Current iteration number.
+
+        Returns:
+            dict: Updated results dictionary with convergence status and cost analysis.
+        """
+        results["converged"] = True
+        cost_analysis = self.files.load_results(
+            instance, iteration, self.cfg.solver.config
+        )
+
+        arcs_init = self.files.load_arcs(
+            instance, config_number=self.cfg.solver.org_config, suffix="1"
+        )
+        arcs_final = self.files.load_arcs(
+            instance,
+            config_number=self.cfg.solver.config,
+            suffix=iteration,  # the last index
+        )
+        results["initial_costs"] = cost_analysis["OldCost"]
+        results["final_costs"] = cost_analysis["NewCost"]
+        results["cost_delta"] = (
+            results["final_costs"] - results["initial_costs"]
+        ) / results["initial_costs"]
+        results["valid"] = cost_analysis["Valid"]
+        results["equal"] = self.files.compare_arcs(arcs_init, arcs_final)
         return results

@@ -10,8 +10,8 @@ import torch.nn.functional as F
 from src.visualization import (
     get_heatmap,
     show_mask_on_image,
-    compute_bce_with_logits_mask,
 )
+from src.heatmap.compute_bce_with_logits_mask import compute_bce_with_logits_mask
 
 
 def compute_seg_loss_from_loader(

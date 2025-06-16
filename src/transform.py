@@ -85,5 +85,35 @@ class MaxPoolResize:
         return mask
 
 
+class ProportionalThresholdResize:
+    def __init__(self, size=(10, 10), threshold=0.1):
+        """
+        Args:
+            size (tuple): output spatial size (H_out, W_out)
+            threshold (float): proportion threshold at which output reaches 1.0
+        """
+        self.size = size
+        self.threshold = threshold
+
+    def __call__(self, mask):
+        """
+        Args:
+            mask (Tensor[C, H, W]): binary mask with values 0 or 1
+
+        Returns:
+            Tensor[C, H_out, W_out]: resized mask with linear interpolation up to threshold
+        """
+        mask = mask.float()
+        proportions = F.adaptive_avg_pool2d(mask, self.size)
+
+        # Linear interpolation: scale up proportion to reach 1.0 at threshold
+        scaled = proportions / (self.threshold + 1e-6)
+        scaled = torch.clamp(scaled, max=1.0)  # Prevent values > 1.0
+
+        return scaled
+
+
 def mask_transform(size=(224, 224)):
-    return transforms.Compose([transforms.ToTensor(), MaxPoolResize(size)])
+    return transforms.Compose(
+        [transforms.ToTensor(), ProportionalThresholdResize(size)]
+    )

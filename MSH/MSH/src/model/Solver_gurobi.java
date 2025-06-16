@@ -33,7 +33,9 @@ import msh.GurobiSetPartitioningSolver;
 import msh.MSH;
 import msh.OrderFirstSplitSecondSampling;
 import split.SplitPLRP;
-
+import util.SolutionPrinter;
+import validation.RouteConstraintValidator;
+import util.RouteFromFile;
 // temporary : TODO: Chnage SplitLRP to take this into account.
 import split.SplitWithEdgeConstraints;
 
@@ -1342,11 +1344,13 @@ public class Solver_gurobi {
 		distances = new DepotToCustomersDistanceMatrix(data);
 
 		// Arc modification matrix
-		ArcModificationMatrix arcModificationMatrix = new ArcModificationMatrix();
-		arcModificationMatrix.loadFromFile(GlobalParameters.RESULT_FOLDER + arc_path);
+		// ArcModificationMatrix arcModificationMatrix = new ArcModificationMatrix();
+		// arcModificationMatrix.loadFromFile(GlobalParameters.RESULT_FOLDER +
+		// arc_path);
 
-		ArrayDistanceMatrix fixed_arcs = null;
-		fixed_arcs = new DepotToCustomersDistanceMatrixV2(data, arcModificationMatrix);
+		// ArrayDistanceMatrix fixed_arcs = null;
+		// fixed_arcs = new DepotToCustomersDistanceMatrixV2(data,
+		// arcModificationMatrix);
 
 		CustomArcCostMatrix arcCost = new CustomArcCostMatrix();
 		arcCost.addDepot(depot);
@@ -1406,20 +1410,19 @@ public class Solver_gurobi {
 
 		// this.addSamplingFunctionsLowSE(data, distances, pools, msh, split,
 		// num_iterations);
-		arc_path = GlobalParameters.RESULT_FOLDER + arc_path;
-		System.out.println(
-				"[Solver_gurobi.runWithCustomCosts] The file with the arcs to be fixed : " + arc_path
-						+ " is provided. We will run the MSH with fixing arcs.");
+		String global_arc_path = GlobalParameters.RESULT_FOLDER + arc_path;
 
-		if (!new File(arc_path).isFile()) {
+		if (!new File(global_arc_path).isFile()) {
 			System.out.println(
-					"[Solver_gurobi.run] The file with the arcs to be fixed : " + arc_path
+					"[Solver_gurobi.run] The file with the arcs to be fixed : " + global_arc_path
 							+ " does not exist or is not provided. We will run the MSH without fixing arcs.");
 			this.addSamplingFunctionsHighSE(data, distances, pools, msh, split, num_iterations);
 			this.addSamplingFunctionsLowSE(data, distances, pools, msh, split, num_iterations);
 		} else {
 
-			this.addSamplingFunctionsRefiner(data, distances, pools, msh, split, num_iterations, arc_path);
+			// this.addSamplingFunctionsRefiner(data, distances, pools, msh, split,
+			// num_iterations, arc_path);
+			this.addSamplingFunctionsRoutesRefiner(data, distances, pools, msh, split, num_iterations, global_arc_path);
 		}
 
 		// 11. Stops the clock for the initialization time:
@@ -1479,9 +1482,29 @@ public class Solver_gurobi {
 
 		cpu_msh_assembly = (FinTime_msh - IniTime_msh) / 1000000000;
 
+		// Get the total cost of the original Solution
+
+		String initial_arc_path = GlobalParameters.COMPARISON_FOLDER + "Arcs_" + instance_name + "_" + 1
+				+ ".txt";
+
+		Double totalCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, initial_arc_path,
+				this.instance_identifier);
+		System.out.println("Total cost of the solution: " + totalCost);
+
 		// 17. Print solution
 
-		printSolution(msh, assembler, data, suffix + 1);
+		// printSolution(msh, assembler, data, suffix + 1);
+
+		// Valider toute la solution
+
+		// Créer le validateur avec la même instance
+		RouteConstraintValidator validator = new RouteConstraintValidator(this.instance_identifier,
+				"./config/configuration7.xml");
+
+		SolutionPrinter.printSolutionWithCostAnalysis(assembler, data, instance_name, suffix + 1, distances,
+				walking_times, validator, totalCost);
+
+		// System.out.println(solutionResult.toString());
 
 	}
 

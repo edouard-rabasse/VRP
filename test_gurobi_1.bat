@@ -15,4 +15,4 @@ java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi
 cd .. 
 cd ..
 
-python src/test/plot_one.py -c "MSH\MSH\instancesCustomCosts\Coordinates_1.txt" -a "MSH\MSH\results\configurationCustomCosts\Arcs_1_1.txt" 
+@REM python src/test/plot_one.py -c "MSH\MSH\instancesCustomCosts\Coordinates_1.txt" -a "MSH\MSH\results\configurationCustomCosts\Arcs_1_1.txt" 

@@ -1,7 +1,33 @@
 # File: src/main.py
 from src.pipeline.optimized_pipeline import OptimizedVRPPipeline
+from time import time
 
 if __name__ == "__main__":
     pipeline = OptimizedVRPPipeline()
-    res = pipeline.iterative_optimization(instance=5, max_iter=10)
-    print(res)
+    nb_equal = 0
+    nb_total = 0
+    nb_valid = 0
+    average_diff = 0.0
+
+    start = time()
+
+    for i in range(1, 80):
+
+        res = pipeline.iterative_optimization(instance=i, max_iter=10, thresh=0.4)
+        nb_equal += res["equal"]
+        nb_total += 1
+        nb_valid += res["valid"]
+        average_diff += res["cost_delta"]
+    end = time()
+    total_time = end - start
+
+    nb_diff = nb_total - nb_valid
+    average_diff /= nb_diff if nb_diff > 0 else 0.0
+
+    # save results in a file
+    with open("results.txt", "w") as f:
+        f.write(f"Total instances: {nb_total}\n")
+        f.write(f"Valid instances: {nb_valid}\n")
+        f.write(f"Equal instances: {nb_equal}\n")
+        f.write(f"Average cost difference: {average_diff:.2f}\n")
+        f.write(f"Total time taken: {total_time:.2f} seconds\n")

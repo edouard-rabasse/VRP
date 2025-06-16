@@ -4,6 +4,7 @@ defaults:
   - model: cnn       # ← then merge conf/model/cnn.yaml
   - arcs: default    # ← then merge conf/arcs/default.yaml
   - plot: default    # ← then merge conf/plot/default.yaml
+  - solver: default  # ← then merge conf/solver/default.yaml
   - _self_            # ← load THIS file’s keys 
 
 # now your keys are available for interpolation:
