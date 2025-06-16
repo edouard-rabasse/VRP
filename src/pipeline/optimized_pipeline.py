@@ -143,6 +143,9 @@ class OptimizedVRPPipeline:
             )
             iteration += 1
         results["total_time"] = current_time() - start
+        # self.files.delete_intermediate_files(
+        #     instance, config_number=self.cfg.solver.config, iter=iteration
+        # )
         return results
 
     def check_final(self, results: dict, instance: int, iteration: int) -> None:

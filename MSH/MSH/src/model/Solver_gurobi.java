@@ -1484,7 +1484,7 @@ public class Solver_gurobi {
 
 		// Get the total cost of the original Solution
 
-		String initial_arc_path = GlobalParameters.RESULT_FOLDER + "Arcs_" + instance_name + "_" + 1
+		String initial_arc_path = GlobalParameters.COMPARISON_FOLDER + "Arcs_" + instance_name + "_" + 1
 				+ ".txt";
 
 		Double totalCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, initial_arc_path,

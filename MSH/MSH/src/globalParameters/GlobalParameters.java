@@ -174,4 +174,7 @@ public class GlobalParameters {
 	public static final double DEFAULT_WALK_COST = GlobalParametersReader.<Double>get("DEFAULT_WALK_COST", Double.class,
 			1.0);
 
+	public static final String COMPARISON_FOLDER = GlobalParametersReader.<String>get("COMPARISON_FOLDER", String.class,
+			"./results/configuration7/");
+
 }
