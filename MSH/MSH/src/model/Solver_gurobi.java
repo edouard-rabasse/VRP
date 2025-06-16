@@ -1482,7 +1482,12 @@ public class Solver_gurobi {
 
 		cpu_msh_assembly = (FinTime_msh - IniTime_msh) / 1000000000;
 
-		Double totalCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, global_arc_path,
+		// Get the total cost of the original Solution
+
+		String initial_arc_path = GlobalParameters.RESULT_FOLDER + "Arcs_" + instance_name + "_" + 1
+				+ ".txt";
+
+		Double totalCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, initial_arc_path,
 				this.instance_identifier);
 		System.out.println("Total cost of the solution: " + totalCost);
 

@@ -222,12 +222,11 @@ class FileService:
         instance,
         org_cfg_number: str,
         cfg_number: str,
+        suffix: str = "1",
     ) -> None:
         """Creates a copy of the results file for a given instance."""
-        original_path = self.get_arcs_path(
-            instance, org_cfg_number, self.DEFAULT_SUFFIX
-        )
-        copy_path = self.get_arcs_path(instance, cfg_number, self.DEFAULT_SUFFIX)
+        original_path = self.get_arcs_path(instance, org_cfg_number, suffix)
+        copy_path = self.get_arcs_path(instance, cfg_number, suffix)
 
         if not original_path.exists():
             raise FileNotFoundError(f"Original file not found: {original_path}")
@@ -237,7 +236,7 @@ class FileService:
             with open(copy_path, "w", encoding="utf-8") as copy_file:
                 copy_file.write(original_file.read())
 
-    def load_results(self, instance, iteration):
+    def load_results(self, instance, iteration, config_number):
         """
         Load results for a given instance and iteration.
 
@@ -249,7 +248,7 @@ class FileService:
             Tuple of (arcs, coordinates, depot)
         """
         path = self.get_results_path(
-            instance, config_number=self.CUSTOM_COSTS_CONFIG, suffix=iteration
+            instance, config_number=config_number, suffix=iteration
         )
         if not path.exists():
             raise FileNotFoundError(f"Results file not found: {path}")

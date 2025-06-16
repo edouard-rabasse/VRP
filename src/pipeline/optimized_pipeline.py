@@ -157,8 +157,9 @@ class OptimizedVRPPipeline:
             dict: Updated results dictionary with convergence status and cost analysis.
         """
         results["converged"] = True
-        cost_analysis = self.files.load_results(instance, iteration)
-        cost_analysis_init = self.files.load_results(instance, 2)
+        cost_analysis = self.files.load_results(
+            instance, iteration, self.cfg.solver.config
+        )
 
         arcs_init = self.files.load_arcs(
             instance, config_number=self.cfg.solver.org_config, suffix="1"
@@ -168,10 +169,10 @@ class OptimizedVRPPipeline:
             config_number=self.cfg.solver.config,
             suffix=iteration,  # the last index
         )
-        results["initial_costs"] = cost_analysis_init["RealCost"]
-        results["final_costs"] = cost_analysis["RealCost"]
+        results["initial_costs"] = cost_analysis["OldCost"]
+        results["final_costs"] = cost_analysis["NewCost"]
         results["cost_delta"] = (
-            results["initial_costs"] - results["final_costs"]
+            results["final_costs"] - results["initial_costs"]
         ) / results["initial_costs"]
         results["valid"] = cost_analysis["Valid"]
         results["equal"] = self.files.compare_arcs(arcs_init, arcs_final)
