@@ -1,8 +1,9 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <entry key="INSTANCE_FOLDER">./instances/</entry>
 <entry key="RESULT_FOLDER">./results/configurationCustomCosts/</entry> 
-"
+
 
 <entry key="ARCS_MODIFIED_FOLDER">./results/configurationCustomCosts/</entry>
 <entry key="COMPARISON_FOLDER">./results/configuration7/</entry>
@@ -33,7 +34,7 @@
 <entry key="PARKING_TIME_MIN">0</entry>
 
 <entry key="FIXED_ARCS_DISTANCE">-100</entry>
-<entry key="CUSTOM_COST_MULTIPLIER">0.1</entry>
+<entry key="CUSTOM_COST_MULTIPLIER">0.5</entry>
 <entry key="DEFAULT_WALK_COST">1</entry>
 
 

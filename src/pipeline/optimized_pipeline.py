@@ -163,7 +163,6 @@ class OptimizedVRPPipeline:
         Returns:
             dict: Updated results dictionary with convergence status and cost analysis.
         """
-        results["converged"] = True
         cost_analysis = self.files.load_results(
             instance, iteration, self.cfg.solver.config
         )

@@ -26,7 +26,7 @@ def get_cfg(overrides: list[str] | None = None):
 
 def override_java_param(config_path: str, overrides: dict):
     """
-    Override values in a Java-style .xml Properties file.
+    Override values in a Java-style .xml Properties file and preserve DOCTYPE.
 
     :param config_path: path to the configuration XML file
     :param overrides: dictionary of key-value pairs to override
@@ -40,7 +40,22 @@ def override_java_param(config_path: str, overrides: dict):
             print(f"Overriding {key}: {entry.text} -> {overrides[key]}")
             entry.text = str(overrides[key])
 
-    tree.write(config_path, encoding="utf-8", xml_declaration=True)
+    # Write to temporary string buffer first
+    from io import BytesIO
+
+    buffer = BytesIO()
+    tree.write(buffer, encoding="utf-8", xml_declaration=True)
+    xml_content = buffer.getvalue()
+
+    # Manually insert DOCTYPE line after XML declaration
+    xml_with_doctype = xml_content.replace(
+        b"<?xml version='1.0' encoding='utf-8'?>",
+        b"""<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">""",
+    )
+
+    # Write final content to file
+    with open(config_path, "wb") as f:
+        f.write(xml_with_doctype)
 
 
 # Exemple d’usage
