@@ -13,6 +13,7 @@ save_path: checkpoints/${..experiment_name}.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}
 freeze: true
+pretrained: false # whether to use generic pretrained weights
 
 params:
   learning_rate: 0.0001

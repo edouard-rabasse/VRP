@@ -10,6 +10,9 @@ if __name__ == "__main__":
         for walking in [0.1]:
             for multiplier in [0.1, 2]:
                 # Override Java parameters for the MSH solver
+                print(
+                    f"Running with walking cost: {walking}, multiplier: {multiplier}, threshold: {threshold}"
+                )
                 override_java_param(
                     "MSH/MSH/config/configurationCustomCosts2.xml",
                     {

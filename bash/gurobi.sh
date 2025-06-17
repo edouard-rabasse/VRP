@@ -72,7 +72,7 @@ echo "✅ compilation done"
 #   main.CreateInstances2 10 10 20 1001 3000
 
 
-for i in {2001..3000}; do
+for i in {2001..2002}; do
 java \
   -Djava.library.path="$GUROBI_TMP_LIB" \
   -cp "$BIN_DIR:$JAR" \
