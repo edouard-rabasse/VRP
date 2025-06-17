@@ -88,6 +88,7 @@ class OptimizedVRPPipeline:
         start = current_time()
         iteration = 1
         score = 0
+        results["converged"] = False
 
         # Create copy of the arc file
         self.files.create_copy(
@@ -134,14 +135,17 @@ class OptimizedVRPPipeline:
                 #     show_labels=True,
                 # )
             if iteration > 1 and score < thresh:
+                results["converged"] = True
+                results["number_iter"] = iteration
 
-                results = self.check_final(results, instance, iteration)
                 break
 
             self.run_vrp_solver(
                 instance, arc_suffix=iteration, config_name=self.cfg.solver.config_name
             )
             iteration += 1
+
+        results = self.check_final(results, instance, iteration)
         results["total_time"] = current_time() - start
         # self.files.delete_intermediate_files(
         #     instance, config_number=self.cfg.solver.config, iter=iteration
