@@ -1,12 +1,12 @@
 
-java_parent: "/cvmfs/restricted.computecanada.ca/easybuild/software/2023/Core/gurobi/12.0.1"
+java_parent: "${env:EBROOTGUROBI}"
 java_lib: "${solver.java_parent}/lib"
 java_bin: "${solver.java_parent}/bin"
 
 
 program_name: "main.Main_customCosts"
 config_name: "configurationCustomCosts2.xml"
-org_config: "1"
+
 custom_args:
   - "-Xmx14000m"
   - "-Djava.library.path=${solver.java_lib}"
@@ -14,7 +14,8 @@ custom_args:
   - "bin:${solver.java_lib}/gurobi.jar"
 
 
-
+config: "CustomCosts" # suffix for the result folder
+org_config: "1"
 
 source_folder: "MSH/MSH"
 bin_folder: "bin"

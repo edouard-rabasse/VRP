@@ -1,5 +1,7 @@
 # File: src/pipeline/config.py
 from hydra import initialize, compose
+from omegaconf import OmegaConf
+import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -20,6 +22,7 @@ def get_cfg(overrides: list[str] | None = None):
     """
     Charge la configuration Hydra.
     """
+    OmegaConf.register_new_resolver("env", lambda var_name: os.environ.get(var_name, ""))
     with initialize(version_base=None, config_path="../../config"):
         return compose(config_name="config", overrides=overrides or DEFAULT_OVERRIDES)
 
