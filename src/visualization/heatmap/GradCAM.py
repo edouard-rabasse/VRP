@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import torch
 
 
 class GradCAM:
@@ -46,5 +47,7 @@ class GradCAM:
         # clear stored data to free CPU memory
         self.activations = None
         self.gradients = None
+
+        torch.cuda.empty_cache()
 
         return heatmap

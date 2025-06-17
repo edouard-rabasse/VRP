@@ -145,11 +145,7 @@ class FileService:
         Returns:
             Path to the costs file
         """
-        return (
-            self.base_dir
-            / self.results_folder
-            / f"CostsAnalysis_{instance}_{suffix}.txt"
-        )
+        return self.base_dir / self.results_folder / f"Costs_{instance}_{suffix}.txt"
 
     def read_costs(self, path) -> Dict[int, Dict[int, float]]:
         """
@@ -316,13 +312,14 @@ class FileService:
         """
 
         for suffix in range(1, int(iter)):
-            if suffix == 1:
-                continue
 
             arcs_path = self.get_arcs_path(instance, config_number, suffix)
             results_path = self.get_results_path(instance, config_number, suffix)
+            cost_path = self.get_cost_path(instance, suffix)
 
             if arcs_path.exists():
                 arcs_path.unlink()
             if results_path.exists():
                 results_path.unlink()
+            if cost_path.exists():
+                cost_path.unlink()

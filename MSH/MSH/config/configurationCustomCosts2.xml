@@ -34,8 +34,8 @@
 <entry key="PARKING_TIME_MIN">0</entry>
 
 <entry key="FIXED_ARCS_DISTANCE">-100</entry>
-<entry key="CUSTOM_COST_MULTIPLIER">0.5</entry>
-<entry key="DEFAULT_WALK_COST">1</entry>
+<entry key="CUSTOM_COST_MULTIPLIER">0.1</entry>
+<entry key="DEFAULT_WALK_COST">0.1</entry>
 
 
 </properties>

@@ -109,3 +109,14 @@ filtre les instances qui changent pas.
 Planificateur bête : 
 - Si l'arc est trop long, prend la voiture pour cet arc. Veiller à ce qu'on ait toujours assez de distances pour evenir à la voiture à pied.
 
+## 17/06
+
+carré sans stationnement
+inspection manuelle des cas différents :  vérifier si on est loin des arcs à modifier.
+Pour les arcs qui ont été flag, distance minimale avec les vrais arcs
+un seul arc par itération.
+identifier les valeurs lorsque la solution est valide. Puis regarder retrospectivement.
+faire des graphes.
+à quel point on est proches d'être valide
+
+Métrique heatmap : combien d'arcs correctement identifiés et inversement. (courbes ROC/AUC)
