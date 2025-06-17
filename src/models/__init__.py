@@ -84,7 +84,7 @@ def _load_MFCN(cfgm, device):
 
 def _load_resnet(cfgm, device):
     return ResNetScoringModel(
-        pretrained=True,
+        pretrained=cfgm.pretrained,
         input_channels=3,
         kernel_size=cfgm.kernel_size,
         num_classes=2,
