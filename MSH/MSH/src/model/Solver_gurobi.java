@@ -197,7 +197,7 @@ public class Solver_gurobi {
 
 		// Generate detailed report with cost analysis
 		SolutionReporter reporter = new SolutionReporter(instanceName, cpuInitialization);
-		reporter.printSolutionWithAnalysis(mshConfig.getAssembler(), context.getData(), suffix,
+		reporter.printSolutionWithAnalysis(mshConfig.getAssembler(), context.getData(), suffix + 1,
 				context.getDistances(), context.getWalkingTimes(),
 				this.instanceIdentifier, totalCost);
 	}
