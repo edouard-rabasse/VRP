@@ -134,7 +134,7 @@ class FileService:
             str(coordinates_path), coordinate_type, keep_service_time
         )
 
-    def get_cost_path(self, instance: int, suffix: str) -> Path:
+    def get_cost_path(self, instance: int, config_number: int, suffix: str) -> Path:
         """
         Get the path to the costs file for a given instance.
 
@@ -145,7 +145,12 @@ class FileService:
         Returns:
             Path to the costs file
         """
-        return self.base_dir / self.results_folder / f"Costs_{instance}_{suffix}.txt"
+        return (
+            self.base_dir
+            / self.results_folder
+            / f"configuration{config_number}"
+            / f"Costs_{instance}_{suffix}.txt"
+        )
 
     def read_costs(self, path) -> Dict[int, Dict[int, float]]:
         """
@@ -315,7 +320,7 @@ class FileService:
 
             arcs_path = self.get_arcs_path(instance, config_number, suffix)
             results_path = self.get_results_path(instance, config_number, suffix)
-            cost_path = self.get_cost_path(instance, suffix)
+            cost_path = self.get_cost_path(instance, config_number, suffix)
 
             if arcs_path.exists():
                 arcs_path.unlink()

@@ -34,6 +34,24 @@ class SolverClient:
                 "-cp",
                 f"bin;{self.java_lib.parent / 'lib' / 'gurobi.jar'}",
             ]
+        self.recompile_java_files()
+
+    def recompile_java_files(self) -> None:
+        cmd = [
+            "javac",
+            "-cp",
+            f"bin;{self.java_lib.parent / 'lib' / 'gurobi.jar'}",
+            "src/main/*.java",
+            "-d",
+            "bin",
+        ]
+        print(f"[Debug] Running command: {' '.join(cmd)} from {self.msh_dir}")
+        result = subprocess.run(cmd, cwd=self.msh_dir, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise SolverError(
+                f"Java compilation failed ({result.returncode})\n{result.stderr}"
+            )
+        return
 
     def run(
         self,

@@ -14,7 +14,7 @@ DEFAULT_OVERRIDES = [
     "model=resnet",
     "model.weight_path=checkpoints/resnet_8_30_7.pth",
     "model.load=true",
-    "solver=host"
+    # "solver=host"
 ]
 
 
@@ -22,7 +22,9 @@ def get_cfg(overrides: list[str] | None = None):
     """
     Charge la configuration Hydra.
     """
-    OmegaConf.register_new_resolver("env", lambda var_name: os.environ.get(var_name, ""))
+    OmegaConf.register_new_resolver(
+        "env", lambda var_name: os.environ.get(var_name, "")
+    )
     with initialize(version_base=None, config_path="../../config"):
         return compose(config_name="config", overrides=overrides or DEFAULT_OVERRIDES)
 
