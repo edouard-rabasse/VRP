@@ -68,18 +68,28 @@ public class MSHConfiguration {
         msh.setPools(pools);
     }
 
+    public MSHConfiguration(DataHandler data, ArrayDistanceMatrix distances, Split split,
+            String instanceName, int numRoutes) {
+        this.pools = new ArrayList<RoutePool>();
+        this.assembler = new GurobiSetPartitioningSolver(data.getNbCustomers(), true, data);
+        this.msh = new MSH(assembler, GlobalParameters.THREADS);
+        int numIterations = calculateNumIterations();
+        addRouteSpecificSamplingFunctions(data, distances, split, numIterations, instanceName, numRoutes);
+        msh.setPools(pools);
+    }
+
     /**
      * Creates an MSH configuration for route-specific refinement
      */
     public MSHConfiguration(DataHandler data, ArrayDistanceMatrix distances, Split split,
-            String instanceName, int numRoutes) {
+            String instanceName, int numRoutes, String arc_path) {
         this.pools = new ArrayList<RoutePool>();
         this.assembler = new GurobiSetPartitioningSolver(data.getNbCustomers(), true, data);
         this.msh = new MSH(assembler, GlobalParameters.THREADS);
 
         int numIterations = calculateNumIterations();
 
-        addRouteSpecificSamplingFunctions(data, distances, split, numIterations, instanceName, numRoutes);
+        addRouteSpecificSamplingFunctions(data, distances, split, numIterations, instanceName, numRoutes, arc_path);
 
         msh.setPools(pools);
     }
@@ -152,10 +162,30 @@ public class MSHConfiguration {
 
     private void addRouteSpecificSamplingFunctions(DataHandler data, ArrayDistanceMatrix distances, Split split,
             int numIterations, String instanceName, int numRoutes) {
+
+        for (int i = 0; i < numRoutes; i++) {
+            Random randomNN = new Random(GlobalParameters.SEED + 90 + 1000 + i);
+
+            RefinerHeuristicRoutes nn = new RefinerHeuristicRoutes(distances, instanceName, i);
+            nn.setRandomized(true);
+            nn.setRandomGen(randomNN);
+            nn.setRandomizationFactor(GlobalParameters.MSH_RANDOM_FACTOR_HIGH_RN);
+            nn.setInitNode(0);
+
+            addSamplingFunction(nn, split, numIterations, "rnn_route_" + i);
+        }
+    }
+
+    /*
+     * Adds route-specific sampling functions for each route in the instance.
+     * This is used for route refinement operations where each route is refined
+     */
+    private void addRouteSpecificSamplingFunctions(DataHandler data, ArrayDistanceMatrix distances, Split split,
+            int numIterations, String instanceName, int numRoutes, String arc_path) {
         for (int i = 0; i < numRoutes; i++) {
             Random randomNN = new Random(GlobalParameters.SEED + 90 + 1000);
 
-            RefinerHeuristicRoutes nn = new RefinerHeuristicRoutes(distances, instanceName, i);
+            RefinerHeuristicRoutes nn = new RefinerHeuristicRoutes(distances, instanceName, i, arc_path);
             nn.setRandomized(true);
             nn.setRandomGen(randomNN);
             nn.setRandomizationFactor(GlobalParameters.MSH_RANDOM_FACTOR_HIGH_RN);

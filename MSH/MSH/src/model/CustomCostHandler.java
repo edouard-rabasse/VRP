@@ -49,7 +49,7 @@ public class CustomCostHandler {
      */
     public void saveCosts(String instanceName, int suffix) throws IOException {
         String outputPath = GlobalParameters.ARCS_MODIFIED_FOLDER + "Costs_" + instanceName + "_" +
-                (suffix + 1) + ".txt";
+                (suffix) + ".txt";
         customCosts.saveFile(outputPath);
     }
 

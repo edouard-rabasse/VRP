@@ -170,7 +170,7 @@ public class Solver_gurobi {
 		VRPInstanceContext context = new VRPInstanceContext(instanceIdentifier, customArcCosts);
 		CustomCostHandler costHandler = new CustomCostHandler(context.getData());
 		costHandler.loadAndUpdateCosts(costFile, arcPath, context.getDistances());
-		costHandler.saveCosts(instanceName, suffix);
+		costHandler.saveCosts(instanceName, suffix + 1);
 
 		// Initialize split with custom costs
 		Split split = new SplitWithEdgeConstraints(context.getDistances(), context.getDrivingTimes(),
@@ -240,6 +240,10 @@ public class Solver_gurobi {
 		reporter.printSolution(mshConfig.getMSH(), mshConfig.getAssembler(), context.getData());
 	}
 
+	/*
+	 * Creates an MSH configuration for custom costs.
+	 * This method checks if the arc file exists and is valid.
+	 */
 	private MSHConfiguration createMSHConfigForCustomCosts(VRPInstanceContext context, Split split, String arcPath) {
 		String globalArcPath = RouteFileUtils.getGlobalArcPath(arcPath);
 
@@ -250,7 +254,8 @@ public class Solver_gurobi {
 		} else {
 			try {
 				int numRoutes = RouteFileUtils.countRoutesInFile(globalArcPath);
-				return new MSHConfiguration(context.getData(), context.getDistances(), split, instanceName, numRoutes);
+				return new MSHConfiguration(context.getData(), context.getDistances(), split, instanceName, numRoutes, 
+						globalArcPath);
 			} catch (IOException e) {
 				System.out.println("Error reading route file, using standard configuration");
 				return new MSHConfiguration(context.getData(), context.getDistances(), split);
