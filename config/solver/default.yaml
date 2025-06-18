@@ -9,7 +9,7 @@ config_name: "configurationCustomCosts2.xml" #Located in the MSH/MSH/folder, for
 program_name: "main.Main_customCosts"
 
 custom_args:
-- "-Xmx14000m"
+- "-Xmx2000m"
 - "-Djava.library.path=${solver.java_bin}"
 - "-cp"
 - "bin;${solver.java_lib}/gurobi.jar"
