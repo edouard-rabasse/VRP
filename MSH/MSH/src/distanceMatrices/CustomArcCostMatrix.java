@@ -250,8 +250,6 @@ public class CustomArcCostMatrix {
                             double defaultCost;
                             if (mode == 1) {
                                 // Driving mode - use distance * VARIABLE_COST
-                                System.out.println("[CustomCost] Creating new arc " + tail + "->" + head +
-                                        " (mode " + mode + ") with default cost based on distance.");
                                 defaultCost = distances.getDistance(tail % this.depot, head % this.depot)
                                         * GlobalParameters.VARIABLE_COST;
                             } else {
@@ -263,9 +261,9 @@ public class CustomArcCostMatrix {
                             double newCost = defaultCost * (1.0 + lambda);
                             customCosts.put(key, newCost);
 
-                            System.out.println("[CustomCost] Created new arc " + tail + "->" + head +
-                                    " (mode " + mode + ") with cost " + newCost +
-                                    " (default: " + defaultCost + ", lambda: " + lambda + ")");
+                            // System.out.println("[CustomCost] Created new arc " + tail + "->" + head +
+                            // " (mode " + mode + ") with cost " + newCost +
+                            // " (default: " + defaultCost + ", lambda: " + lambda + ")");
                         }
                     }
                     // if (flagged == 0) { // TODO : remove
