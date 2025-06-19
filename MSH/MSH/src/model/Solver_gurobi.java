@@ -283,6 +283,7 @@ public class Solver_gurobi {
 
 	/**
 	 * Add route refiner sampling functions
+	 * The sampling functions 
 	 */
 	private void addRouteRefinerSamplingFunctions(MSHContext context, String path) {
 		int numRoutes = countRoutesInFile(path);
@@ -290,7 +291,7 @@ public class Solver_gurobi {
 		for (int i = 0; i < numRoutes; i++) {
 			Random random = new Random(GlobalParameters.SEED + 90 + 1000);
 
-			RefinerHeuristicRoutes refiner = new RefinerHeuristicRoutes(context.distances, this.instance_name, i);
+			RefinerHeuristicRoutes refiner = new RefinerHeuristicRoutes(context.distances, this.instance_name, i, path);
 			refiner.setRandomized(true);
 			refiner.setRandomGen(random);
 			refiner.setRandomizationFactor(GlobalParameters.MSH_RANDOM_FACTOR_HIGH_RN);
