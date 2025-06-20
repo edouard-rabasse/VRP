@@ -86,7 +86,7 @@ public class Main_refineSolutionFixedEdges {
 
 			// Runs the MSH:
 
-			manager.runRefineWithFixedEdges(instance_identifier);
+			// manager.runRefineWithFixedEdges(instance_identifier);
 
 			// Closes the code:
 

@@ -1,6 +1,6 @@
 cd MSH/MSH
 
-java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_refineSolutionFixedEdges ExperimentsAllSets.txt 5 configuration8.xml 1 8
+java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_gurobi ExperimentsAllSets.txt 5 configuration1.xml 1 8
 
 
 @REM java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_gurobi ExperimentsAllSets.txt 5 configuration1.xml 1 8
@@ -15,4 +15,4 @@ java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi
 cd .. 
 cd ..
 
-python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_5.txt" -a "MSH\MSH\results\configuration8\Arcs_5_1.txt" 
+python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_5.txt" -a "MSH\MSH\results\configuration1\Arcs_5_1.txt" 

@@ -69,21 +69,21 @@ public class Manager {
 		return solver;
 	}
 
-	public Solver_gurobi runRefineWithFixedEdges(String instance_identifier)
-			throws IOException, InterruptedException {
+	// public Solver_gurobi runRefineWithFixedEdges(String instance_identifier)
+	// throws IOException, InterruptedException {
 
-		// Creates a solver instance:
+	// // Creates a solver instance:
 
-		Solver_gurobi solver = new Solver_gurobi();
+	// Solver_gurobi solver = new Solver_gurobi();
 
-		// Runs the MSH:
+	// // Runs the MSH:
 
-		solver.refineWithFixedEdges(instance_identifier);
+	// solver.refineWithFixedEdges(instance_identifier);
 
-		// Returns the solver instance:
+	// // Returns the solver instance:
 
-		return solver;
-	}
+	// return solver;
+	// }
 
 	public Solver_gurobi runWithCustomCosts(String coordinatesFile, String CostFile, String arcsFile, int suffix)
 			throws IOException, InterruptedException {
@@ -94,6 +94,26 @@ public class Manager {
 		// Runs the MSH with custom costs:
 
 		solver.runWithCustomCosts(coordinatesFile, CostFile, arcsFile, suffix);
+
+		// Returns the solver instance:
+
+		return solver;
+	}
+
+	/**
+	 * Runs the MSH algorithm with upper right corner constraint
+	 * This prohibits starting walking loops from nodes where x > 5 and y > 5
+	 */
+	public Solver_gurobi runRefinedWithUpperRightConstraint(String instance_identifier)
+			throws IOException, InterruptedException {
+
+		// Creates a solver instance:
+
+		Solver_gurobi solver = new Solver_gurobi();
+
+		// Runs the MSH with upper right constraint:
+
+		solver.runRefinedWithUpperRightConstraint(instance_identifier);
 
 		// Returns the solver instance:
 

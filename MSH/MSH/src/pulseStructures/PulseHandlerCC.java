@@ -15,6 +15,7 @@ import distanceMatrices.CustomArcCostMatrix;
 /**
  * This class handles the pulse algorithm.
  * 
+ * @author Nicolas Cabrera. Original pulse algorithm
  * @author Edouard Rabasse, added the part on custom costs
  *
  */
