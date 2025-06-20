@@ -276,12 +276,9 @@ public class CustomArcCostMatrix {
                             double newCost = defaultCost * (1.0 + lambda);
                             customCosts.put(key, newCost);
 
-                            if (GlobalParameters.PRINT_IN_CONSOLE) {
-                                // Log the creation
-                                System.out.println("[CustomCost] Created new arc " + tail + "->" + head +
-                                        " (mode " + mode + ") with cost " + newCost +
-                                        " (default: " + defaultCost + ", lambda: " + lambda + ")");
-                            }
+                            // System.out.println("[CustomCost] Created new arc " + tail + "->" + head +
+                            // " (mode " + mode + ") with cost " + newCost +
+                            // " (default: " + defaultCost + ", lambda: " + lambda + ")");
                         }
                     }
                     // if (flagged == 0) { // TODO : remove
