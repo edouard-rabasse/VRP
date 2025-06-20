@@ -246,7 +246,7 @@ public class Solver_gurobi {
 	public void refineSolution(String instance_identifier) throws IOException {
 		MSHContext context = initializeMSH(instance_identifier);
 
-		String path = GlobalParameters.INSTANCE_FOLDER + instance_identifier + "_refiner.txt";
+		String path = "./results/configuration1/Arcs_" + this.instance_name + "_" + GlobalParameters.SEED + ".txt";
 		addRefinerSamplingFunction(context, path);
 		context.msh.setPools(context.pools);
 
@@ -283,7 +283,7 @@ public class Solver_gurobi {
 
 	/**
 	 * Add route refiner sampling functions
-	 * The sampling functions 
+	 * The sampling functions
 	 */
 	private void addRouteRefinerSamplingFunctions(MSHContext context, String path) {
 		int numRoutes = countRoutesInFile(path);
@@ -423,7 +423,15 @@ public class Solver_gurobi {
 		context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
 				context.walkingTimes, context.data, constraintMatrix);
 
-		addStandardSamplingFunctions(context);
+		String originalArcPath = GlobalParameters.ARCS_MODIFIED_FOLDER + "Arcs_" + instance_name + "_1.txt";
+		if (!new File(originalArcPath).isFile()) {
+			printMessage("Arc file not found. Running standard MSH without fixing arcs.");
+			addStandardSamplingFunctions(context);
+		} else {
+			printMessage("Arc file found. Adding route refiner sampling functions.");
+			addRouteRefinerSamplingFunctions(context, originalArcPath);
+		}
+
 		context.msh.setPools(context.pools);
 		executeMSH(context.msh, context.assembler, context.data);
 	}

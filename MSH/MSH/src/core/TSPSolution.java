@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * Models a solution to the traveling salesman problem (TSP).
+ * 
  * @author Jorge E. Mendoza (dev@jorge-mendoza.com)
  * @version %I%, %G%
  * @since Jan 19, 2016
@@ -19,22 +20,23 @@ public class TSPSolution implements Route, Solution {
 	/**
 	 * The objective function
 	 */
-	private double of=Double.NaN;
+	private double of = Double.NaN;
 
-	public TSPSolution(){
-		this.route=JVRAEnv.getRouteFactory().buildRoute();
+	public TSPSolution() {
+		this.route = JVRAEnv.getRouteFactory().buildRoute();
 	}
-	
+
 	/**
-	 * Sets the route (sequence of nodes) making up the solution. For encapsulation purposes the method calls {@link #getCopy()} 
+	 * Sets the route (sequence of nodes) making up the solution. For encapsulation
+	 * purposes the method calls {@link #getCopy()}
 	 * on <code>route</code> and stores the obtained copy.
-	 *  
+	 * 
 	 * @param route the route to store
 	 */
-	public void setRoute(Route route){
-		this.route=route.getCopy();
+	public void setRoute(Route route) {
+		this.route = route.getCopy();
 	}
-	
+
 	@Override
 	public double getOF() {
 		return of;
@@ -42,14 +44,14 @@ public class TSPSolution implements Route, Solution {
 
 	@Override
 	public void setOF(double of) {
-		this.of=of;
+		this.of = of;
 	}
 
 	@Override
 	public TSPSolution clone() {
-		TSPSolution clone=new TSPSolution();
-		clone.route=this.route.getCopy();
-		clone.of=this.of;
+		TSPSolution clone = new TSPSolution();
+		clone.route = this.route.getCopy();
+		clone.of = this.of;
 		return clone;
 	}
 
@@ -109,9 +111,9 @@ public class TSPSolution implements Route, Solution {
 		this.route.relocate(i, j);
 	}
 
-	public String toString(){
-		StringBuilder sb=new StringBuilder();
-		sb.append(this.of+"|"+this.route.toString());
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.of + "|" + this.route.toString());
 		return sb.toString();
 	}
 
@@ -133,6 +135,20 @@ public class TSPSolution implements Route, Solution {
 	@Override
 	public Object getAttribute(RouteAttribute att) {
 		return this.route.getAttribute(att);
+	}
+
+	// The following methods are not part of the Route interface but are
+	// useful for TSP solutions
+
+	public boolean isEmpty() {
+		return size() == 0;
+	}
+
+	public int getLastNode() {
+		if (isEmpty()) {
+			return -1; // or throw an exception
+		}
+		return this.route.get(this.size() - 1);
 	}
 
 }
