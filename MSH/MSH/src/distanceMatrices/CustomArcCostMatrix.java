@@ -139,7 +139,10 @@ public class CustomArcCostMatrix {
      */
     public void loadFromFile(String filePath) throws IOException {
         if (!new File(filePath).isFile()) {
-            System.out.println("[CustomCost creation] No custom cost file " + filePath + " provided, skipping update.");
+            if (GlobalParameters.PRINT_IN_CONSOLE) {
+                System.out.println(
+                        "[CustomCost creation] No custom cost file " + filePath + " provided, skipping update.");
+            }
             return;
         }
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
@@ -213,12 +216,17 @@ public class CustomArcCostMatrix {
         // check if the filePath corresponds to a valid file
 
         if (!new File(filePath).isFile()) {
-            System.out.println("[CustomCost update] No flagged file " + filePath + " provided, skipping update.");
+            if (GlobalParameters.PRINT_IN_CONSOLE) {
+                System.out.println("[CustomCost update] No flagged file " + filePath + " provided, skipping update.");
+            }
             return;
+
         }
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
         String line;
-        System.out.println("[CustomCost update] Updating custom costs from flagged file: " + filePath);
+        if (GlobalParameters.PRINT_IN_CONSOLE) {
+            System.out.println("[CustomCost update] Starting to update custom costs from flagged file: " + filePath);
+        }
 
         while ((line = reader.readLine()) != null) {
             line = line.trim();
@@ -243,15 +251,20 @@ public class CustomArcCostMatrix {
                             double newCost = currentCost * (1.0 + lambda);
                             customCosts.put(key, newCost);
 
-                            System.out.println("[CustomCost] Updated arc " + tail + "->" + head +
-                                    " (mode " + mode + ") from " + currentCost + " to " + newCost);
+                            if (GlobalParameters.PRINT_IN_CONSOLE) {
+                                // Log the update
+                                System.out.println("[CustomCost] Updated arc " + tail + "->" + head +
+                                        " (mode " + mode + ") from " + currentCost + " to " + newCost);
+                            }
                         } else {
                             // Arc doesn't have custom cost yet - create default cost
                             double defaultCost;
                             if (mode == 1) {
                                 // Driving mode - use distance * VARIABLE_COST
-                                System.out.println("[CustomCost] Creating new arc " + tail + "->" + head +
-                                        " (mode " + mode + ") with default cost based on distance.");
+                                if (GlobalParameters.PRINT_IN_CONSOLE) {
+                                    System.out.println("[CustomCost] Creating new arc " + tail + "->" + head +
+                                            " (mode " + mode + ") with default cost based on distance.");
+                                }
                                 defaultCost = distances.getDistance(tail % this.depot, head % this.depot)
                                         * GlobalParameters.VARIABLE_COST;
                             } else {
@@ -263,9 +276,12 @@ public class CustomArcCostMatrix {
                             double newCost = defaultCost * (1.0 + lambda);
                             customCosts.put(key, newCost);
 
-                            System.out.println("[CustomCost] Created new arc " + tail + "->" + head +
-                                    " (mode " + mode + ") with cost " + newCost +
-                                    " (default: " + defaultCost + ", lambda: " + lambda + ")");
+                            if (GlobalParameters.PRINT_IN_CONSOLE) {
+                                // Log the creation
+                                System.out.println("[CustomCost] Created new arc " + tail + "->" + head +
+                                        " (mode " + mode + ") with cost " + newCost +
+                                        " (default: " + defaultCost + ", lambda: " + lambda + ")");
+                            }
                         }
                     }
                     // if (flagged == 0) { // TODO : remove

@@ -335,17 +335,18 @@ public class Solver_gurobi {
 
 		// Setup custom costs
 		setupCustomCosts(context, costFile, arcPath, suffix);
+		printMessage("[Debug] Custom costs set up with file: " + costFile);
 
 		// Determine sampling strategy based on file existence
 		String globalArcPath = GlobalParameters.RESULT_FOLDER + arcPath;
 		if (!new File(globalArcPath).isFile()) {
-			printMessage("Arc file not found. Running standard MSH without fixing arcs.");
 			addStandardSamplingFunctions(context);
 		} else {
 			addRouteRefinerSamplingFunctions(context, globalArcPath);
 		}
 
 		context.msh.setPools(context.pools);
+		printMessage("Starting MSH with custom costs...");
 		executeMSHWithCustomAnalysis(context, suffix);
 	}
 
@@ -391,6 +392,7 @@ public class Solver_gurobi {
 	private void executeMSHWithCustomAnalysis(MSHContext context, int suffix) {
 		// Run MSH phases
 		executeMSHPhases(context.msh);
+		printMessage("End of the MSH phases...");
 
 		// Get original solution cost for comparison
 		String initialArcPath = GlobalParameters.COMPARISON_FOLDER + "Arcs_" + instance_name + "_1.txt";
