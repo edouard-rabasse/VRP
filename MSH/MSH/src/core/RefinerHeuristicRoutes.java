@@ -132,6 +132,11 @@ public class RefinerHeuristicRoutes implements TSPHeuristic, RandomizedHeuristic
 					if (mode == 2 && parkingSpot == -1) {
 
 						parkingSpot = tail;
+						if (tail != n) {
+
+							tour.removeID(tail);
+
+						}
 
 						if (head != n) {
 
@@ -151,6 +156,11 @@ public class RefinerHeuristicRoutes implements TSPHeuristic, RandomizedHeuristic
 					}
 
 					else if (mode == 2 && head == parkingSpot) {
+						if (head != n) {
+
+							tour.add(head);
+
+						}
 
 						parkingSpot = -1;
 

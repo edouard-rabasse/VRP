@@ -52,7 +52,7 @@ public class DepotToCustomersDistanceMatrixV2 extends ArrayDistanceMatrix {
 							data.getY_coors().get(j));
 				} else {
 
-					System.out.println("Null distance between " + i + " and " + j);
+					// System.out.println("Null distance between " + i + " and " + j);
 					distances[i][j] = GlobalParameters.FIXED_ARCS_DISTANCE;
 				}
 

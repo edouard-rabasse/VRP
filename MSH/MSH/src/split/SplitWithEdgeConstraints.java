@@ -134,7 +134,7 @@ public class SplitWithEdgeConstraints implements Split {
 				V[j] = candidateCost; // Update the shortest path label
 				P[j] = i;
 				// Add's the route:
-				routeStrings.put((i + ";" + j), "-> " + customer);
+				routeStrings.put((i + ";" + j), "CD -> " + customer);
 				routeTimes.put((i + ";" + j), singleRouteTime);
 				routeCosts.put((i + ";" + j), candidateCost);
 
