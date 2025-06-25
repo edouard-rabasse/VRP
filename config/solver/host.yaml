@@ -22,3 +22,5 @@ bin_folder: "bin"
 instance_folder: "instances/"
 result_folder: "results/"
 plot_output_folder: "output/test/"
+
+plot: false

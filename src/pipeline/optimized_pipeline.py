@@ -125,16 +125,26 @@ class OptimizedVRPPipeline:
             if score < results["best_score"]:
                 improvement = -(results["best_score"] - score) / results["best_score"]
                 results["best_score"] = score
-            plot_routes(
-                flagged_arcs,
-                flagged_coords,
-                depot,
-                output_file=f"{self.cfg.solver.plot_output_folder}/instance_{instance}_iter_{iteration}.png",
-                bounds=tuple(self.cfg.plot.bounds),
-                route_type="modified",
-                show_labels=True,
-            )
-            if iteration > 1 and score < thresh:
+
+            if self.cfg.solver.plot:
+                plot_routes(
+                    flagged_arcs,
+                    flagged_coords,
+                    depot,
+                    output_file=f"{self.cfg.solver.plot_output_folder}/instance_{instance}_iter_{iteration}.png",
+                    bounds=tuple(self.cfg.plot.bounds),
+                    route_type="modified",
+                    show_labels=True,
+                )
+
+            if iteration > 1:
+                cost_analysis = self.files.load_results(
+                    instance, iteration, self.cfg.solver.config
+                )
+                valid = cost_analysis["Valid"]
+            else:
+                valid = False
+            if score < thresh or valid:
                 results["converged"] = True
                 results["number_iter"] = iteration
 

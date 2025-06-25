@@ -6,7 +6,7 @@ from time import time
 if __name__ == "__main__":
     pipeline = OptimizedVRPPipeline()
 
-    for threshold in [0.2, 0.5]:
+    for threshold in [0.02]:
         for walking in [1, 0.1]:
             for multiplier in [1, 2]:
                 # Override Java parameters for the MSH solver
@@ -32,12 +32,13 @@ if __name__ == "__main__":
                 for i in range(1, 80):
 
                     res = pipeline.iterative_optimization(
-                        instance=i, max_iter=10, thresh=0.4
+                        instance=i, max_iter=100, thresh=threshold
                     )
                     nb_equal += res["equal"]
                     nb_total += 1
                     nb_valid += res["valid"]
-                    average_diff += res["cost_delta"]
+                    if res["valid"]:
+                        average_diff += res["cost_delta"]
                     if res["converged"]:
                         nb_converged += 1
                         nb_iter += res["number_iter"]
@@ -46,7 +47,7 @@ if __name__ == "__main__":
                 total_time = end - start
 
                 nb_diff = nb_total - nb_valid
-                average_diff /= nb_diff if nb_diff > 0 else 0.0
+                average_diff /= nb_valid if nb_valid > 0 else 0.0
 
                 # save results in a file
                 with open(
