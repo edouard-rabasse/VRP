@@ -16,5 +16,3 @@ cd ..
 cd ..
 
 python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_%NUMBER%.txt" -a "MSH\MSH\results\configuration7_2\Arcs_%NUMBER%_%SUFFIX%.txt" 
-
-python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_%NUMBER%.txt" -a "MSH\MSH\results\configuration7\Arcs_%NUMBER%_%SUFFIX%.txt"

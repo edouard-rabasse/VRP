@@ -1,6 +1,10 @@
+@echo off
+set NUMBER=70
+set SUFFIX=1
+
 cd MSH/MSH
 
-java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_refineUpperRightConstraint ExperimentsAllSets.txt 45 configurationCustomCosts.xml 
+java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_refineUpperRightConstraint ExperimentsAllSets.txt %NUMBER% configurationCustomCosts.xml
 
 
 @REM java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_gurobi ExperimentsAllSets.txt 5 configuration1.xml 1 8
@@ -15,4 +19,4 @@ java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi
 cd .. 
 cd ..
 
-python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_45.txt" -a "MSH\MSH\results\configurationCustomCosts\Arcs_45_1.txt" 
+python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_%NUMBER%.txt" -a "MSH\MSH\results\configurationCustomCosts\Arcs_%NUMBER%_%SUFFIX%.txt" 
