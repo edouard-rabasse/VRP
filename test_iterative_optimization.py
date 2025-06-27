@@ -27,8 +27,6 @@ def test_single_instance():
 
     # Test objective parsing
     print("\n=== Testing Objective Parsing ===")
-    objective = pipeline.parse_objective_value(6)
-    print(f"Parsed objective value: {objective}")
 
 
 def test_iterative_optimization():
@@ -41,9 +39,9 @@ def test_iterative_optimization():
 
     # Run iterative optimization with smaller parameters for testing
     results = pipeline.iterative_optimization(
-        instance_number=6,
-        max_iterations=3,  # Reduced for testing
-        convergence_threshold=0.05,  # Relaxed for testing
+        instance=6,
+        max_iter=3,  # Reduced for testing
+        thresh=0.05,  # Relaxed for testing
     )
 
     # Print detailed results

@@ -49,7 +49,7 @@ class FileService:
         self,
         instance: int,
         config_number: str,
-        suffix: str,
+        suffix: str | int,
     ) -> Path:
         """
         Get the path to the arcs file for a given instance and configuration.
@@ -73,7 +73,7 @@ class FileService:
         self,
         instance: int,
         config_number: str,
-        suffix: str,
+        suffix: str | int,
     ) -> Path:
         """
         Get the path to the results file for a given instance and configuration.
@@ -152,23 +152,11 @@ class FileService:
             / f"Costs_{instance}_{suffix}.txt"
         )
 
-    def read_costs(self, path) -> Dict[int, Dict[int, float]]:
-        """
-        Read costs from a file and return as a dictionary.
-
-        Args:
-            path: Path to the costs file, containing
-
-        Returns:
-            Dictionary of costs
-        """
-        costs = {}
-
     def load_arcs(
         self,
         instance: int,
         config_number: str,
-        suffix: str,
+        suffix: str | int,
         arc_type: str = "original",
     ) -> List[Tuple]:
         """
@@ -191,7 +179,7 @@ class FileService:
         instance: int,
         arcs: List[Tuple],
         config_number: str,
-        suffix: str,
+        suffix: str | int,
     ) -> None:
         """
         Save arcs to file for a given instance and configuration.

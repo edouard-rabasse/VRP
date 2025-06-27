@@ -21,7 +21,7 @@ public class RouteFromFile {
 
     public static RoutePool routePool = new RoutePool();
 
-    private static int nbCustomers = 0;
+    public static int nbCustomers = 0;
 
     /**
      * Create routes from an arc file
@@ -61,7 +61,7 @@ public class RouteFromFile {
     /**
      * Parse the arc file and group arcs by route ID
      */
-    private static Map<Integer, List<Arc>> parseArcFile(String arcFilePath) throws IOException {
+    public static Map<Integer, List<Arc>> parseArcFile(String arcFilePath) throws IOException {
         Map<Integer, List<Arc>> routeArcsMap = new HashMap<>();
 
         BufferedReader reader = new BufferedReader(new FileReader(arcFilePath));
@@ -112,7 +112,7 @@ public class RouteFromFile {
     /**
      * Build a Route object from a list of arcs
      */
-    private static Route buildRouteFromArcs(List<Arc> arcs, DataHandler data,
+    public static Route buildRouteFromArcs(List<Arc> arcs, DataHandler data,
             ArrayDistanceMatrix distances, ArrayDistanceMatrix drivingTimes,
             ArrayDistanceMatrix walkingTimes, int routeId) {
 
@@ -153,7 +153,7 @@ public class RouteFromFile {
     /**
      * Sort arcs to form a continuous path
      */
-    private static List<Arc> sortArcsIntoPath(List<Arc> arcs) {
+    public static List<Arc> sortArcsIntoPath(List<Arc> arcs) {
         if (arcs.isEmpty())
             return arcs;
 
@@ -190,7 +190,7 @@ public class RouteFromFile {
     /**
      * Build chain string from arcs (like "CD -> 1 -> 2 --- 3 --- CD")
      */
-    private static String buildChainString(List<Arc> sortedArcs, DataHandler data) {
+    public static String buildChainString(List<Arc> sortedArcs, DataHandler data) {
         if (sortedArcs.isEmpty())
             return "";
 
@@ -232,7 +232,7 @@ public class RouteFromFile {
     /**
      * Calculate route metrics
      */
-    private static RouteMetrics calculateRouteMetrics(List<Arc> arcs, DataHandler data,
+    public static RouteMetrics calculateRouteMetrics(List<Arc> arcs, DataHandler data,
             ArrayDistanceMatrix distances, ArrayDistanceMatrix drivingTimes,
             ArrayDistanceMatrix walkingTimes) {
 
@@ -278,7 +278,7 @@ public class RouteFromFile {
     /**
      * Convert node number to string representation
      */
-    private static String convertNodeToString(int node, DataHandler data) {
+    public static String convertNodeToString(int node, DataHandler data) {
         if (node == 0 || node == data.getNbCustomers() + 1) {
             return "CD"; // Depot
         }
@@ -286,10 +286,10 @@ public class RouteFromFile {
     }
 
     // Helper classes
-    private static class Arc {
-        int tail, head, mode;
+    public static class Arc {
+        public int tail, head, mode;
 
-        Arc(int tail, int head, int mode) {
+        public Arc(int tail, int head, int mode) {
             this.tail = tail;
             this.head = head;
             this.mode = mode;
@@ -301,7 +301,7 @@ public class RouteFromFile {
         }
     }
 
-    private static class RouteMetrics {
+    public static class RouteMetrics {
         double totalCost = 0.0;
         double totalDuration = 0.0;
         double drivingTime = 0.0;
