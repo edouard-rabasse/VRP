@@ -144,7 +144,7 @@ class HeatmapAnalyzer:
             top_indices = set(sorted_indices[:top_n_arcs])
             # Set value to weighted sum for top n, 0 for others
             filtered_arc_values = [
-                1 if i in top_indices else 0.0 for i in range(len(arc_values))
+                1 if i in top_indices else 0 for i in range(len(arc_values))
             ]
         else:
             filtered_arc_values = arc_values
@@ -166,7 +166,7 @@ class HeatmapAnalyzer:
                 # Use max value among all incident arcs
                 agg_value = max(coord_values[point])
             else:
-                agg_value = 0.0
+                agg_value = 0
             new_coordinates[point] = (*self.coordinates[point][:3], agg_value)
         return arcs_with_flag, new_coordinates
 

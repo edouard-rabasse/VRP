@@ -23,5 +23,5 @@ plot_output_folder: "output/test/"
 instance_folder: "instances/"
 result_folder: "results/"
 
-return_weighted_sum:tTrue
+return_weighted_sum: true
 top_n_arcs: 3
