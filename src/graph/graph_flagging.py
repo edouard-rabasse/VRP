@@ -14,6 +14,8 @@ def flag_graph_from_instance(
     model: torch.nn.Module,
     cfg: DictConfig,
     device: str = "cuda",
+    return_weighted_sum: bool = False,
+    top_n_arcs: int | None = None,
 ) -> tuple:
     """
     Load arc and coordinate data for a given instance number, and return flagged elements.
@@ -23,6 +25,7 @@ def flag_graph_from_instance(
         model (torch.nn.Module): Trained model.
         cfg (DictConfig): Configuration for heatmap generation.
         device (str): Torch device.
+        return_weighted_sum (bool): Whether to return the weighted sum.
 
     Returns:
         tuple: (flagged_arcs, flagged_coordinates)
@@ -33,7 +36,16 @@ def flag_graph_from_instance(
     arcs = read_arcs(arc_path)
     coordinates, depot = read_coordinates(coord_path)
 
-    return flag_graph_from_data(arcs, coordinates, depot, model, cfg, device)
+    return flag_graph_from_data(
+        arcs,
+        coordinates,
+        depot,
+        model,
+        cfg,
+        device,
+        return_weighted_sum=return_weighted_sum,
+        top_n_arcs=top_n_arcs,
+    )
 
 
 def flag_graph_from_data(
@@ -43,6 +55,8 @@ def flag_graph_from_data(
     model: torch.nn.Module,
     cfg: DictConfig,
     device: str = "cuda",
+    return_weighted_sum: bool = False,
+    top_n_arcs: int | None = None,
 ) -> tuple:
     """
     Generate a plot from graph data, forward it through the model, and flag arcs/coordinates.
@@ -53,6 +67,7 @@ def flag_graph_from_data(
         model (torch.nn.Module): Trained model.
         cfg (DictConfig): Configuration for heatmap generation.
         device (str): Torch device.
+        return_weighted_sum (bool): Whether to return the weighted sum.
 
     Returns:
         tuple: (flagged_arcs, flagged_coordinates)
@@ -64,7 +79,16 @@ def flag_graph_from_data(
         image_transform_test()(Image.fromarray(image)).unsqueeze(0).to(device)
     )
 
-    return flag_graph_from_tensor(input_tensor, arcs, coordinates, model, cfg, device)
+    return flag_graph_from_tensor(
+        input_tensor,
+        arcs,
+        coordinates,
+        model,
+        cfg,
+        device,
+        return_weighted_sum=return_weighted_sum,
+        top_n_arcs=top_n_arcs,
+    )
 
 
 def flag_graph_from_tensor(
@@ -74,6 +98,8 @@ def flag_graph_from_tensor(
     model: torch.nn.Module,
     cfg: DictConfig,
     device: str = "cuda",
+    return_weighted_sum: bool = False,
+    top_n_arcs: int | None = None,
 ) -> tuple:
     """
     Compute heatmap from a tensor input and flag important arcs/nodes.
@@ -85,6 +111,7 @@ def flag_graph_from_tensor(
         model (torch.nn.Module): Trained model.
         cfg (DictConfig): Heatmap configuration.
         device (str): Torch device.
+        return_weighted_sum (bool): Whether to return the weighted sum.
 
     Returns:
         tuple: (flagged_arcs, flagged_coordinates)
@@ -98,4 +125,6 @@ def flag_graph_from_tensor(
     )
 
     analyzer = HeatmapAnalyzer(heatmap=heatmap, arcs=arcs, coordinates=coordinates)
-    return analyzer.reverse_heatmap()
+    return analyzer.reverse_heatmap(
+        return_weighted_sum=return_weighted_sum, top_n_arcs=top_n_arcs
+    )

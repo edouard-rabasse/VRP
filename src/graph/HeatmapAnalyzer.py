@@ -17,7 +17,7 @@ Functions:
         Returns a list of arcs that pass through zones in the heatmap above the threshold.
     route_in_zone(self, arcs_in_zone)
         Returns the set of route IDs and points that are part of the arcs in the zone.
-    reverse_heatmap(self)
+    reverse_heatmap(self, return_weighted_sum=False, top_n_arcs=None)
         Determines which arcs and coordinates are in the zone and returns them with zone indicators.
     write_arcs(self, arcs_with_zone, output_path)
         Writes the arcs with zone indicators to a specified output file.
@@ -55,6 +55,7 @@ class HeatmapAnalyzer:
         bounds=(-1, 11, -1, 11),
         threshold=0.5,
         n_samples=15,
+        return_weighted_sum=False,
     ):
         """Initialize the HeatmapAnalyzer.
 
@@ -72,6 +73,7 @@ class HeatmapAnalyzer:
         self.coordinates = coordinates
         self.threshold = threshold
         self.n_samples = n_samples
+        self.return_weighted_sum = return_weighted_sum
 
     def world_to_pixel(self, x, y):
         x_min, x_max, y_min, y_max = self.bounds
@@ -87,19 +89,29 @@ class HeatmapAnalyzer:
             t = i / (self.n_samples - 1)
             yield (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
 
-    def is_arc_in_zone(self, arc):
+    def is_arc_in_zone(self, arc, return_weighted_sum=False):
         tail, head = arc[:2]
         p_tail = self.coordinates[tail][:2]
         p_head = self.coordinates[head][:2]
+        values = []
         for x, y in self.sample_segment(p_tail, p_head):
             r, c = self.world_to_pixel(x, y)
+            value = self.heatmap[r, c]
+            if not return_weighted_sum:
+                if value >= self.threshold:
+                    return 1
+            else:
+                values.append(value)
+        if return_weighted_sum:
+            return sum(values) / len(values) if values else 0.0
+        return 0
 
-            if self.heatmap[r, c] >= self.threshold:
-                return True
-        return False
-
-    def arcs_in_zone(self):
-        return [arc for arc in self.arcs if self.is_arc_in_zone(arc)]
+    def arcs_in_zone(self, return_weighted_sum=False):
+        return [
+            arc
+            for arc in self.arcs
+            if self.is_arc_in_zone(arc, return_weighted_sum=return_weighted_sum)
+        ]
 
     def route_in_zone(self, arcs_in_zone):
         route_ids = set(arc[3] for arc in arcs_in_zone)
@@ -108,26 +120,54 @@ class HeatmapAnalyzer:
         )
         return route_ids, points
 
-    def reverse_heatmap(self):
+    def reverse_heatmap(self, return_weighted_sum=False, top_n_arcs=None):
         """Reverse the heatmap to find arcs and coordinates in the zone.
 
+        Args:
+            return_weighted_sum (bool): If True, return the weighted sum for each arc instead of a binary flag.
+            top_n_arcs (int or None): If set and return_weighted_sum is True, only flag the top n arcs by weighted sum.
+
         Returns:
-            arcs: List of arcs with an indicator of whether they are in the zone.
-            coordinates: Dictionary of coordinates with an indicator of whether they are in the zone.
+            arcs: List of arcs with an indicator (0/1 or weighted sum) of whether they are in the zone.
+            coordinates: Dictionary of coordinates with an indicator (0/1 or weighted sum) of whether they are in the zone.
         """
-        in_zone = self.arcs_in_zone()
-        route_ids, points = self.route_in_zone(in_zone)
+        arc_values = [
+            self.is_arc_in_zone(arc, return_weighted_sum=return_weighted_sum)
+            for arc in self.arcs
+        ]
 
-        arcs_with_flag = [(*arc[:4], 1 if arc in in_zone else 0) for arc in self.arcs]
+        if return_weighted_sum and top_n_arcs is not None:
+            # Get indices of top n arcs by weighted sum
+            sorted_indices = sorted(
+                range(len(arc_values)), key=lambda i: arc_values[i], reverse=True
+            )
+            top_indices = set(sorted_indices[:top_n_arcs])
+            # Set value to weighted sum for top n, 0 for others
+            filtered_arc_values = [
+                1 if i in top_indices else 0.0 for i in range(len(arc_values))
+            ]
+        else:
+            filtered_arc_values = arc_values
 
+        # For arcs: attach the value (weighted sum or 0/1)
+        arcs_with_flag = [
+            (*arc[:4], value) for arc, value in zip(self.arcs, filtered_arc_values)
+        ]
+
+        # For coordinates: aggregate the values of arcs that include each point
+        coord_values = {point: [] for point in self.coordinates}
+        for arc, value in zip(self.arcs, filtered_arc_values):
+            tail, head = arc[:2]
+            coord_values[tail].append(value)
+            coord_values[head].append(value)
         new_coordinates = {}
-
         for point in self.coordinates:
-            if point in points:
-                new_coordinates[point] = (*self.coordinates[point][:3], 1)
+            if coord_values[point]:
+                # Use max value among all incident arcs
+                agg_value = max(coord_values[point])
             else:
-                new_coordinates[point] = (*self.coordinates[point][:3], 0)
-
+                agg_value = 0.0
+            new_coordinates[point] = (*self.coordinates[point][:3], agg_value)
         return arcs_with_flag, new_coordinates
 
     def write_arcs(self, arcs_with_zone, output_path):

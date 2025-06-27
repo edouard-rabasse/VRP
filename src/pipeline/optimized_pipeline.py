@@ -41,18 +41,30 @@ class OptimizedVRPPipeline:
         )
 
     def flag_arcs(
-        self, instance: int, suffix: str, config_number="1"
+        self,
+        instance: int,
+        suffix: str | int,
+        config_number="1",
+        return_weighted_sum=False,
+        top_n_arcs=None,
     ) -> tuple[list, list]:
         coords, depot = self.files.load_coordinates(instance)
         arcs = self.files.load_arcs(
             instance, config_number=config_number, suffix=suffix
         )
         flagged, flagged_coords = flag_graph_from_data(
-            arcs, coords, depot, self.model, self.cfg, device=self.device
+            arcs,
+            coords,
+            depot,
+            self.model,
+            self.cfg,
+            device=self.device,
+            return_weighted_sum=return_weighted_sum,
+            top_n_arcs=top_n_arcs,
         )
         return flagged, flagged_coords
 
-    def score(self, coords: list[tuple[float, float]], arcs: list, depot) -> float:
+    def score(self, coords: dict, arcs: list, depot) -> float:
         img = generate_plot_from_dict(
             arcs, coordinates=coords, depot=depot, bounds=tuple(self.cfg.plot.bounds)
         )
@@ -70,7 +82,7 @@ class OptimizedVRPPipeline:
         self,
         instance: int,
         config_name: str = "configurationCustomCosts2.xml",
-        arc_suffix: str = "1",
+        arc_suffix: str | int = "1",
     ) -> None:
         self.solver.run(
             instance,
@@ -102,7 +114,11 @@ class OptimizedVRPPipeline:
             t0 = current_time()
 
             flagged_arcs, flagged_coords = self.flag_arcs(
-                instance, suffix=iteration, config_number=self.cfg.solver.config
+                instance,
+                suffix=iteration,
+                config_number=self.cfg.solver.config,
+                return_weighted_sum=self.cfg.solver.return_weighted_sum,
+                top_n_arcs=self.cfg.solver.top_n_arcs,
             )
 
             self.files.save_arcs(
@@ -162,7 +178,7 @@ class OptimizedVRPPipeline:
         )
         return results
 
-    def check_final(self, results: dict, instance: int, iteration: int) -> None:
+    def check_final(self, results: dict, instance: int, iteration: int) -> dict:
         """Check final results for convergence and cost analysis.
 
         Args:

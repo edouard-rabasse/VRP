@@ -1,6 +1,11 @@
 package model;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
+import core.Route;
+import globalParameters.GlobalParameters;
+import globalParameters.GlobalParametersReader;
 
 /**
  * Class to manage the different algorithms
@@ -118,5 +123,16 @@ public class Manager {
 		// Returns the solver instance:
 
 		return solver;
+	}
+
+	public void runRefineEasy(String coordinatesFile, String arcsFile, int suffix)
+			throws IOException, InterruptedException {
+		int instanceNumber = Integer.parseInt(coordinatesFile.replaceAll("[^0-9]", ""));
+
+		String inputArcFile = "results/configuration1/" + arcsFile;
+		String outputArcFile = GlobalParameters.RESULT_FOLDER + "Arcs_" + instanceNumber + "_" + suffix + ".txt";
+		SplitEasy modifier = new SplitEasy(coordinatesFile);
+		modifier.modifyRoutesFromFile(inputArcFile, outputArcFile);
+
 	}
 }

@@ -57,7 +57,7 @@ class SolverClient:
         self,
         instance: int,
         config_name: str,
-        arc_suffix: str = "1",
+        arc_suffix: str | int = "1",
         timeout: int = 300,
     ) -> None:
         cmd = [

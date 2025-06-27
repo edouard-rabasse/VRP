@@ -24,3 +24,5 @@ result_folder: "results/"
 plot_output_folder: "output/test/"
 
 plot: false
+return_weighted_sum: true
+top_n_arcs: 3
