@@ -24,6 +24,6 @@ seed: 42
 # optional instance selection (filter by instance ID)
 selection:
   type: range
-  value: [1, 10]
+  value: [1001, 3000]
 
 augment: true  

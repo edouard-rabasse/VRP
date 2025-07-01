@@ -14,7 +14,7 @@ DEFAULT_OVERRIDES = [
     "model=resnet",
     "model.weight_path=checkpoints/resnet_8_30_7.pth",
     "model.load=true",
-    # "solver=host"
+    "solver=host"
 ]
 
 
