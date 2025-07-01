@@ -8,7 +8,6 @@ program_name: "main.Main_customCosts"
 config_name: "configurationCustomCosts2.xml"
 
 custom_args:
-  - "-Xmx14000m"
   - "-Djava.library.path=${solver.java_lib}"
   - "-cp"
   - "bin:${solver.java_lib}/gurobi.jar"

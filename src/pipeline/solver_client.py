@@ -40,8 +40,8 @@ class SolverClient:
         cmd = [
             "javac",
             "-cp",
-            f"bin;{self.java_lib.parent / 'lib' / 'gurobi.jar'}",
-            "src/main/*.java",
+            f"bin:{self.java_lib.parent / 'lib' / 'gurobi.jar'}",
+            "src/main/Main_customCosts.java",
             "-d",
             "bin",
         ]
@@ -78,6 +78,10 @@ class SolverClient:
             text=True,
             timeout=timeout,
         )
+
+        # Print stdout and/or stderr
+        print("STDOUT:\n", result.stdout)
+        print("STDERR:\n", result.stderr)
         if result.returncode != 0:
             raise SolverError(f"Solver failed ({result.returncode})\n{result.stderr}")
         return
