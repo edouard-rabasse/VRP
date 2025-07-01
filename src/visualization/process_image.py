@@ -43,7 +43,7 @@ def process_image(cfg, model, fname, device):
     heatmap = get_heatmap(
         cfg.heatmap.method, model, t_img, cfg.heatmap.args, device=device
     )
-    mask = ProportionalThresholdResize(size=(heatmap.shape[0], heatmap.shape[1]))(mask)
+    # mask = ProportionalThresholdResize(size=(heatmap.shape[0], heatmap.shape[1]))(mask)
 
     overlay = show_mask_on_image(
         mask, heatmap, alpha=0.5, interpolation=cv2.INTER_NEAREST
