@@ -6,4 +6,5 @@ arcs_out_dir: ${hydra:runtime.cwd}/data/results_modified/configuration${..cfg_nu
 coord_in_dir: ${hydra:runtime.cwd}/MSH/MSH/instances/
 coord_out_dir: ${hydra:runtime.cwd}/data/instances_modified/
 
+arcs_refined_dir: ${hydra:runtime.cwd}/MSH/MSH/results/configuration${..cfg_number}/
 

@@ -1,4 +1,4 @@
-def read_arcs(file_path, type="original"):
+def read_arcs(file_path, type="original", number_of_fields=None):
     """
     Reads arcs from a file and returns them as a list of tuples.
     Automatically deduces the type based on the number of fields in each line.
@@ -21,15 +21,18 @@ def read_arcs(file_path, type="original"):
 
         for line in file:
             fields = list(map(int, line.strip().split(";")))
+            if number_of_fields is None:
+                number_of_fields = num_fields
             if num_fields == 4:
-                arcs.append(tuple(fields))
+                arcs.append(tuple(fields[:number_of_fields]))
             elif num_fields == 5:
-                arcs.append(tuple(fields))
+                arcs.append(tuple(fields[:number_of_fields]))
             else:
                 raise ValueError("Unsupported number of fields in the file.")
+
     return arcs
 
 
-def get_arc_name(index):
+def get_arc_name(index, suffix: int | str = 1) -> str:
     """Returns the arc name as a string."""
-    return f"Arcs_{index}_1.txt"
+    return f"Arcs_{index}_{suffix}.txt"

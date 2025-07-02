@@ -39,7 +39,9 @@ def process_image(cfg, model, fname, device):
     This function processes a single image, finds its mask, computes the heatmap,
     overlays the heatmap on the image, saves the arcs, and saves the results.
     """
-    t_img, mask = load_and_transform_image_mask(cfg, fname, device)
+    t_img, mask = load_and_transform_image_mask(
+        cfg, cfg.data.test_original_path, cfg.test_mask_path, fname, device
+    )
     heatmap = get_heatmap(
         cfg.heatmap.method, model, t_img, cfg.heatmap.args, device=device
     )
