@@ -43,4 +43,4 @@ def plot_metrics_by_threshold(
 
     # Sauvegarde ou affichage
     plt.savefig(os.path.join(folder, filename))
-    plt.show()
+    # plt.show()
