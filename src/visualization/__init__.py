@@ -9,6 +9,7 @@ from .reverse_heatmap import reverse_heatmap
 from .save_overlay import save_overlay
 from .process_image import process_image
 from ..heatmap.compute_bce_with_logits_mask import compute_bce_with_logits_mask
+from .heatmap_metric import HeatmapMetric
 
 
 __all__ = [
@@ -23,4 +24,5 @@ __all__ = [
     "save_overlay",
     "process_image",
     "compute_bce_with_logits_mask",
+    "HeatmapMetric",
 ]

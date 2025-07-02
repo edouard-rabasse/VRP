@@ -24,7 +24,7 @@ def plot_arcs(ax, arcs, coordinates, type="original"):
     arc_has_type = len(arcs[0]) == 5
 
     for arc in arcs:
-        tail, head, mode, route_id = arc[:4]
+        tail, head, mode = arc[:3]
         arc_type = arc[4] if arc_has_type else 0
 
         x1, y1 = coordinates[tail][:2]

@@ -9,7 +9,7 @@ def test_read_arcs_original():
         tmp.write(content)
         tmp_path = tmp.name
 
-    arcs = read_arcs(tmp_path, type="original")
+    arcs = read_arcs(tmp_path)
     os.remove(tmp_path)
 
     assert arcs == [(1, 2, 1, 0), (3, 4, 2, 1)]
@@ -22,7 +22,7 @@ def test_read_arcs_modified():
         tmp.write(content)
         tmp_path = tmp.name
 
-    arcs = read_arcs(tmp_path, type="modified")
+    arcs = read_arcs(tmp_path)
     os.remove(tmp_path)
 
     assert arcs == [(1, 2, 1, 0, 0), (3, 4, 2, 1, 1)]
