@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
-#SBATCH --time=1:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=logs/solver-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
 
@@ -14,6 +14,9 @@ GUROBI_BASE="/cvmfs/restricted.computecanada.ca/easybuild/software/2020/Core/gur
 GUROBI_TMP_LIB="$SLURM_TMPDIR/gurobi_lib"
 
 echo $SLURM_TMPDIR
+
+# === Créer le dossier temporaire ===
+mkdir -p "$GUROBI_TMP_LIB"
 
 module load python/3.11 scipy-stack/2023b opencv/4.10.0
 module load StdEnv/2023
