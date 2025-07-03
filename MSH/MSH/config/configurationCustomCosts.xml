@@ -7,8 +7,8 @@
 <entry key="COORDINATES_FOLDER">./instances_modified/</entry>
 <entry key="ARCS_MODIFIED_FOLDER">./results/configuration1/</entry> <!-- Folder where the original arcs are stored -->
 
-<entry key="PRINT_IN_CONSOLE">true</entry>
-<entry key="PRINT_POOLS_TO_FILE">true</entry>
+<entry key="PRINT_IN_CONSOLE">false</entry>
+<entry key="PRINT_POOLS_TO_FILE">false</entry>
 
 <entry key="PRECISION">4</entry> 
 <entry key="SEED">1</entry> 

@@ -1,6 +1,6 @@
 # sweep.yaml
 program: train.py
-name: sweep_resnet_background  # 👈 Nom explicite ic
+name: sweep_resnet  # 👈 Nom explicite ic
 project: VRP
 command:
   - ${env}
@@ -30,6 +30,6 @@ parameters:
   model.freeze:
     values: [false]
   data:
-    values: ["config7_background"]
+    values: ["config7_new"]
 
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas

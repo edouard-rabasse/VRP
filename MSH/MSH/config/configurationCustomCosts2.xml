@@ -8,8 +8,8 @@
 <entry key="ARCS_MODIFIED_FOLDER">./results/configurationCustomCosts/</entry>
 <entry key="COMPARISON_FOLDER">./results/configuration7/</entry>
 
-<entry key="PRINT_IN_CONSOLE">true</entry>
-<entry key="PRINT_POOLS_TO_FILE">true</entry>
+<entry key="PRINT_IN_CONSOLE">false</entry>
+<entry key="PRINT_POOLS_TO_FILE">false</entry>
 
 <entry key="PRECISION">4</entry> 
 <entry key="SEED">1</entry> 
@@ -35,7 +35,7 @@
 
 <entry key="FIXED_ARCS_DISTANCE">-100</entry>
 <entry key="CUSTOM_COST_MULTIPLIER">1</entry>
-<entry key="DEFAULT_WALK_COST">1</entry>
+<entry key="DEFAULT_WALK_COST">10</entry>
 
 
 </properties>

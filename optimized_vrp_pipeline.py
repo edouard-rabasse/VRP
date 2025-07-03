@@ -6,9 +6,9 @@ from time import time
 if __name__ == "__main__":
     pipeline = OptimizedVRPPipeline()
 
-    for threshold in [0.02]:
-        for walking in [1, 0.1, 10, 0.5]:
-            for multiplier in [1, 2, 0.1, 0.5]:
+    for threshold in [0.00002]:
+        for walking in [10]:
+            for multiplier in [1, 0.5, 0.1]:
                 # Override Java parameters for the MSH solver
                 print(
                     f"Running with walking cost: {walking}, multiplier: {multiplier}, threshold: {threshold}"
