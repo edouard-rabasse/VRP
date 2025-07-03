@@ -7,8 +7,8 @@ if __name__ == "__main__":
     pipeline = OptimizedVRPPipeline()
 
     for threshold in [0.02]:
-        for walking in [1, 0.1,10,0.5]:
-            for multiplier in [1, 2,0.1, 0.5]:
+        for walking in [1, 0.1, 10, 0.5]:
+            for multiplier in [1, 2, 0.1, 0.5]:
                 # Override Java parameters for the MSH solver
                 print(
                     f"Running with walking cost: {walking}, multiplier: {multiplier}, threshold: {threshold}"
@@ -24,6 +24,7 @@ if __name__ == "__main__":
                 nb_total = 0
                 nb_valid = 0
                 average_diff = 0.0
+                easy_diff = 0.0
                 nb_converged = 0
                 nb_iter = 0
 
@@ -39,6 +40,7 @@ if __name__ == "__main__":
                     nb_valid += res["valid"]
                     if res["valid"]:
                         average_diff += res["cost_delta"]
+                        easy_diff += res["delta_easy"]
                     if res["converged"]:
                         nb_converged += 1
                         nb_iter += res["number_iter"]
@@ -59,7 +61,13 @@ if __name__ == "__main__":
                     f.write(f"Total instances: {nb_total}\n")
                     f.write(f"Valid instances: {nb_valid}\n")
                     f.write(f"Equal instances: {nb_equal}\n")
-                    f.write(f"Average cost difference: {average_diff:.2f}\n")
+                    f.write(
+                        f"Average cost difference with perfect optim: {average_diff:.2f}\n"
+                    )
+                    f.write(
+                        f"Average cost difference with easy optim: {easy_diff:.2f}\n"
+                    )
+
                     f.write(f"Converged instances: {nb_converged}\n")
                     f.write(
                         f"Average iterations for converged instances: {nb_iter / nb_converged if nb_converged > 0 else 0:.2f}\n"

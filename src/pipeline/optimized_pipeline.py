@@ -203,9 +203,13 @@ class OptimizedVRPPipeline:
         )
         results["initial_costs"] = cost_analysis["OldCost"]
         results["final_costs"] = cost_analysis["NewCost"]
+        results["easy_costs"] = cost_analysis["EasyCost"]
         results["cost_delta"] = (
             results["final_costs"] - results["initial_costs"]
         ) / results["initial_costs"]
+        results["delta_easy"] = (
+            results["easy_costs"] - results["final_costs"]
+        ) / results["final_costs"]
         results["valid"] = cost_analysis["Valid"]
         results["equal"] = self.files.compare_arcs(arcs_init, arcs_final)
         return results
