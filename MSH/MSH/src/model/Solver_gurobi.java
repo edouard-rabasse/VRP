@@ -396,6 +396,8 @@ public class Solver_gurobi {
 
 		// Get original solution cost for comparison
 		String initialArcPath = GlobalParameters.COMPARISON_FOLDER + "Arcs_" + instance_name + "_1.txt";
+
+		String easyPath = "./results/configuration7_easy/Arcs_" + this.instance_name + "_1.txt";
 		try {
 			Double totalCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, initialArcPath,
 					this.instance_identifier);
@@ -404,10 +406,21 @@ public class Solver_gurobi {
 			// Print solution with cost analysis
 			RouteConstraintValidator validator = new RouteConstraintValidator(this.instance_identifier,
 					"./config/configuration7.xml");
-			SolutionPrinter.printSolutionWithCostAnalysis(context.assembler, context.data, instance_name, suffix + 1,
-					context.distances, context.walkingTimes, validator, totalCost);
+
+			if (new File(easyPath).isFile()) {
+				Double easyCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, easyPath,
+						this.instance_identifier);
+				SolutionPrinter.printSolutionWithCostAnalysis(context.assembler, context.data, instance_name,
+						suffix + 1,
+						context.distances, context.walkingTimes, validator, totalCost, easyCost);
+			} else {
+				SolutionPrinter.printSolutionWithCostAnalysis(context.assembler, context.data, instance_name,
+						suffix + 1,
+						context.distances, context.walkingTimes, validator, totalCost);
+			}
+
 		} catch (IOException e) {
-			System.out.println("Error reading initial arc file: " + e.getMessage());
+			System.out.println("Error reading comparison arc file: " + e.getMessage());
 		}
 	}
 

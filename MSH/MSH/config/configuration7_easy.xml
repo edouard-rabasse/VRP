@@ -2,7 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <entry key="INSTANCE_FOLDER">./instances/</entry>
-<entry key="RESULT_FOLDER">./results/configuration7_2/</entry> 
+<entry key="RESULT_FOLDER">./results/configuration7_easy/</entry> 
 
 <entry key="PRINT_IN_CONSOLE">false</entry>
 <entry key="PRINT_POOLS_TO_FILE">false</entry>

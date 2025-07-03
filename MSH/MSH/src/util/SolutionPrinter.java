@@ -30,8 +30,18 @@ public class SolutionPrinter {
             String instanceName, int suffix,
             ArrayDistanceMatrix originalDistances,
             ArrayDistanceMatrix originalWalkingTimes,
+            RouteConstraintValidator routeValidator, Double realCost) {
+        // Call the overloaded method with RealCost
+        printSolutionWithCostAnalysis(assembler, data, instanceName, suffix, originalDistances, originalWalkingTimes,
+                routeValidator, realCost, null);
+    }
+
+    public static void printSolutionWithCostAnalysis(AssemblyFunction assembler, DataHandler data,
+            String instanceName, int suffix,
+            ArrayDistanceMatrix originalDistances,
+            ArrayDistanceMatrix originalWalkingTimes,
             RouteConstraintValidator routeValidator,
-            Double RealCost) {
+            Double RealCost, Double easyCost) {
 
         String pathArcs = GlobalParameters.RESULT_FOLDER + "Arcs_" + instanceName + "_" + suffix + ".txt";
         String pathCosts = GlobalParameters.RESULT_FOLDER + "CostAnalysis_" + instanceName + "_" + suffix + ".txt";
@@ -44,7 +54,7 @@ public class SolutionPrinter {
             PrintWriter pwCosts = new PrintWriter(new File(pathCosts));
 
             // Headers
-            pwCosts.println("Route;OldCost;NewCost;Penalty;PenaltyPercentage;Chain;Valid");
+            pwCosts.println("Route;OldCost;NewCost;EasyCost;Penalty;PenaltyPercentage;Chain;Valid");
 
             System.out.println("-----------------------------------------------");
             System.out.println("SOLUTION WITH COST ANALYSIS");
@@ -90,20 +100,23 @@ public class SolutionPrinter {
             boolean isValid = routeValidator.validateGlobalConstraints(assembler.solution);
 
             if (RealCost != null) {
+                // If RealCost is provided, use it for totalOldCost, meaning that we compare
+                // with another configuration
 
                 totalNewCost = totalOldCost;
                 totalOldCost = RealCost;
             }
+            double easyCostValue = easyCost != null ? easyCost : 0.0;
 
             // Summary
             double totalPenalty = totalNewCost - totalOldCost;
             System.out.println("-----------------------------------------------");
-            System.out.printf("TOTALS: Real=%.2f, Custom=%.2f, Penalty=%.2f (%.1f%%)%n",
-                    totalOldCost, totalNewCost, totalPenalty,
+            System.out.printf("TOTALS: Real=%.2f, Custom=%.2f, EasyCost=%.2f, Penalty=%.2f (%.1f%%)%n",
+                    totalOldCost, totalNewCost, easyCostValue, totalPenalty,
                     totalOldCost > 0 ? (totalPenalty / totalOldCost * 100) : 0);
 
-            pwCosts.printf("TOTAL;%.2f;%.2f;%.2f;%.1f;%s;%b%n",
-                    totalOldCost, totalNewCost, totalPenalty,
+            pwCosts.printf("TOTAL;%.2f;%.2f;%.2f;%.2f;%.1f;%s;%b%n",
+                    totalOldCost, totalNewCost, easyCostValue, totalPenalty,
                     totalOldCost > 0 ? (totalPenalty / totalOldCost * 100) : 0, "", isValid);
 
             pwArcs.close();
