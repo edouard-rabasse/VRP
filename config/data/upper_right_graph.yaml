@@ -3,6 +3,7 @@
 # Must be used with Hydra via '- data: graph'
 
 # basic values (can also be overridden at command line)
+name: UpperRightGraph
 cfg_number: "CustomCosts"
 path: MSH/MSH
 loader: graph       # choose 'mask' or 'graph'

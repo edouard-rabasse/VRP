@@ -1,4 +1,5 @@
 # 1) Valeurs de base
+name: config7
 cfg_number: 7
 mask: mask_removed
 loader: mask  # use mask-based loader
