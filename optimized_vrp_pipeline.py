@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
                 start = time()
 
-                for i in range(1, 80):
+                for i in range(1001, 1100):
 
                     res = pipeline.iterative_optimization(
                         instance=i, max_iter=100, thresh=threshold
