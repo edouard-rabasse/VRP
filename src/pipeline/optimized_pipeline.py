@@ -47,6 +47,7 @@ class OptimizedVRPPipeline:
         config_number="1",
         return_weighted_sum=False,
         top_n_arcs=None,
+        threshold: float = 0.2,
     ) -> tuple[list, list]:
         coords, depot = self.files.load_coordinates(instance)
         arcs = self.files.load_arcs(
@@ -61,6 +62,7 @@ class OptimizedVRPPipeline:
             device=self.device,
             return_weighted_sum=return_weighted_sum,
             top_n_arcs=top_n_arcs,
+            threshold=threshold,
         )
         return flagged, flagged_coords
 
@@ -119,6 +121,7 @@ class OptimizedVRPPipeline:
                 config_number=self.cfg.solver.config,
                 return_weighted_sum=self.cfg.solver.return_weighted_sum,
                 top_n_arcs=self.cfg.solver.top_n_arcs,
+                threshold=self.cfg.solver.heatmap_threshold,
             )
 
             self.files.save_arcs(

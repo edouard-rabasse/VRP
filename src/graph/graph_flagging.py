@@ -16,6 +16,7 @@ def flag_graph_from_instance(
     device: str = "cuda",
     return_weighted_sum: bool = False,
     top_n_arcs: int | None = None,
+    threshold: float = 0.5,
 ) -> tuple:
     """
     Load arc and coordinate data for a given instance number, and return flagged elements.
@@ -45,6 +46,7 @@ def flag_graph_from_instance(
         device,
         return_weighted_sum=return_weighted_sum,
         top_n_arcs=top_n_arcs,
+        threshold=threshold,
     )
 
 
@@ -57,6 +59,7 @@ def flag_graph_from_data(
     device: str = "cuda",
     return_weighted_sum: bool = False,
     top_n_arcs: int | None = None,
+    threshold: float = 0.5,
 ) -> tuple:
     """
     Generate a plot from graph data, forward it through the model, and flag arcs/coordinates.
@@ -88,6 +91,7 @@ def flag_graph_from_data(
         device,
         return_weighted_sum=return_weighted_sum,
         top_n_arcs=top_n_arcs,
+        threshold=threshold,
     )
 
 
@@ -100,6 +104,7 @@ def flag_graph_from_tensor(
     device: str = "cuda",
     return_weighted_sum: bool = False,
     top_n_arcs: int | None = None,
+    threshold: float = 0.5,
 ) -> tuple:
     """
     Compute heatmap from a tensor input and flag important arcs/nodes.
@@ -124,7 +129,9 @@ def flag_graph_from_tensor(
         device=device,
     )
 
-    analyzer = HeatmapAnalyzer(heatmap=heatmap, arcs=arcs, coordinates=coordinates)
+    analyzer = HeatmapAnalyzer(
+        heatmap=heatmap, arcs=arcs, coordinates=coordinates, threshold=threshold
+    )
     return analyzer.reverse_heatmap(
         return_weighted_sum=return_weighted_sum, top_n_arcs=top_n_arcs
     )
