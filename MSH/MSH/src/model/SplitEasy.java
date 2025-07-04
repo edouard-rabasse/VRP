@@ -3,6 +3,7 @@ package model;
 import java.io.*;
 import java.util.*;
 import core.Route;
+import core.RouteAttribute;
 import dataStructures.DataHandler;
 import core.ArrayDistanceMatrix;
 import distanceMatrices.DepotToCustomersDistanceMatrix;
@@ -49,6 +50,11 @@ public class SplitEasy {
             Route route = RouteFromFile.buildRouteFromArcs(modifiedArcs, data, distances, drivingTimes, walkingTimes,
                     routeId);
             modifiedRoutes.add(route);
+        }
+
+        // Print the modified routes
+        for (Route route : modifiedRoutes) {
+            System.out.println("Modified Route : " + route.getAttribute(RouteAttribute.CHAIN));
         }
 
         // Write modified arcs to file

@@ -32,12 +32,14 @@ import globalParameters.GlobalParameters;
 import msh.AssemblyFunction;
 import msh.GurobiSetPartitioningSolver;
 import msh.MSH;
+import msh.MSHContext;
 import msh.OrderFirstSplitSecondSampling;
 import split.SplitPLRP;
 import util.SolutionPrinter;
 import validation.RouteConstraintValidator;
 import util.RouteFromFile;
 import split.SplitWithEdgeConstraints;
+import heuristic.HeuristicConfiguration;
 
 /**
  * This class contains the main logic of the MSH.
@@ -85,7 +87,7 @@ public class Solver_gurobi {
 	/**
 	 * Common initialization logic shared across all MSH methods
 	 */
-	private MSHContext initializeMSH(String instance_identifier) throws IOException {
+	private MSHContext initialize(String instance_identifier) throws IOException {
 		// Store main attributes
 		this.instance_identifier = instance_identifier;
 		this.instance_name = instance_identifier.replace(".txt", "").replace("Coordinates_", "");
@@ -93,30 +95,12 @@ public class Solver_gurobi {
 		Double iniTime = (double) System.nanoTime();
 		printMessage("Starting the initialization step...");
 
-		// Read the instance
-		DataHandler data = new DataHandler(GlobalParameters.INSTANCE_FOLDER + instance_identifier);
-
-		// Create distance matrices
-		ArrayDistanceMatrix distances = new DepotToCustomersDistanceMatrix(data);
-		ArrayDistanceMatrix drivingTimes = new DepotToCustomersDrivingTimesMatrix(data);
-		ArrayDistanceMatrix walkingTimes = new DepotToCustomersWalkingTimesMatrix(data);
-
-		// Initialize pools and assembler
-		ArrayList<RoutePool> pools = new ArrayList<RoutePool>();
-		AssemblyFunction assembler = new GurobiSetPartitioningSolver(data.getNbCustomers(), true, data);
-		MSH msh = new MSH(assembler, GlobalParameters.THREADS);
-
-		// Initialize split algorithm
-		Split split = new SplitPLRP(distances, drivingTimes, walkingTimes, data);
-
-		// Calculate iterations
-		int numIterations = Math.max(1, (int) Math.ceil(GlobalParameters.MSH_NUM_ITERATIONS / 8.0));
-
+		MSHContext context = MSHContext.initializeMSH(instance_identifier);
 		Double finTime = (double) System.nanoTime();
 		cpu_initialization = (finTime - iniTime) / 1000000000;
 		printMessage("End of the initialization step...");
 
-		return new MSHContext(data, distances, drivingTimes, walkingTimes, pools, assembler, msh, split, numIterations);
+		return context;
 	}
 
 	/**
@@ -148,7 +132,7 @@ public class Solver_gurobi {
 	 * Main MSH method
 	 */
 	public void MSH(String instance_identifier) throws IOException {
-		MSHContext context = initializeMSH(instance_identifier);
+		MSHContext context = initialize(instance_identifier);
 
 		addStandardSamplingFunctions(context);
 		context.msh.setPools(context.pools);
@@ -244,7 +228,7 @@ public class Solver_gurobi {
 	 * Refine solution method
 	 */
 	public void refineSolution(String instance_identifier) throws IOException {
-		MSHContext context = initializeMSH(instance_identifier);
+		MSHContext context = initialize(instance_identifier);
 
 		String path = "./results/configuration1/Arcs_" + this.instance_name + "_" + GlobalParameters.SEED + ".txt";
 		addRefinerSamplingFunction(context, path);
@@ -257,7 +241,7 @@ public class Solver_gurobi {
 	 * Refine routes method
 	 */
 	public void refineRoutes(String instance_identifier) throws IOException {
-		MSHContext context = initializeMSH(instance_identifier);
+		MSHContext context = initialize(instance_identifier);
 
 		String path = "./results/configuration1/Arcs_" + this.instance_name + "_" + GlobalParameters.SEED + ".txt";
 		addRouteRefinerSamplingFunctions(context, path);
@@ -331,7 +315,7 @@ public class Solver_gurobi {
 	 */
 	public void runWithCustomCosts(String instance_identifier, String costFile, String arcPath, int suffix)
 			throws IOException {
-		MSHContext context = initializeMSH(instance_identifier);
+		MSHContext context = initialize(instance_identifier);
 
 		// Setup custom costs
 		setupCustomCosts(context, costFile, arcPath, suffix);
@@ -428,7 +412,7 @@ public class Solver_gurobi {
 	 * Run with upper right constraint
 	 */
 	public void runRefinedWithUpperRightConstraint(String instance_identifier) throws IOException {
-		MSHContext context = initializeMSH(instance_identifier);
+		MSHContext context = initialize(instance_identifier);
 		printMessage("Starting initialization with upper right constraint...");
 
 		// Create constraint matrix
@@ -676,34 +660,6 @@ public class Solver_gurobi {
 		}
 	}
 
-	/**
-	 * Context class to hold MSH-related objects and reduce parameter passing
-	 */
-	private static class MSHContext {
-		final DataHandler data;
-		final ArrayDistanceMatrix distances;
-		final ArrayDistanceMatrix drivingTimes;
-		final ArrayDistanceMatrix walkingTimes;
-		final ArrayList<RoutePool> pools;
-		final AssemblyFunction assembler;
-		final MSH msh;
-		Split split; // Not final as it may be replaced with custom implementations
-		final int numIterations;
-
-		MSHContext(DataHandler data, ArrayDistanceMatrix distances, ArrayDistanceMatrix drivingTimes,
-				ArrayDistanceMatrix walkingTimes, ArrayList<RoutePool> pools, AssemblyFunction assembler,
-				MSH msh, Split split, int numIterations) {
-			this.data = data;
-			this.distances = distances;
-			this.drivingTimes = drivingTimes;
-			this.walkingTimes = walkingTimes;
-			this.pools = pools;
-			this.assembler = assembler;
-			this.msh = msh;
-			this.split = split;
-			this.numIterations = numIterations;
-		}
-	}
 }
 
 //
