@@ -38,6 +38,7 @@ import split.SplitPLRP;
 import util.SolutionPrinter;
 import validation.RouteConstraintValidator;
 import util.RouteFromFile;
+import util.RouteProcessor;
 import split.SplitWithEdgeConstraints;
 import heuristic.HeuristicConfiguration;
 
@@ -60,20 +61,6 @@ public class Solver_gurobi {
 
 	// Custom cost matrix for Arcs
 	private CustomArcCostMatrix customArcCosts;
-
-	// Configuration for different heuristic types
-	private enum HeuristicConfig {
-		HIGH_RANDOMIZATION(GlobalParameters.MSH_RANDOM_FACTOR_HIGH, GlobalParameters.MSH_RANDOM_FACTOR_HIGH_RN),
-		LOW_RANDOMIZATION(GlobalParameters.MSH_RANDOM_FACTOR_LOW, GlobalParameters.MSH_RANDOM_FACTOR_LOW);
-
-		private final int randomFactor;
-		private final int nnRandomFactor;
-
-		HeuristicConfig(int randomFactor, int nnRandomFactor) {
-			this.randomFactor = randomFactor;
-			this.nnRandomFactor = nnRandomFactor;
-		}
-	}
 
 	// Constructors
 	public Solver_gurobi(CustomArcCostMatrix customArcCosts) {
@@ -108,20 +95,7 @@ public class Solver_gurobi {
 	 */
 	private void executeMSH(MSH msh, AssemblyFunction assembler, DataHandler data) {
 		// Sampling phase
-		Double iniTime = (double) System.nanoTime();
-		printMessage("Start of the sampling step...");
-		msh.run_sampling();
-		printMessage("End of the sampling step...");
-		Double finTime = (double) System.nanoTime();
-		cpu_msh_sampling = (finTime - iniTime) / 1000000000;
-
-		// Assembly phase
-		iniTime = (double) System.nanoTime();
-		printMessage("Start of the assembly step...");
-		msh.run_assembly();
-		printMessage("End of the assembly step...");
-		finTime = (double) System.nanoTime();
-		cpu_msh_assembly = (finTime - iniTime) / 1000000000;
+		executeMSHPhases(msh);
 
 		// Print results
 		printSummary(msh, assembler, data);
@@ -134,95 +108,15 @@ public class Solver_gurobi {
 	public void MSH(String instance_identifier) throws IOException {
 		MSHContext context = initialize(instance_identifier);
 
-		addStandardSamplingFunctions(context);
+		HeuristicConfiguration.addStandardSamplingFunctions(context);
 		context.msh.setPools(context.pools);
 
 		executeMSH(context.msh, context.assembler, context.data);
 	}
 
 	/**
-	 * Adds standard sampling functions (both high and low randomization)
-	 */
-	private void addStandardSamplingFunctions(MSHContext context) {
-		addSamplingFunctions(context, HeuristicConfig.HIGH_RANDOMIZATION, "high");
-		addSamplingFunctions(context, HeuristicConfig.LOW_RANDOMIZATION, "low");
-	}
-
-	/**
-	 * Generic method to add sampling functions with specified randomization level
-	 */
-	private void addSamplingFunctions(MSHContext context, HeuristicConfig config, String suffix) {
-		String[] heuristicTypes = { "NEAREST_INSERTION", "FARTHEST_INSERTION", "BEST_INSERTION" };
-		String[] prefixes = { "rni", "rfi", "rbi" };
-
-		// Add NN heuristic
-		addNNSamplingFunction(context, config, suffix);
-
-		// Add insertion heuristics
-		for (int i = 0; i < heuristicTypes.length; i++) {
-			addInsertionSamplingFunction(context, config, heuristicTypes[i], prefixes[i], suffix);
-		}
-	}
-
-	/**
-	 * Add Nearest Neighbor sampling function
-	 */
-	private void addNNSamplingFunction(MSHContext context, HeuristicConfig config, String suffix) {
-		Random random = new Random(GlobalParameters.SEED + getRandomSeed("nn", suffix));
-
-		NNHeuristic nn = new NNHeuristic(context.distances);
-		nn.setRandomized(true);
-		nn.setRandomGen(random);
-		nn.setRandomizationFactor(config.nnRandomFactor);
-		nn.setInitNode(0);
-
-		addSamplingFunction(context, nn, "rnn_" + suffix);
-	}
-
-	/**
 	 * Add insertion-based sampling function
 	 */
-	private void addInsertionSamplingFunction(MSHContext context, HeuristicConfig config,
-			String insertionType, String prefix, String suffix) {
-		Random random = new Random(GlobalParameters.SEED + getRandomSeed(prefix, suffix));
-
-		InsertionHeuristic heuristic = new InsertionHeuristic(context.distances, insertionType);
-		heuristic.setRandomized(true);
-		heuristic.setRandomGen(random);
-		heuristic.setRandomizationFactor(config.randomFactor);
-		heuristic.setInitNode(0);
-
-		addSamplingFunction(context, heuristic, prefix + "_" + suffix);
-	}
-
-	/**
-	 * Helper method to add a sampling function with its pool
-	 */
-	private void addSamplingFunction(MSHContext context, TSPHeuristic tspHeuristic, String name) {
-		OrderFirstSplitSecondHeuristic heuristic = new OrderFirstSplitSecondHeuristic(tspHeuristic, context.split);
-		OrderFirstSplitSecondSampling sampling = new OrderFirstSplitSecondSampling(heuristic, context.numIterations,
-				name);
-
-		RoutePool pool = new RoutePool();
-		context.pools.add(pool);
-		sampling.setRoutePool(pool);
-		context.msh.addSamplingFunction(sampling);
-	}
-
-	/**
-	 * Get random seed based on heuristic type and suffix
-	 */
-	private int getRandomSeed(String type, String suffix) {
-		int baseOffset = suffix.equals("high") ? 90 : 130;
-		int typeOffset = switch (type) {
-			case "nn" -> 0;
-			case "rni" -> 10;
-			case "rfi" -> 20;
-			case "rbi" -> 30;
-			default -> 0;
-		};
-		return baseOffset + typeOffset + 1000;
-	}
 
 	/**
 	 * Refine solution method
@@ -231,7 +125,7 @@ public class Solver_gurobi {
 		MSHContext context = initialize(instance_identifier);
 
 		String path = "./results/configuration1/Arcs_" + this.instance_name + "_" + GlobalParameters.SEED + ".txt";
-		addRefinerSamplingFunction(context, path);
+		HeuristicConfiguration.addRefinerSamplingFunction(context, path, this.instance_name);
 		context.msh.setPools(context.pools);
 
 		executeMSH(context.msh, context.assembler, context.data);
@@ -244,70 +138,10 @@ public class Solver_gurobi {
 		MSHContext context = initialize(instance_identifier);
 
 		String path = "./results/configuration1/Arcs_" + this.instance_name + "_" + GlobalParameters.SEED + ".txt";
-		addRouteRefinerSamplingFunctions(context, path);
+		HeuristicConfiguration.addRouteRefinerSamplingFunctions(context, path, this.instance_name);
 		context.msh.setPools(context.pools);
 
 		executeMSH(context.msh, context.assembler, context.data);
-	}
-
-	/**
-	 * Add refiner sampling function
-	 */
-	private void addRefinerSamplingFunction(MSHContext context, String path) {
-		Random random = new Random(GlobalParameters.SEED + 90 + 1000);
-
-		RefinerHeuristic refiner = new RefinerHeuristic(context.distances, this.instance_name, path);
-		refiner.setRandomized(true);
-		refiner.setRandomGen(random);
-		refiner.setRandomizationFactor(GlobalParameters.MSH_RANDOM_FACTOR_HIGH_RN);
-		refiner.setInitNode(0);
-
-		addSamplingFunction(context, refiner, "rnn_high");
-	}
-
-	/**
-	 * Add route refiner sampling functions
-	 * The sampling functions
-	 */
-	private void addRouteRefinerSamplingFunctions(MSHContext context, String path) {
-		int numRoutes = countRoutesInFile(path);
-
-		for (int i = 0; i < numRoutes; i++) {
-			Random random = new Random(GlobalParameters.SEED + 90 + 1000);
-
-			RefinerHeuristicRoutes refiner = new RefinerHeuristicRoutes(context.distances, this.instance_name, i, path);
-			refiner.setRandomized(true);
-			refiner.setRandomGen(random);
-			refiner.setRandomizationFactor(GlobalParameters.MSH_RANDOM_FACTOR_HIGH_RN);
-			refiner.setInitNode(0);
-
-			addSamplingFunction(context, refiner, "rnn_high_" + i);
-		}
-	}
-
-	/**
-	 * Count routes in solution file
-	 */
-	private int countRoutesInFile(String path) {
-		int numRoutes = 0;
-		try (BufferedReader buff = new BufferedReader(new FileReader(path))) {
-			String line;
-			int previousRoute = -1;
-
-			while ((line = buff.readLine()) != null) {
-				String[] parts = line.split(";");
-				int currentRoute = Integer.parseInt(parts[3]);
-				if (previousRoute != currentRoute) {
-					numRoutes++;
-					previousRoute = currentRoute;
-				}
-			}
-		} catch (IOException e) {
-			System.out.println("Error reading solution file: " + e.getMessage());
-			e.printStackTrace();
-			System.exit(0);
-		}
-		return numRoutes;
 	}
 
 	/**
@@ -324,9 +158,9 @@ public class Solver_gurobi {
 		// Determine sampling strategy based on file existence
 		String globalArcPath = GlobalParameters.RESULT_FOLDER + arcPath;
 		if (!new File(globalArcPath).isFile()) {
-			addStandardSamplingFunctions(context);
+			HeuristicConfiguration.addStandardSamplingFunctions(context);
 		} else {
-			addRouteRefinerSamplingFunctions(context, globalArcPath);
+			HeuristicConfiguration.addRouteRefinerSamplingFunctions(context, globalArcPath, this.instance_name);
 		}
 
 		context.msh.setPools(context.pools);
@@ -425,10 +259,10 @@ public class Solver_gurobi {
 		String originalArcPath = GlobalParameters.ARCS_MODIFIED_FOLDER + "Arcs_" + instance_name + "_1.txt";
 		if (!new File(originalArcPath).isFile()) {
 			printMessage("Arc file not found. Running standard MSH without fixing arcs.");
-			addStandardSamplingFunctions(context);
+			HeuristicConfiguration.addStandardSamplingFunctions(context);
 		} else {
 			printMessage("Arc file found. Adding route refiner sampling functions.");
-			addRouteRefinerSamplingFunctions(context, originalArcPath);
+			HeuristicConfiguration.addRouteRefinerSamplingFunctions(context, originalArcPath, this.instance_name);
 		}
 
 		context.msh.setPools(context.pools);
@@ -507,7 +341,7 @@ public class Solver_gurobi {
 
 			int counter = 0;
 			for (Route r : assembler.solution) {
-				processRoute(r, pwArcs, counter, data.getNbCustomers());
+				RouteProcessor.processRoute(r, pwArcs, counter, data.getNbCustomers());
 				printRouteInfo(r, counter);
 				counter++;
 			}
@@ -516,102 +350,6 @@ public class Solver_gurobi {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Error while printing the final solution");
-		}
-	}
-
-	/**
-	 * Process individual route for solution output
-	 */
-	private void processRoute(Route route, PrintWriter writer, int routeId, int nbCustomers) {
-		String chain = (String) route.getAttribute(RouteAttribute.CHAIN);
-		chain = chain.replace(" 0 ", " " + (nbCustomers + 1) + " ");
-		chain = chain.replace("CD", "" + (nbCustomers + 1));
-		chain = chain.replace(" ", "");
-		String[] parts = chain.split("[||]");
-
-		for (String part : parts) {
-			if (part.length() > 0) {
-				processRoutePart(part, writer, routeId);
-			}
-		}
-	}
-
-	/**
-	 * Process individual part of route chain
-	 */
-	private void processRoutePart(String part, PrintWriter writer, int routeId) {
-		if (part.contains("->") && !part.contains("---")) {
-			// Only driving
-			processSimpleMode(part, "->", 1, writer, routeId);
-		} else if (!part.contains("->") && part.contains("---")) {
-			// Only walking
-			processSimpleMode(part, "---", 2, writer, routeId);
-		} else if (part.contains("->") && part.contains("---")) {
-			// Mixed mode
-			processMixedMode(part, writer, routeId);
-		}
-	}
-
-	/**
-	 * Process route part with single mode (driving or walking)
-	 */
-	private void processSimpleMode(String part, String delimiter, int mode, PrintWriter writer, int routeId) {
-		part = part.replace(delimiter, ";");
-		String[] arcParts = part.split("[;]");
-		for (int arc = 0; arc < arcParts.length - 1; arc++) {
-			if (!arcParts[arc].equals(arcParts[arc + 1])) {
-				writer.println(arcParts[arc] + ";" + arcParts[arc + 1] + ";" + mode + ";" + routeId);
-			}
-		}
-	}
-
-	/**
-	 * Process route part with mixed modes (driving and walking)
-	 */
-	private void processMixedMode(String part, PrintWriter writer, int routeId) {
-		// Implementation of mixed mode processing (keeping original complex logic)
-		part = part.replace("---", ";").replace("->", ":");
-
-		int posInString = 0;
-		String tail = "";
-		String head = "";
-		int mode = -1;
-		int lastPos = -1;
-
-		while (posInString < part.length()) {
-			char currentChar = part.charAt(posInString);
-
-			if (mode == -1) {
-				if (currentChar == ':') {
-					mode = 1;
-					lastPos = posInString;
-				} else if (currentChar == ';') {
-					mode = 2;
-					lastPos = posInString;
-				}
-			} else {
-				if (currentChar == ':' || currentChar == ';') {
-					if (!tail.equals(head)) {
-						writer.println(tail + ";" + head + ";" + mode + ";" + routeId);
-					}
-					posInString = lastPos;
-					mode = -1;
-					tail = "";
-					head = "";
-				}
-			}
-
-			if (mode == -1 && currentChar != ':' && currentChar != ';') {
-				tail += currentChar;
-			} else if (currentChar != ':' && currentChar != ';') {
-				head += currentChar;
-			}
-
-			posInString++;
-		}
-
-		if (!tail.equals(head)) {
-			writer.println(tail + ";" + head + ";" + mode + ";" + routeId);
 		}
 	}
 
