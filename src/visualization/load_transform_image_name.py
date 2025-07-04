@@ -71,7 +71,7 @@ def load_transform_mask(cfg, mask_path: str, fname: str, device: str):
     mask = Image.open(os.path.join(mask_path, fname)).convert("L")
     mask = TF.resize(
         mask,
-        (cfg.image_size, cfg.image_size),
+        cfg.image_size,
         interpolation=transforms.InterpolationMode.NEAREST,
     )
     mask = mask_transform(size=cfg.image_size)(mask)

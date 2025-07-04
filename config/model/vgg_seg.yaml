@@ -7,7 +7,7 @@ name: vgg_seg
 load: ${..load_model}  # load model from checkpoint
 save: ${..save_model}  # save model to checkpoint
 
-weight_path: ${hydra:runtime.cwd}/checkpoints/${..experiment_name}.pth
+weight_path: ${hydra:runtime.cwd}/checkpoints/vgg_seg_16_40_7_config7_new.pth
 save_path: ${hydra:runtime.cwd}/checkpoints/${..experiment_name}.pth
 # weight_path: ${hydra:runtime.cwd}/checkpoints/vgg_32_30_7.pth
 image_size: ${image_size}

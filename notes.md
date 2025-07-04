@@ -121,3 +121,11 @@ faire des graphes.
 à quel point on est proches d'être valide
 
 Métrique heatmap : combien d'arcs correctement identifiés et inversement. (courbes ROC/AUC)
+
+## 03/07
+
+De combien on respecte pas la contrainte. Ou combien de fois on respecte pas la contrainte.
+Faire tourner plus longtemps.
+Critère d'arrêt : si on ajuste deux fois le même arc.
+Ne pas l'arrêter. Seuil, s'il est valide.
+Essayer avec juste une arête. à quel point l'arc flaggé est problématique.

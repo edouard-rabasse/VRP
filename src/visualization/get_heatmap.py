@@ -67,6 +67,9 @@ def get_heatmap(
             # Assuming the first channel is the one of interest
             # apply softmax to the heatmap
             heatmap = torch.nn.functional.softmax(heatmap, dim=0).cpu().numpy()
+            # thresh = np.percentile(heatmap, percentile_for_thresh)
+
+            # heatmap = np.clip(heatmap, thresh, 1)  # Clip values to [thresh,1]
 
     else:
         raise ValueError("Unknown method: {}".format(method))

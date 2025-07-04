@@ -1,0 +1,1 @@
+python .\visualize.py model=vgg_seg data=config7 

@@ -40,7 +40,7 @@ def process_image(cfg, model, fname, device):
     overlays the heatmap on the image, saves the arcs, and saves the results.
     """
     t_img, mask = load_and_transform_image_mask(
-        cfg, cfg.data.test_original_path, cfg.test_mask_path, fname, device
+        cfg, cfg.data.test_original_path, cfg.data.test_mask_path, fname, device
     )
     heatmap = get_heatmap(
         cfg.heatmap.method, model, t_img, cfg.heatmap.args, device=device
@@ -52,7 +52,7 @@ def process_image(cfg, model, fname, device):
     )
     save_overlay(overlay, cfg.heatmap_dir, fname)
 
-    reverse_heatmap(cfg, fname, heatmap)
+    # reverse_heatmap(cfg, fname, heatmap)
 
     loss = compute_bce_with_logits_mask(heatmap, mask)
     print(loss)
