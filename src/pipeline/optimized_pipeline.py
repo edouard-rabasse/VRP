@@ -256,7 +256,7 @@ class OptimizedVRPPipeline:
         nb_converged = 0
         nb_iter = 0
 
-        start = time()
+        start = current_time()
         for i in numbers:
 
             res = self.iterative_optimization(
@@ -272,7 +272,7 @@ class OptimizedVRPPipeline:
                 nb_converged += 1
                 nb_iter += res["number_iter"]
 
-        end = time()
+        end = current_time()
         total_time = end - start
 
         # Save results in a file

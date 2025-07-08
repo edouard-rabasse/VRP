@@ -15,19 +15,19 @@ DEFAULT_OVERRIDES = [
 
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
-def main(cfg: DictConfig):
+def main(cfg: DictConfig, threshold=0.00002, walking=10, multiplier=1):
     cfg = compose(config_name="config", overrides=DEFAULT_OVERRIDES)
-    pipeline = OptimizedVRPPipeline()
+    pipeline = OptimizedVRPPipeline(cfg)
+    # Override Java parameters for the MSH solver
+    pipeline.run_optimized_pipeline(
+        walking=walking,
+        multiplier=multiplier,
+        threshold=threshold,
+        numbers=range(1, 40),  # Adjust the range as needed
+        max_iter=10,
+        output_dir="output",
+    )
 
-    for threshold in [0.00002]:
-        for walking in [10]:
-            for multiplier in [1, 0.5, 0.1]:
-                # Override Java parameters for the MSH solver
-                pipeline.run_optimized_pipeline(
-                    walking=walking,
-                    multiplier=multiplier,
-                    threshold=threshold,
-                    numbers=range(1001, 1100),  # Adjust the range as needed
-                    max_iter=100,
-                    output_dir="output",
-                )
+
+if __name__ == "__main__":
+    main()

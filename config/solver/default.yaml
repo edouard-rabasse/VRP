@@ -14,6 +14,7 @@ custom_args:
 - "-cp"
 - "bin;${solver.java_lib}/gurobi.jar"
 
+
 config: "CustomCosts" # suffix for the result folder
 org_config: "1"
 

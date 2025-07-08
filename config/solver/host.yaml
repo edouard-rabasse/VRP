@@ -4,7 +4,7 @@ java_lib: "${solver.java_parent}/lib"
 java_bin: "${solver.java_parent}/bin"
 
 
-program_name: "main.Main_customCosts"
+program_name: "main.Main_refineMSH"
 config_name: "configurationCustomCosts2.xml"
 
 custom_args:

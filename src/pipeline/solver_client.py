@@ -1,4 +1,5 @@
 # File: src/pipeline/solver_client.py
+import os
 import subprocess
 from pathlib import Path
 from omegaconf import DictConfig
@@ -37,10 +38,12 @@ class SolverClient:
         self.recompile_java_files()
 
     def recompile_java_files(self) -> None:
+        classpath = f"bin{os.pathsep}{self.java_lib.parent / 'lib' / 'gurobi.jar'}"
+
         cmd = [
             "javac",
             "-cp",
-            f"bin:{self.java_lib.parent / 'lib' / 'gurobi.jar'}",
+            classpath,
             "src/main/Main_customCosts.java",
             "-d",
             "bin",
