@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import core.ArrayDistanceMatrix;
+import dataStructures.DataHandler;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -301,5 +302,30 @@ public class CustomArcCostMatrix {
     public void updateFromFlaggedFile(String filePath) throws IOException {
         // You'll need to pass these parameters from the calling code
         throw new UnsupportedOperationException("Use updateFromFlaggedFile(filePath, lambda, distances, alpha)");
+    }
+
+    /**
+     * Create constraint matrix for upper right corner
+     */
+    public static CustomArcCostMatrix createUpperRightConstraintMatrix(DataHandler data) {
+        CustomArcCostMatrix constraintMatrix = new CustomArcCostMatrix();
+        int depot = data.getNbCustomers() + 1;
+        constraintMatrix.addDepot(depot);
+
+        for (int i = 0; i < data.getNbCustomers(); i++) {
+            double xCoord = data.getX_coors().get(i);
+            double yCoord = data.getY_coors().get(i);
+
+            if (xCoord > 5.0 && yCoord > 5.0) {
+                for (int j = 0; j < data.getNbCustomers(); j++) {
+                    if (i != j) {
+                        constraintMatrix.addCustomCost(i, j, 2, GlobalParameters.FIXED_ARCS_DISTANCE * 1000);
+                    }
+                }
+
+            }
+        }
+
+        return constraintMatrix;
     }
 }

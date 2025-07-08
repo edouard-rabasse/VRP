@@ -135,4 +135,20 @@ public class Manager {
 		modifier.modifyRoutesFromFile(inputArcFile, outputArcFile);
 
 	}
+
+	public Solver_gurobi runRefineMSH(String coordinatesFile, String costFile, String arcsFile, int suffix)
+			throws IOException, InterruptedException {
+		// Creates a solver instance:
+
+		Solver_gurobi solver = new Solver_gurobi();
+
+		// Runs the MSH:
+
+		solver.refineRoutesWithMSH(coordinatesFile, costFile, arcsFile, suffix);
+		System.out.println("Refinement completed for " + coordinatesFile + " with suffix " + suffix);
+
+		// Returns the solver instance:
+
+		return solver;
+	}
 }

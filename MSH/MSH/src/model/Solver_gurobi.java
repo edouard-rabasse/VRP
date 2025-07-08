@@ -1,40 +1,26 @@
 package model;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.List;
 
-import core.ArrayDistanceMatrix;
-import core.InsertionHeuristic;
-import core.NNHeuristic;
-import core.OrderFirstSplitSecondHeuristic;
-import core.RefinerHeuristic;
-import core.RefinerHeuristicRoutes;
+import java.util.Iterator;
+
 import core.Route;
 import core.RouteAttribute;
 import core.RoutePool;
-import core.Split;
-import core.TSPSolution;
-import core.TSPHeuristic;
+
 import dataStructures.DataHandler;
-import dataStructures.DataHandlerHighlighted;
-import distanceMatrices.DepotToCustomersDistanceMatrix;
-import distanceMatrices.DepotToCustomersDistanceMatrixV2;
-import distanceMatrices.DepotToCustomersDrivingTimesMatrix;
-import distanceMatrices.DepotToCustomersWalkingTimesMatrix;
-import distanceMatrices.ArcModificationMatrix;
+
 import distanceMatrices.CustomArcCostMatrix;
 import globalParameters.GlobalParameters;
 import msh.AssemblyFunction;
 import msh.GurobiSetPartitioningSolver;
 import msh.MSH;
 import msh.MSHContext;
-import msh.OrderFirstSplitSecondSampling;
-import split.SplitPLRP;
 import util.SolutionPrinter;
 import validation.RouteConstraintValidator;
 import util.RouteFromFile;
@@ -60,15 +46,15 @@ public class Solver_gurobi {
 	private double cpu_msh_assembly;
 
 	// Custom cost matrix for Arcs
-	private CustomArcCostMatrix customArcCosts;
+	// private CustomArcCostMatrix customArcCosts;
 
 	// Constructors
-	public Solver_gurobi(CustomArcCostMatrix customArcCosts) {
-		this.customArcCosts = customArcCosts;
-	}
+	// public Solver_gurobi(CustomArcCostMatrix customArcCosts) {
+	// this.customArcCosts = customArcCosts;
+	// }
 
 	public Solver_gurobi() {
-		this.customArcCosts = new CustomArcCostMatrix();
+		// this.customArcCosts = new CustomArcCostMatrix();
 	}
 
 	/**
@@ -166,6 +152,7 @@ public class Solver_gurobi {
 		context.msh.setPools(context.pools);
 		printMessage("Starting MSH with custom costs...");
 		executeMSHWithCustomAnalysis(context, suffix);
+		executeCostAnalysis(context, suffix);
 	}
 
 	/**
@@ -202,6 +189,7 @@ public class Solver_gurobi {
 		// Update split algorithm with custom costs
 		context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
 				context.walkingTimes, context.data, arcCost);
+		// System.out.println("Custom costs set up with file: " + costFile);
 	}
 
 	/**
@@ -211,6 +199,9 @@ public class Solver_gurobi {
 		// Run MSH phases
 		executeMSHPhases(context.msh);
 		printMessage("End of the MSH phases...");
+	}
+
+	private void executeCostAnalysis(MSHContext context, int suffix) {
 
 		// Get original solution cost for comparison
 		String initialArcPath = GlobalParameters.COMPARISON_FOLDER + "Arcs_" + instance_name + "_1.txt";
@@ -250,7 +241,7 @@ public class Solver_gurobi {
 		printMessage("Starting initialization with upper right constraint...");
 
 		// Create constraint matrix
-		CustomArcCostMatrix constraintMatrix = createUpperRightConstraintMatrix(context.data);
+		CustomArcCostMatrix constraintMatrix = CustomArcCostMatrix.createUpperRightConstraintMatrix(context.data);
 
 		// Update split algorithm with constraints
 		context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
@@ -270,29 +261,73 @@ public class Solver_gurobi {
 	}
 
 	/**
-	 * Create constraint matrix for upper right corner
+	 * This method tries to refine the routes in a solution
+	 * 
+	 * @throws IOException
 	 */
-	private CustomArcCostMatrix createUpperRightConstraintMatrix(DataHandler data) {
-		CustomArcCostMatrix constraintMatrix = new CustomArcCostMatrix();
-		int depot = data.getNbCustomers() + 1;
-		constraintMatrix.addDepot(depot);
+	public void refineRoutesWithMSH(String instance_identifier, String costFile, String arcPath, int suffix)
+			throws IOException {
+		this.instance_identifier = instance_identifier;
+		this.instance_name = instance_identifier.replace(".txt", "").replace("Coordinates_", "");
 
-		for (int i = 0; i < data.getNbCustomers(); i++) {
-			double xCoord = data.getX_coors().get(i);
-			double yCoord = data.getY_coors().get(i);
+		String globalArcPath = GlobalParameters.RESULT_FOLDER + arcPath;
+		int numRoutes = RouteProcessor.countRoutesInFile(globalArcPath);
 
-			if (xCoord > 5.0 && yCoord > 5.0) {
-				for (int j = 0; j < data.getNbCustomers(); j++) {
-					if (i != j) {
-						constraintMatrix.addCustomCost(i, j, 2, GlobalParameters.FIXED_ARCS_DISTANCE * 1000);
-					}
+		// Container for all refined routes
+		RoutePool combinedPool = new RoutePool();
+
+		// Base data to use for final assembly
+		DataHandler baseData = new DataHandler(GlobalParameters.INSTANCE_FOLDER + instance_identifier);
+
+		for (int routeId = 0; routeId < numRoutes; routeId++) {
+			// Créer un contexte pour cette route (mini instance TSP)
+			MSHContext context = MSHContext.initializeMSH(instance_identifier, globalArcPath, routeId, baseData);
+
+			setupCustomCosts(context, costFile, arcPath, suffix);
+
+			HeuristicConfiguration.addStandardSamplingFunctions(context);
+
+			// Sampling sur cette route
+			context.msh.setPools(context.pools);
+			executeSampling(context.msh);
+
+			// Copier les routes dans le pool global
+			for (RoutePool pool : context.pools) {
+				Iterator<Route> iterator = pool.iterator();
+				while (iterator.hasNext()) {
+					Route r = iterator.next();
+
+					// System.out.println("[Debug] route " + r.toString());
+					System.out.println("Route avant conversion: " + r.getAttribute(RouteAttribute.COST) + " "
+							+ r.getAttribute(RouteAttribute.CHAIN));
+					Route r_copy = RouteProcessor.convertRouteToGlobalRoute(r, context.data, baseData);
+					System.out.println("Route après conversion: " + r_copy.getAttribute(RouteAttribute.COST) + " "
+							+ r_copy.getAttribute(RouteAttribute.CHAIN));
+					combinedPool.add(r_copy);
 				}
-				printMessage("Applied upper right constraint to node " + i + " at coordinates (" + xCoord + ", "
-						+ yCoord + ")");
 			}
 		}
 
-		return constraintMatrix;
+		System.out.println(globalArcPath + " - Combined pool size: " + combinedPool.size());
+
+		MSHContext globalContext = MSHContext.initializeMSH(instance_identifier);
+
+		// Assemblage final avec toutes les routes
+		AssemblyFunction assembler = new GurobiSetPartitioningSolver(baseData.getNbCustomers(), true, baseData);
+		MSH globalMSH = new MSH(assembler, GlobalParameters.THREADS);
+
+		// executeSampling(globalMSH);
+		globalContext.msh = globalMSH;
+		globalContext.assembler = assembler;
+		globalContext.pools = new ArrayList<RoutePool>(List.of(combinedPool));
+
+		globalContext.msh.setPools(new ArrayList<RoutePool>(List.of(combinedPool)));
+		setupCustomCosts(globalContext, costFile, globalArcPath, suffix);
+
+		executeAssembly(globalContext.msh);
+		// printSummary(globalMSH, assembler, baseData);
+		// printSolution(globalMSH, assembler, baseData);
+		executeCostAnalysis(globalContext, suffix);
 	}
 
 	/**
@@ -300,19 +335,27 @@ public class Solver_gurobi {
 	 */
 	private void executeMSHPhases(MSH msh) {
 		// Sampling phase
+		executeSampling(msh);
+
+		// Assembly phase
+		executeAssembly(msh);
+	}
+
+	private void executeSampling(MSH msh) {
 		Double iniTime = (double) System.nanoTime();
 		printMessage("Start of the sampling step...");
 		msh.run_sampling();
 		printMessage("End of the sampling step...");
 		Double finTime = (double) System.nanoTime();
 		cpu_msh_sampling = (finTime - iniTime) / 1000000000;
+	}
 
-		// Assembly phase
-		iniTime = (double) System.nanoTime();
+	private void executeAssembly(MSH msh) {
+		Double iniTime = (double) System.nanoTime();
 		printMessage("Start of the assembly step...");
 		msh.run_assembly();
 		printMessage("End of the assembly step...");
-		finTime = (double) System.nanoTime();
+		Double finTime = (double) System.nanoTime();
 		cpu_msh_assembly = (finTime - iniTime) / 1000000000;
 	}
 

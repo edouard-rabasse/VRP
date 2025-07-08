@@ -76,7 +76,6 @@ public class SplitEasy {
         int currentPosition = nbCustomers + 1; // Start at depot
         int currentParkingSpot = -1; // Start at depot
         double routeWalkingDistance = 0.0;
-        int lastNode = 0;
         Set<Integer> visitedNodes = new HashSet<>(); // Track visited nodes to avoid repeating arcs
 
         for (int i = 0; i < sortedArcs.size(); i++) {

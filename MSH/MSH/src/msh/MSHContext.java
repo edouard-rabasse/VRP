@@ -3,6 +3,8 @@ package msh;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.xml.crypto.Data;
+
 import core.ArrayDistanceMatrix;
 import core.RoutePool;
 import core.Split;
@@ -57,6 +59,45 @@ public class MSHContext {
         Split split = new SplitPLRP(distances, drivingTimes, walkingTimes, data);
 
         // Calculate iterations
+        int numIterations = Math.max(1, (int) Math.ceil(GlobalParameters.MSH_NUM_ITERATIONS / 8.0));
+
+        return new MSHContext(data, distances, drivingTimes, walkingTimes, pools, assembler, msh, split, numIterations);
+    }
+
+    /**
+     * @param instance_identifier: Identifier of the instance (e.g.,
+     *                             "Coordinates_1.txt")
+     * @param arc_path:            Name of the instance (e.g., "1")
+     * @param routeId:             ID of the route (e.g., 1)
+     * @param globalData:          Global data handler
+     */
+    public static MSHContext initializeMSH(String instance_identifier, String arc_path, int routeId,
+            DataHandler globalData)
+            throws IOException {
+        // Chargement du sous-ensemble des données pour la route `routeId`
+
+        System.out.println("[Debug] " + instance_identifier);
+
+        DataHandler data = new DataHandler(
+                GlobalParameters.INSTANCE_FOLDER + instance_identifier,
+                arc_path,
+                routeId,
+                globalData.getNbCustomers() + 1);
+
+        // Matrices de distances spécifiques à cette route
+        ArrayDistanceMatrix distances = new DepotToCustomersDistanceMatrix(data);
+        ArrayDistanceMatrix drivingTimes = new DepotToCustomersDrivingTimesMatrix(data);
+        ArrayDistanceMatrix walkingTimes = new DepotToCustomersWalkingTimesMatrix(data);
+
+        // Pools et assembleur pour cette sous-instance
+        ArrayList<RoutePool> pools = new ArrayList<>();
+        AssemblyFunction assembler = new GurobiSetPartitioningSolver(data.getNbCustomers(), true, data);
+        MSH msh = new MSH(assembler, GlobalParameters.THREADS);
+
+        // Algorithme de split simple
+        Split split = new SplitPLRP(distances, drivingTimes, walkingTimes, data);
+
+        // Itérations réduites par route
         int numIterations = Math.max(1, (int) Math.ceil(GlobalParameters.MSH_NUM_ITERATIONS / 8.0));
 
         return new MSHContext(data, distances, drivingTimes, walkingTimes, pools, assembler, msh, split, numIterations);

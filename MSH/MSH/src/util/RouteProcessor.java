@@ -1,9 +1,16 @@
 package util;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
+import core.JVRAEnv;
 import core.Route;
 import core.RouteAttribute;
+import dataStructures.DataHandler;
 
 public class RouteProcessor {
     /**
@@ -100,6 +107,52 @@ public class RouteProcessor {
         if (!tail.equals(head)) {
             writer.println(tail + ";" + head + ";" + mode + ";" + routeId);
         }
+    }
+
+    public static int countRoutesInFile(String arcPath) throws IOException {
+        int numRoutes = 0;
+        try (BufferedReader reader = new BufferedReader(new FileReader(arcPath))) {
+            String line;
+            int lastRouteId = -1;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                int currentRoute = Integer.parseInt(parts[3]);
+                if (currentRoute != lastRouteId) {
+                    numRoutes++;
+                    lastRouteId = currentRoute;
+                }
+            }
+        }
+        return numRoutes;
+    }
+
+    public static Route convertRouteToGlobalRoute(Route route, DataHandler localData, DataHandler globalData) {
+        Route r_copy = JVRAEnv.getRouteFactory().buildRoute();
+        r_copy.add(0);
+        for (int i = 1; i < route.size() - 1; i++) {
+
+            int customer = route.get(i);
+            int mapped = localData.getMapping().get(customer);
+            r_copy.add(mapped);
+        }
+        r_copy.add(0);
+        r_copy.setAttribute(RouteAttribute.COST, route.getAttribute(RouteAttribute.COST));
+        r_copy.setAttribute(RouteAttribute.DURATION, route.getAttribute(RouteAttribute.DURATION));
+
+        // Convert chain string
+        String chain = (String) route.getAttribute(RouteAttribute.CHAIN);
+        Pattern numberPattern = Pattern.compile("\\b\\d+\\b");
+        Matcher matcher = numberPattern.matcher(chain);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            int original = Integer.parseInt(matcher.group());
+            int mapped = localData.getMapping().getOrDefault(original, original);
+            matcher.appendReplacement(result, String.valueOf(mapped));
+        }
+        matcher.appendTail(result);
+        r_copy.setAttribute(RouteAttribute.CHAIN, result.toString());
+
+        return r_copy;
     }
 
 }
