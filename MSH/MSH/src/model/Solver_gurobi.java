@@ -186,10 +186,20 @@ public class Solver_gurobi {
 		arcCost.saveFile(
 				GlobalParameters.ARCS_MODIFIED_FOLDER + "Costs_" + instance_name + "_" + (suffix + 1) + ".txt");
 
-		// Update split algorithm with custom costs
-		context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
-				context.walkingTimes, context.data, arcCost);
-		// System.out.println("Custom costs set up with file: " + costFile);
+		if (context.data.getMapping() != null && !context.data.getMapping().isEmpty()) {
+			System.out.println("Converting global costs to local costs for route-specific context");
+
+			// Convertir global → local (false = mapping est global → local)
+			CustomArcCostMatrix localArcCost = arcCost.applyMapping(context.data.getMapping(), true);
+
+			// Utiliser cette matrice locale pour le split
+			context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
+					context.walkingTimes, context.data, localArcCost);
+		} else {
+			// Utiliser les coûts globaux directement
+			context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
+					context.walkingTimes, context.data, arcCost);
+		}
 	}
 
 	/**

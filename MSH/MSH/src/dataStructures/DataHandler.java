@@ -97,6 +97,14 @@ public class DataHandler {
 
 		buff.close();
 
+		// // 4. Set the mapping : each customer is mapped to its index in the list
+		// mapping = new Hashtable<Integer, Integer>();
+		// for (int i = 1; i <= nbCustomers; i++) {
+		// mapping.put(i, i);
+		// }
+
+		// this.setMapping(mapping);
+
 	}
 
 	/**
