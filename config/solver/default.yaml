@@ -6,7 +6,7 @@ java_lib: ${solver.java_parent}/lib
 java_bin: ${solver.java_parent}/bin
 config_name: "configurationCustomCosts2.xml" #Located in the MSH/MSH/folder, for the Java run
 
-program_name: "main.Main_customCosts"
+program_name: "main.Main_refineMSH"
 
 custom_args:
 - "-Xmx2000m"

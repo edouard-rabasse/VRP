@@ -9,8 +9,9 @@ from pathlib import Path
 import torch
 from PIL import Image
 import matplotlib.pyplot as plt
+from omegaconf import DictConfig
 
-from src.pipeline.config import get_cfg, BASE_DIR
+from src.pipeline.config import BASE_DIR, override_java_param
 from src.pipeline.model_loader import ModelLoader
 from src.pipeline.file_service import FileService
 from src.pipeline.solver_client import SolverClient
@@ -24,9 +25,9 @@ def current_time():
 
 
 class OptimizedVRPPipeline:
-    def __init__(self, config_overrides: list[str] | None = None):
+    def __init__(self, cfg: DictConfig | None = None):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.cfg = get_cfg(config_overrides)
+        self.cfg = cfg
 
         # Services
         self.model = ModelLoader(self.cfg.model, self.device).load()
@@ -216,3 +217,114 @@ class OptimizedVRPPipeline:
         results["valid"] = cost_analysis["Valid"]
         results["equal"] = self.files.compare_arcs(arcs_init, arcs_final)
         return results
+
+    def run_optimized_pipeline(
+        self,
+        walking: int,
+        multiplier: float,
+        threshold: float,
+        numbers: list,
+        max_iter: int = 100,
+        output_dir: str = "output",
+    ):
+        """
+        Run the optimized VRP pipeline with specified parameters.
+        Args:
+            walking (int): The walking cost to set in the Java configuration.
+            multiplier (float): The multiplier for the custom costs.
+            threshold (float): The convergence threshold for the optimization.
+            numbers (list): List of instance numbers to process.
+        Returns:
+            None
+
+        """
+        print(
+            f"Running with walking cost: {walking}, multiplier: {multiplier}, threshold: {threshold}"
+        )
+        override_java_param(
+            "MSH/MSH/config/configurationCustomCosts2.xml",
+            {
+                "DEFAULT_WALK_COST": walking,
+                "CUSTOM_COST_MULTIPLIER": multiplier,
+            },
+        )
+        nb_equal = 0
+        nb_total = 0
+        nb_valid = 0
+        average_diff = 0.0
+        easy_diff = 0.0
+        nb_converged = 0
+        nb_iter = 0
+
+        start = time()
+        for i in numbers:
+
+            res = self.iterative_optimization(
+                instance=i, max_iter=max_iter, thresh=threshold
+            )
+            nb_equal += res["equal"]
+            nb_total += 1
+            nb_valid += res["valid"]
+            if res["valid"]:
+                average_diff += res["cost_delta"]
+                easy_diff += res["delta_easy"]
+            if res["converged"]:
+                nb_converged += 1
+                nb_iter += res["number_iter"]
+
+        end = time()
+        total_time = end - start
+
+        # Save results in a file
+        self.write_results(
+            nb_total=nb_total,
+            nb_valid=nb_valid,
+            nb_equal=nb_equal,
+            average_diff=average_diff,
+            easy_diff=easy_diff,
+            output_dir=output_dir,
+            walking=walking,
+            multiplier=multiplier,
+            threshold=threshold,
+            nb_converged=nb_converged,
+            nb_iter=nb_iter,
+            total_time=total_time,
+        )
+
+    def write_results(
+        self,
+        *,
+        nb_total: int,
+        nb_valid: int,
+        nb_equal: int,
+        average_diff: float,
+        easy_diff: float,
+        output_dir: str,
+        walking: int,
+        multiplier: float,
+        threshold: float,
+        nb_converged: int,
+        nb_iter: int,
+        total_time: float,
+    ):
+        nb_diff = nb_total - nb_valid
+        average_diff /= nb_valid if nb_valid > 0 else 0.0
+
+        # save results in a file
+        with open(
+            f"{output_dir}/results_{walking}_{multiplier}_{threshold}.txt", "w"
+        ) as f:
+            f.write(f"Walking cost: {walking}\n")
+            f.write(f"Multiplier: {multiplier}\n")
+            f.write(f"Threshold: {threshold}\n")
+            f.write(f"Total instances: {nb_total}\n")
+            f.write(f"Valid instances: {nb_valid}\n")
+            f.write(f"Equal instances: {nb_equal}\n")
+            f.write(f"Average cost difference with perfect optim: {average_diff:.2f}\n")
+            f.write(f"Average cost difference with easy optim: {easy_diff:.2f}\n")
+
+            f.write(f"Converged instances: {nb_converged}\n")
+            f.write(
+                f"Average iterations for converged instances: {nb_iter / nb_converged if nb_converged > 0 else 0:.2f}\n"
+            )
+            f.write(f"Total time taken: {total_time:.2f} seconds\n")

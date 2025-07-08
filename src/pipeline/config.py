@@ -9,13 +9,6 @@ import xml.etree.ElementTree as ET
 BASE_DIR = Path(__file__).parent.parent.parent / "MSH" / "MSH"
 
 # Default Hydra overrides
-DEFAULT_OVERRIDES = [
-    "data=config7",
-    "model=resnet",
-    "model.weight_path=checkpoints/resnet_8_30_7.pth",
-    "model.load=true",
-    "solver=host"
-]
 
 
 def get_cfg(overrides: list[str] | None = None):
