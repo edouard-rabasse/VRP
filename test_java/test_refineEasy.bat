@@ -1,5 +1,5 @@
 @echo off
-set NUMBER=8
+set NUMBER=5
 set SUFFIX=1
 
 set /a NEXT_SUFFIX=%SUFFIX%+1
@@ -15,4 +15,4 @@ java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi
 cd .. 
 cd ..
 
-python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_%NUMBER%.txt" -a "MSH\MSH\results\configuration7_2\Arcs_%NUMBER%_%SUFFIX%.txt" 
+python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_%NUMBER%.txt" -a "MSH\MSH\results\configuration7_easy\Arcs_%NUMBER%_%SUFFIX%.txt" 

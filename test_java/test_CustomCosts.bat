@@ -1,6 +1,6 @@
 @echo off
-set NUMBER=3
-set SUFFIX=10
+set NUMBER=25
+set SUFFIX=1
 
 set /a NEXT_SUFFIX=%SUFFIX%+1
 

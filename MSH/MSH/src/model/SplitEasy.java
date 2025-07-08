@@ -3,6 +3,7 @@ package model;
 import java.io.*;
 import java.util.*;
 import core.Route;
+import core.RouteAttribute;
 import dataStructures.DataHandler;
 import core.ArrayDistanceMatrix;
 import distanceMatrices.DepotToCustomersDistanceMatrix;
@@ -51,6 +52,11 @@ public class SplitEasy {
             modifiedRoutes.add(route);
         }
 
+        // Print the modified routes
+        for (Route route : modifiedRoutes) {
+            System.out.println("Modified Route : " + route.getAttribute(RouteAttribute.CHAIN));
+        }
+
         // Write modified arcs to file
         writeModifiedArcsToFile(modifiedRouteArcsMap, outputPath);
 
@@ -70,7 +76,6 @@ public class SplitEasy {
         int currentPosition = nbCustomers + 1; // Start at depot
         int currentParkingSpot = -1; // Start at depot
         double routeWalkingDistance = 0.0;
-        int lastNode = 0;
         Set<Integer> visitedNodes = new HashSet<>(); // Track visited nodes to avoid repeating arcs
 
         for (int i = 0; i < sortedArcs.size(); i++) {

@@ -232,9 +232,11 @@ public class GurobiSetPartitioningSolver extends AssemblyFunction {
 			// WARM START:
 
 			VRPSolution initialSolution = (VRPSolution) bound;
-			for (Route route : initialSolution.getRoutes()) {
-				int routeCode = pool_f.getHashCode().compute(route);
-				model.getVarByName("y_" + routeCode).set(GRB.DoubleAttr.Start, 1.0);
+			if (initialSolution != null) {
+				for (Route route : initialSolution.getRoutes()) {
+					int routeCode = pool_f.getHashCode().compute(route);
+					model.getVarByName("y_" + routeCode).set(GRB.DoubleAttr.Start, 1.0);
+				}
 			}
 
 			// Hide the output

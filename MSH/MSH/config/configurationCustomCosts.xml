@@ -2,9 +2,9 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <entry key="INSTANCE_FOLDER">./instances/</entry>
-<entry key="RESULT_FOLDER">./results/configurationEasy/</entry> 
+<entry key="RESULT_FOLDER">./results/configurationUpperRight/</entry> 
 
-<entry key="COORDINATES_FOLDER">./instances_modified/</entry>
+<entry key="COORDINATES_FOLDER">./instances/</entry>
 <entry key="ARCS_MODIFIED_FOLDER">./results/configuration1/</entry> <!-- Folder where the original arcs are stored -->
 
 <entry key="PRINT_IN_CONSOLE">false</entry>

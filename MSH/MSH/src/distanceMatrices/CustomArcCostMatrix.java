@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import core.ArrayDistanceMatrix;
+import dataStructures.DataHandler;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -276,16 +277,8 @@ public class CustomArcCostMatrix {
                             double newCost = defaultCost * (1.0 + lambda);
                             customCosts.put(key, newCost);
 
-                            // System.out.println("[CustomCost] Created new arc " + tail + "->" + head +
-                            // " (mode " + mode + ") with cost " + newCost +
-                            // " (default: " + defaultCost + ", lambda: " + lambda + ")");
                         }
                     }
-                    // if (flagged == 0) { // TODO : remove
-                    // // If the arc is not flagged, we set the cost to -1
-                    // String key = tail + ";" + head + ";" + mode;
-                    // customCosts.put(key, -1.0);
-                    // }
                 } catch (NumberFormatException e) {
                     System.err.println("[CustomCost] Error parsing line: " + line + " - " + e.getMessage());
                 }
@@ -302,4 +295,112 @@ public class CustomArcCostMatrix {
         // You'll need to pass these parameters from the calling code
         throw new UnsupportedOperationException("Use updateFromFlaggedFile(filePath, lambda, distances, alpha)");
     }
+
+    /**
+     * Create constraint matrix for upper right corner
+     */
+    public static CustomArcCostMatrix createUpperRightConstraintMatrix(DataHandler data) {
+        CustomArcCostMatrix constraintMatrix = new CustomArcCostMatrix();
+        int depot = data.getNbCustomers() + 1;
+        constraintMatrix.addDepot(depot);
+
+        for (int i = 0; i < data.getNbCustomers(); i++) {
+            double xCoord = data.getX_coors().get(i);
+            double yCoord = data.getY_coors().get(i);
+
+            if (xCoord > 5.0 && yCoord > 5.0) {
+                for (int j = 0; j < data.getNbCustomers(); j++) {
+                    if (i != j) {
+                        constraintMatrix.addCustomCost(i, j, 2, GlobalParameters.FIXED_ARCS_DISTANCE * 1000);
+                    }
+                }
+
+            }
+        }
+
+        return constraintMatrix;
+    }
+
+    /**
+     * Transforme tous les coûts d'arcs en utilisant un mapping d'indices
+     * Cette fonction peut être utilisée pour convertir une matrice globale en
+     * locale ou vice versa
+     * 
+     * @param mapping         Map contenant la correspondance entre indices
+     *                        (local→global ou global→local)
+     * @param isLocalToGlobal true si mapping est local→global, false si
+     *                        global→local
+     * @return Une nouvelle matrice de coûts avec les indices convertis
+     */
+    public CustomArcCostMatrix applyMapping(Map<Integer, Integer> mapping, boolean isLocalToGlobal) {
+        CustomArcCostMatrix mappedCosts = new CustomArcCostMatrix();
+
+        // Créer un mapping inverse si nécessaire
+        Map<Integer, Integer> inverseMapping = null;
+        if (!isLocalToGlobal) {
+            // Si on fournit un mapping global→local, on l'utilise directement
+            inverseMapping = new HashMap<>(mapping);
+        } else {
+            // Si on fournit un mapping local→global, on crée l'inverse
+            inverseMapping = new HashMap<>();
+            for (Map.Entry<Integer, Integer> entry : mapping.entrySet()) {
+                inverseMapping.put(entry.getValue(), entry.getKey());
+            }
+        }
+
+        // Traiter le dépôt spécialement
+        inverseMapping.put(0, 0);
+
+        System.out.println("Converting costs with mapping: " + (isLocalToGlobal ? "local→global" : "global→local"));
+        System.out.println("Mapping: " + mapping);
+
+        // Parcourir tous les coûts et les convertir
+        int countConverted = 0;
+        for (Map.Entry<String, Double> entry : customCosts.entrySet()) {
+            String key = entry.getKey();
+            Double cost = entry.getValue();
+
+            // Décomposer la clé pour obtenir tail, head, mode
+            String[] parts = key.split(";");
+            int tail = Integer.parseInt(parts[0]);
+            int head = Integer.parseInt(parts[1]);
+            int mode = Integer.parseInt(parts[2]);
+
+            // Convertir les indices
+            Integer mappedTail = getMappedIndex(tail, inverseMapping);
+            Integer mappedHead = getMappedIndex(head, inverseMapping);
+
+            // Ajouter le coût converti s'il est valide
+            if (mappedTail != null && mappedHead != null) {
+                mappedCosts.addCustomCost(mappedTail, mappedHead, mode, cost);
+                countConverted++;
+
+                if (GlobalParameters.PRINT_IN_CONSOLE) {
+                    System.out.println("Converted cost: (" + tail + "," + head + "," + mode + ") → (" +
+                            mappedTail + "," + mappedHead + "," + mode + ") = " + cost);
+                }
+            }
+        }
+
+        System.out.println("Converted " + countConverted + " costs out of " + customCosts.size());
+        return mappedCosts;
+    }
+
+    /**
+     * Obtient l'indice converti en utilisant le mapping
+     * 
+     * @param index   Indice à convertir
+     * @param mapping Mapping à utiliser
+     * @return Indice converti ou null si non trouvé
+     */
+    private Integer getMappedIndex(int index, Map<Integer, Integer> mapping) {
+        // Le dépôt reste le dépôt
+        if (index == 0) {
+            return 0;
+        }
+
+        // Utiliser le mapping pour les autres indices
+        return mapping.getOrDefault(index, null);
+    }
+
 }
