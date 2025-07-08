@@ -212,7 +212,7 @@ public class CustomArcCostMatrix {
      * @throws IOException
      */
     public void updateFromFlaggedFile(String filePath, double lambda,
-            ArrayDistanceMatrix distances, double alpha) throws IOException {
+            ArrayDistanceMatrix distances, double alpha, DataHandler data) throws IOException {
 
         // check if the filePath corresponds to a valid file
 
@@ -266,8 +266,34 @@ public class CustomArcCostMatrix {
                                     System.out.println("[CustomCost] Creating new arc " + tail + "->" + head +
                                             " (mode " + mode + ") with default cost based on distance.");
                                 }
-                                defaultCost = distances.getDistance(tail % this.depot, head % this.depot)
-                                        * GlobalParameters.VARIABLE_COST;
+
+                                if (data.getMapping() != null && !data.getMapping().isEmpty()) {
+                                    // If we have a mapping, use it to get the correct indices
+                                    // print all the mapping
+                                    for (Map.Entry<Integer, Integer> entry : data.getMapping().entrySet()) {
+                                        System.out.println("Mapping: " + entry.getKey() + " -> " + entry.getValue());
+                                    }
+                                    System.out.println(
+                                            "[CustomCost] Using mapping for tail: " + tail + ", head: " + head);
+                                    int mappedTail = getInverseMappedIndex(tail, data.getMapping());
+                                    int mappedHead = getInverseMappedIndex(head, data.getMapping());
+
+                                    if (mappedTail == -1 || mappedHead == -1) {
+
+                                        continue; // Skip this arc if mapping fails
+                                    }
+
+                                    System.out.println(
+                                            "[CustomCost] Using mapping for tail: " + tail + " -> " + mappedTail +
+                                                    ", head: " + head + " -> " + mappedHead);
+                                    defaultCost = distances.getDistance(mappedTail % this.depot,
+                                            mappedHead % this.depot)
+                                            * GlobalParameters.VARIABLE_COST;
+                                } else {
+                                    // No mapping, use original indices
+                                    defaultCost = distances.getDistance(tail % this.depot, head % this.depot)
+                                            * GlobalParameters.VARIABLE_COST;
+                                }
                             } else {
                                 // Walking mode - use alpha
                                 defaultCost = alpha;
@@ -401,6 +427,21 @@ public class CustomArcCostMatrix {
 
         // Utiliser le mapping pour les autres indices
         return mapping.getOrDefault(index, null);
+    }
+
+    private Integer getInverseMappedIndex(int index, Map<Integer, Integer> mapping) {
+        // Le dépôt reste le dépôt
+        if (index == 0) {
+            return 0;
+        }
+
+        // Utiliser le mapping inverse pour les autres indices
+        for (Map.Entry<Integer, Integer> entry : mapping.entrySet()) {
+            if (entry.getValue().equals(index)) {
+                return entry.getKey();
+            }
+        }
+        return -1; // Si l'index n'est pas trouvé dans le mapping
     }
 
 }

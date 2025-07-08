@@ -176,15 +176,12 @@ public class Solver_gurobi {
 			// Load distances from the specified arc path
 			arcCost.updateFromFlaggedFile(GlobalParameters.RESULT_FOLDER + arcPath,
 					GlobalParameters.CUSTOM_COST_MULTIPLIER, context.distances,
-					GlobalParameters.DEFAULT_WALK_COST);
+					GlobalParameters.DEFAULT_WALK_COST, context.data);
 		} catch (IOException e) {
 			System.out.println("Error updating custom costs from flagged file: " + e.getMessage());
 			e.printStackTrace();
 			System.exit(0);
 		}
-
-		arcCost.saveFile(
-				GlobalParameters.ARCS_MODIFIED_FOLDER + "Costs_" + instance_name + "_" + (suffix + 1) + ".txt");
 
 		if (context.data.getMapping() != null && !context.data.getMapping().isEmpty()) {
 			System.out.println("Converting global costs to local costs for route-specific context");
@@ -196,9 +193,14 @@ public class Solver_gurobi {
 			context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
 					context.walkingTimes, context.data, localArcCost);
 		} else {
+			System.out.println("Using global costs directly for split");
 			// Utiliser les coûts globaux directement
 			context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
 					context.walkingTimes, context.data, arcCost);
+
+			// We only save the global arc costs if no mapping is present
+			arcCost.saveFile(
+					GlobalParameters.ARCS_MODIFIED_FOLDER + "Costs_" + instance_name + "_" + (suffix + 1) + ".txt");
 		}
 	}
 
@@ -332,7 +334,7 @@ public class Solver_gurobi {
 		globalContext.pools = new ArrayList<RoutePool>(List.of(combinedPool));
 
 		globalContext.msh.setPools(new ArrayList<RoutePool>(List.of(combinedPool)));
-		setupCustomCosts(globalContext, costFile, globalArcPath, suffix);
+		setupCustomCosts(globalContext, costFile, arcPath, suffix);
 
 		executeAssembly(globalContext.msh);
 		// printSummary(globalMSH, assembler, baseData);
