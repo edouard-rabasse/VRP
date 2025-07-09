@@ -5,6 +5,7 @@ from time import time
 import hydra
 from omegaconf import DictConfig
 from hydra import compose
+import sys
 
 DEFAULT_OVERRIDES = [
     "data=config7",
@@ -15,8 +16,12 @@ DEFAULT_OVERRIDES = [
 
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
-def main(cfg: DictConfig, threshold=0.00002, walking=10, multiplier=1):
+def main(cfg: DictConfig):
     cfg = compose(config_name="config", overrides=DEFAULT_OVERRIDES)
+    threshold = float(sys.argv[1]) if len(sys.argv) > 1 else 0.00002
+    walking = int(sys.argv[2]) if len(sys.argv) > 2 else 10
+    multiplier = int(sys.argv[3]) if len(sys.argv) > 3 else 1
+
     pipeline = OptimizedVRPPipeline(cfg)
     # Override Java parameters for the MSH solver
     pipeline.run_optimized_pipeline(

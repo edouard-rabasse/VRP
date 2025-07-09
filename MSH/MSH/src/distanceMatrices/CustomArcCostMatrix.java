@@ -241,9 +241,9 @@ public class CustomArcCostMatrix {
                     int head = Integer.parseInt(parts[1]);
                     int mode = Integer.parseInt(parts[2]);
                     // parts[3] is route number - not used for cost calculation
-                    int flagged = Integer.parseInt(parts[4]);
+                    double flagged = Double.parseDouble(parts[4]);
 
-                    if (flagged == 1) {
+                    if (flagged > 0) {
                         String key = tail + ";" + head + ";" + mode;
 
                         if (hasCustomCost(tail, head, mode) && customCosts.get(key) > 0.0) {
@@ -376,9 +376,6 @@ public class CustomArcCostMatrix {
 
         // Traiter le dépôt spécialement
         inverseMapping.put(0, 0);
-
-        System.out.println("Converting costs with mapping: " + (isLocalToGlobal ? "local→global" : "global→local"));
-        System.out.println("Mapping: " + mapping);
 
         // Parcourir tous les coûts et les convertir
         int countConverted = 0;

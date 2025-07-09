@@ -4,10 +4,23 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
-#SBATCH --time=24:00:00
+#SBATCH --time=00:30:00
 #SBATCH --output=logs/solver-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
+#SBATCH --array=0-8
 
+
+# a_idx = task_id / (nb * nc)
+# b_idx = (task_id / nc) % nb
+# c_idx = task_id % nc
+
+list_thresholds = (0.0000002)
+list_walking = (0.1 0.5 1 5)
+list_multiplier = (0.1 0.5 1)
+
+threshold=${list_thresholds[$SLURM_ARRAY_TASK_ID / 9]}
+walking=${list_walking[($SLURM_ARRAY_TASK_ID / 3) % 4]}
+multiplier=${list_multiplier[$SLURM_ARRAY_TASK_ID % 3]}
 
 GUROBI_VERSION="11.0.0"
 GUROBI_BASE="/cvmfs/restricted.computecanada.ca/easybuild/software/2020/Core/gurobi/${GUROBI_VERSION}/lib"
@@ -40,4 +53,4 @@ source "$SLURM_TMPDIR/env/bin/activate"
 pip install --no-index --upgrade pip
 pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
-python optimized_vrp_pipeline.py
+python optimized_vrp_pipeline.py $threshold $walking $multiplier

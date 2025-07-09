@@ -74,10 +74,10 @@ def get_heatmap(
     else:
         raise ValueError("Unknown method: {}".format(method))
 
-    # thresh = np.percentile(heatmap, percentile_for_thresh)  # Threshold for heatmap
+    thresh = np.percentile(heatmap, percentile_for_thresh)  # Threshold for heatmap
     # print("Threshold for heatmap:", thresh)
-    # heatmap = np.clip(heatmap, thresh, 1)  # Clip values to [thresh,1]
+    heatmap = np.clip(heatmap, 0, 1)  # Clip values to [thresh,1]
     # normalize the heatmap to [0, 1]
-    heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-8)
+    # heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-8)
 
     return heatmap
