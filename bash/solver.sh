@@ -53,4 +53,4 @@ source "$SLURM_TMPDIR/env/bin/activate"
 pip install --no-index --upgrade pip
 pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
-python optimized_vrp_pipeline.py $threshold $walking $multiplier
+python optimized_vrp_pipeline.py +threshold=$threshold +walking=$walking +multiplier=$multiplier
