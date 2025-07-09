@@ -1,7 +1,8 @@
 from pathlib import Path
+import csv
 from typing import List, Dict, Tuple, Optional
 
-from src.graph import read_coordinates, read_arcs, load_set_arc
+from src.graph import read_coordinates, read_arcs, load_set_arc, binarize_arcs
 
 
 class FileService:
@@ -197,6 +198,13 @@ class FileService:
             for arc in arcs:
                 self._write_arc_line(file, arc)
 
+    def binarize_arcs(self, arcs: List[Tuple], threshold: float = 0, index: int = 4):
+        """
+        Binarize arcs based on a threshold value.
+        """
+        arcs = binarize_arcs(arcs, threshold=threshold, index=index)
+        return arcs
+
     def _ensure_directory_exists(self, directory: Path) -> None:
         """Ensure the directory exists, creating it if necessary."""
         directory.mkdir(parents=True, exist_ok=True)
@@ -316,3 +324,28 @@ class FileService:
                 results_path.unlink()
             if cost_path.exists():
                 cost_path.unlink()
+
+    def write_list_to_csv(self, output_path: Path, data: List[Dict]) -> None:
+        """
+        Write a list of dictionaries to a CSV file.
+
+        Args:
+            output_path: Path to the output CSV file
+            data: List of dictionaries to write
+        """
+
+        # Récupère les clés du premier dictionnaire pour les entêtes
+        fieldnames = data[0].keys()
+
+        output_path = Path(output_path)
+
+        # Ensure the output directory exists
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Écriture dans le fichier CSV
+        with open(output_path, mode="w", newline="") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            writer.writeheader()  # écrit les en-têtes
+            for row in data:
+                writer.writerow(row)

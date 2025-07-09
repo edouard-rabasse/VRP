@@ -124,8 +124,18 @@ class OptimizedVRPPipeline:
                 top_n_arcs=self.cfg.solver.top_n_arcs,
                 threshold=self.cfg.solver.heatmap_threshold,
             )
+            coords, depot = self.files.load_coordinates(instance)
+            arcs = self.files.load_arcs(
+                instance, config_number=self.cfg.solver.config, suffix=iteration
+            )
 
-            best_arc_value = self.extract_top_arc_value(flagged_arcs, index=3)
+            best_arc_value = self.extract_top_arc_value(flagged_arcs, index=4)
+
+            flagged_arcs = self.files.binarize_arcs(
+                flagged_arcs,
+                threshold=0,
+                index=4,
+            )
 
             self.files.save_arcs(
                 instance,
@@ -133,21 +143,10 @@ class OptimizedVRPPipeline:
                 config_number=self.cfg.solver.config,
                 suffix=iteration,
             )
-            coords, depot = self.files.load_coordinates(instance)
-            arcs = self.files.load_arcs(
-                instance, config_number=self.cfg.solver.config, suffix=iteration
-            )
+
             # score = self.score(flagged_coords, flagged_arcs, depot)
             score = self.score(coords, arcs, depot)
             dt = current_time() - t0
-            results["iterations"].append(
-                {
-                    "iter": iteration,
-                    "score": score,
-                    "time": dt,
-                    "best_arc_value": best_arc_value,
-                }
-            )
 
             if score < results["best_score"]:
                 improvement = -(results["best_score"] - score) / results["best_score"]
@@ -169,12 +168,30 @@ class OptimizedVRPPipeline:
                     instance, iteration, self.cfg.solver.config
                 )
                 valid = cost_analysis["Valid"]
+                config1_cost = cost_analysis["OldCost"]
+                solver_cost = cost_analysis["NewCost"]
+                easy_cost = cost_analysis["EasyCost"]
             else:
                 valid = False
-            if score < thresh or valid:
+                config1_cost = 0
+                solver_cost = 0
+                easy_cost = 0
+            if score < thresh or valid and not (results["converged"]):
                 results["converged"] = True
                 results["number_iter"] = iteration
-                break
+
+            results["iterations"].append(
+                {
+                    "iter": iteration,
+                    "score": score,
+                    "time": dt,
+                    "best_arc_value": best_arc_value,
+                    "valid": valid,
+                    "config1_cost": config1_cost,
+                    "solver_cost": solver_cost,
+                    "easy_cost": easy_cost,
+                }
+            )
 
             self.run_vrp_solver(
                 instance, arc_suffix=iteration, config_name=self.cfg.solver.config_name
@@ -278,6 +295,12 @@ class OptimizedVRPPipeline:
                 nb_converged += 1
                 nb_iter += res["number_iter"]
 
+            (output_name,) = (
+                f"{output_dir}/{walking}_{multiplier}_{threshold}/instance_{i}.csv",
+            )
+
+            self.files.write_list_to_csv(output_name, res["iterations"])
+
         end = current_time()
         total_time = end - start
 
@@ -335,7 +358,7 @@ class OptimizedVRPPipeline:
             )
             f.write(f"Total time taken: {total_time:.2f} seconds\n")
 
-    def extract_top_arc_value(flagged_arcs: list, index: int = 3) -> list:
+    def extract_top_arc_value(self, flagged_arcs: list, index: int = 4) -> list:
         """
         Extract the top N arcs from the flagged arcs based on their weights.
         Args:
@@ -344,5 +367,5 @@ class OptimizedVRPPipeline:
         Returns:
             list: List of top N arcs.
         """
-        sorted_arcs = sorted(flagged_arcs, key=lambda x: x[3], reverse=True)
-        return sorted_arcs[0, index]
+        sorted_arcs = sorted(flagged_arcs, key=lambda x: x[index], reverse=True)
+        return sorted_arcs[0][index]

@@ -184,7 +184,6 @@ public class Solver_gurobi {
 		}
 
 		if (context.data.getMapping() != null && !context.data.getMapping().isEmpty()) {
-			System.out.println("Converting global costs to local costs for route-specific context");
 
 			// Convertir global → local (false = mapping est global → local)
 			CustomArcCostMatrix localArcCost = arcCost.applyMapping(context.data.getMapping(), true);
@@ -310,11 +309,9 @@ public class Solver_gurobi {
 					Route r = iterator.next();
 
 					// System.out.println("[Debug] route " + r.toString());
-					System.out.println("Route avant conversion: " + r.getAttribute(RouteAttribute.COST) + " "
-							+ r.getAttribute(RouteAttribute.CHAIN));
+
 					Route r_copy = RouteProcessor.convertRouteToGlobalRoute(r, context.data, baseData);
-					System.out.println("Route après conversion: " + r_copy.getAttribute(RouteAttribute.COST) + " "
-							+ r_copy.getAttribute(RouteAttribute.CHAIN));
+
 					combinedPool.add(r_copy);
 				}
 			}

@@ -377,9 +377,6 @@ public class CustomArcCostMatrix {
         // Traiter le dépôt spécialement
         inverseMapping.put(0, 0);
 
-        System.out.println("Converting costs with mapping: " + (isLocalToGlobal ? "local→global" : "global→local"));
-        System.out.println("Mapping: " + mapping);
-
         // Parcourir tous les coûts et les convertir
         int countConverted = 0;
         for (Map.Entry<String, Double> entry : customCosts.entrySet()) {

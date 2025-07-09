@@ -26,4 +26,4 @@ plot: false
 return_weighted_sum: true
 top_n_arcs: 3
 
-heatmap_threshold: 0.2  # threshold for heatmap generation
+heatmap_threshold: 0.1  # threshold for heatmap generation
