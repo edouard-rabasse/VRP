@@ -296,7 +296,7 @@ class OptimizedVRPPipeline:
                 nb_iter += res["number_iter"]
 
             (output_name,) = (
-                f"{output_dir}/{walking}_{multiplier}_{threshold}/instance_{i}.csv",
+                f"{output_dir}/{self.cfg.model.name}_{walking}_{multiplier}_{threshold}/instance_{i}.csv",
             )
 
             self.files.write_list_to_csv(output_name, res["iterations"])

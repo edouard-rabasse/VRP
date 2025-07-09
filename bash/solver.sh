@@ -7,14 +7,14 @@
 #SBATCH --time=00:30:00
 #SBATCH --output=logs/solver-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
-#SBATCH --array=0-107
+#SBATCH --array=0-8
 
 
 # a_idx = task_id / (nb * nc)
 # b_idx = (task_id / nc) % nb
 # c_idx = task_id % nc
 
-list_thresholds = (0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
+list_thresholds = (0.0000002)
 list_walking = (0.1 0.5 1 5)
 list_multiplier = (0.1 0.5 1)
 
