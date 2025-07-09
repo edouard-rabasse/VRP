@@ -1,0 +1,1 @@
+python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_%1.txt" -a "MSH\MSH\results\configurationCustomCosts\Arcs_%1_%2.txt" 

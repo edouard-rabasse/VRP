@@ -47,7 +47,7 @@ class OptimizedVRPPipeline:
         suffix: str | int,
         config_number="1",
         return_weighted_sum=False,
-        top_n_arcs=None,
+        top_n_arcs=1,
         threshold: float = 0.2,
     ) -> tuple[list, list]:
         coords, depot = self.files.load_coordinates(instance)
@@ -125,6 +125,8 @@ class OptimizedVRPPipeline:
                 threshold=self.cfg.solver.heatmap_threshold,
             )
 
+            best_arc_value = self.extract_top_arc_value(flagged_arcs, index=3)
+
             self.files.save_arcs(
                 instance,
                 flagged_arcs,
@@ -139,7 +141,12 @@ class OptimizedVRPPipeline:
             score = self.score(coords, arcs, depot)
             dt = current_time() - t0
             results["iterations"].append(
-                {"iter": iteration, "score": score, "time": dt}
+                {
+                    "iter": iteration,
+                    "score": score,
+                    "time": dt,
+                    "best_arc_value": best_arc_value,
+                }
             )
 
             if score < results["best_score"]:
@@ -167,7 +174,6 @@ class OptimizedVRPPipeline:
             if score < thresh or valid:
                 results["converged"] = True
                 results["number_iter"] = iteration
-
                 break
 
             self.run_vrp_solver(
@@ -328,3 +334,15 @@ class OptimizedVRPPipeline:
                 f"Average iterations for converged instances: {nb_iter / nb_converged if nb_converged > 0 else 0:.2f}\n"
             )
             f.write(f"Total time taken: {total_time:.2f} seconds\n")
+
+    def extract_top_arc_value(flagged_arcs: list, index: int = 3) -> list:
+        """
+        Extract the top N arcs from the flagged arcs based on their weights.
+        Args:
+            flagged_arcs (list): List of flagged arcs with weights.
+            top_n (int): Number of top arcs to extract.
+        Returns:
+            list: List of top N arcs.
+        """
+        sorted_arcs = sorted(flagged_arcs, key=lambda x: x[3], reverse=True)
+        return sorted_arcs[0, index]

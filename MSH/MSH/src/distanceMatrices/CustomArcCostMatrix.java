@@ -241,9 +241,9 @@ public class CustomArcCostMatrix {
                     int head = Integer.parseInt(parts[1]);
                     int mode = Integer.parseInt(parts[2]);
                     // parts[3] is route number - not used for cost calculation
-                    int flagged = Integer.parseInt(parts[4]);
+                    double flagged = Double.parseDouble(parts[4]);
 
-                    if (flagged == 1) {
+                    if (flagged > 0) {
                         String key = tail + ";" + head + ";" + mode;
 
                         if (hasCustomCost(tail, head, mode) && customCosts.get(key) > 0.0) {
