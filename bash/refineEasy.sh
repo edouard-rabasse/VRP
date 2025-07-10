@@ -77,7 +77,7 @@ echo "✅ compilation done"
 #   main.CreateInstances2 10 10 20 1001 3000
 
 
-for i in {1..3000}; do
+for i in {1001..3000}; do
 
 echo "=== Lancement de l'itération $i ==="
 java \
