@@ -7,7 +7,7 @@
 #SBATCH --time=00:30:00
 #SBATCH --output=logs/solver-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
-#SBATCH --array=0-8
+
 
 
 # a_idx = task_id / (nb * nc)
@@ -18,9 +18,6 @@ list_thresholds = (0.0000002)
 list_walking = (0.1 0.5 1 5)
 list_multiplier = (0.1 0.5 1)
 
-threshold=${list_thresholds[$SLURM_ARRAY_TASK_ID / 9]}
-walking=${list_walking[($SLURM_ARRAY_TASK_ID / 3) % 4]}
-multiplier=${list_multiplier[$SLURM_ARRAY_TASK_ID % 3]}
 
 GUROBI_VERSION="11.0.0"
 GUROBI_BASE="/cvmfs/restricted.computecanada.ca/easybuild/software/2020/Core/gurobi/${GUROBI_VERSION}/lib"
@@ -53,4 +50,19 @@ source "$SLURM_TMPDIR/env/bin/activate"
 pip install --no-index --upgrade pip
 pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
-python optimized_vrp_pipeline.py solver=host +threshold=$threshold +walking=$walking +multiplier=$multiplier
+
+for threshold in "${list_thresholds[@]}"; do
+    for walking in "${list_walking[@]}"; do
+        for multiplier in "${list_multiplier[@]}"; do
+            echo "=== Running: threshold=$threshold walking=$walking multiplier=$multiplier ==="
+            
+            python optimized_vrp_pipeline.py \
+                solver=host \
+                +threshold=$threshold \
+                +walking=$walking \
+                +multiplier=$multiplier
+            
+            echo "=== Completed: threshold=$threshold walking=$walking multiplier=$multiplier ==="
+        done
+    done
+done
