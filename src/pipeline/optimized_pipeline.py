@@ -168,14 +168,16 @@ class OptimizedVRPPipeline:
                     instance, iteration, self.cfg.solver.config
                 )
                 valid = cost_analysis["Valid"]
-                config1_cost = cost_analysis["OldCost"]
+                config7_cost = cost_analysis["OldCost"]
                 solver_cost = cost_analysis["NewCost"]
                 easy_cost = cost_analysis["EasyCost"]
+                number_of_violations = cost_analysis["numberOfViolations"]
             else:
                 valid = False
-                config1_cost = 0
+                config7_cost = 0
                 solver_cost = 0
                 easy_cost = 0
+                number_of_violations = None
             if score < thresh or valid and not (results["converged"]):
                 results["converged"] = True
                 results["number_iter"] = iteration
@@ -187,9 +189,10 @@ class OptimizedVRPPipeline:
                     "time": dt,
                     "best_arc_value": best_arc_value,
                     "valid": valid,
-                    "config1_cost": config1_cost,
+                    "config7_cost": config7_cost,
                     "solver_cost": solver_cost,
                     "easy_cost": easy_cost,
+                    "number_of_violations": number_of_violations,
                 }
             )
 

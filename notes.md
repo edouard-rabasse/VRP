@@ -129,3 +129,11 @@ Faire tourner plus longtemps.
 Critère d'arrêt : si on ajuste deux fois le même arc.
 Ne pas l'arrêter. Seuil, s'il est valide.
 Essayer avec juste une arête. à quel point l'arc flaggé est problématique.
+
+## 10/07
+- Si pas d'arc problématique, tous les arcs devraient avoir les mêmes moyennes. Regarder le top 5/10 des arcs. Regarder la variance de la heatmap, entropie. Cross-entropy, seuil.
+- 10%, 30% puis rise.
+- Nombre d'itération sans amélioration.
+- est-ce que ça fonctionne pour le rectangle ?
+
+

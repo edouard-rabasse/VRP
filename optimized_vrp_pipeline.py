@@ -33,8 +33,8 @@ def main():
             walking=walking,
             multiplier=multiplier,
             threshold=threshold,
-            numbers=range(1, 40),
-            max_iter=10,
+            numbers=range(9, 40),
+            max_iter=20,
             output_dir="output",
         )
 

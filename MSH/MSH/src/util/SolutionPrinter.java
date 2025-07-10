@@ -54,7 +54,7 @@ public class SolutionPrinter {
             PrintWriter pwCosts = new PrintWriter(new File(pathCosts));
 
             // Headers
-            pwCosts.println("Route;OldCost;NewCost;EasyCost;Penalty;PenaltyPercentage;Chain;Valid");
+            pwCosts.println("Route;OldCost;NewCost;EasyCost;Penalty;PenaltyPercentage;Chain;Valid;numberOfViolations");
 
             System.out.println("-----------------------------------------------");
             System.out.println("SOLUTION WITH COST ANALYSIS");
@@ -64,6 +64,7 @@ public class SolutionPrinter {
             double totalNewCost = 0.0;
 
             int routeCounter = 0;
+            int numberOfViolations = 0;
             for (Route route : assembler.solution) {
 
                 // Calculate cost breakdown
@@ -73,7 +74,7 @@ public class SolutionPrinter {
                 totalOldCost += breakdown.getRealCost();
                 totalNewCost += breakdown.getCustomCost();
                 boolean isValidRoute = routeValidator.validateRoute(route).isValid;
-                System.out.println(routeValidator.validateRoute(route).violations);
+                numberOfViolations += routeValidator.validateRoute(route).getViolationCount();
 
                 // Print route analysis
                 // String chain = (String) route.getAttribute(RouteAttribute.CHAIN);
@@ -115,9 +116,9 @@ public class SolutionPrinter {
                     totalOldCost, totalNewCost, easyCostValue, totalPenalty,
                     totalOldCost > 0 ? (totalPenalty / totalOldCost * 100) : 0);
 
-            pwCosts.printf("TOTAL;%.2f;%.2f;%.2f;%.2f;%.1f;%s;%b%n",
+            pwCosts.printf("TOTAL;%.2f;%.2f;%.2f;%.2f;%.1f;%s;%b;%d%n",
                     totalOldCost, totalNewCost, easyCostValue, totalPenalty,
-                    totalOldCost > 0 ? (totalPenalty / totalOldCost * 100) : 0, "", isValid);
+                    totalOldCost > 0 ? (totalPenalty / totalOldCost * 100) : 0, "", isValid, numberOfViolations);
 
             pwArcs.close();
             pwCosts.close();

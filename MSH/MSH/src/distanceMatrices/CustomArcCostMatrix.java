@@ -270,11 +270,7 @@ public class CustomArcCostMatrix {
                                 if (data.getMapping() != null && !data.getMapping().isEmpty()) {
                                     // If we have a mapping, use it to get the correct indices
                                     // print all the mapping
-                                    for (Map.Entry<Integer, Integer> entry : data.getMapping().entrySet()) {
-                                        System.out.println("Mapping: " + entry.getKey() + " -> " + entry.getValue());
-                                    }
-                                    System.out.println(
-                                            "[CustomCost] Using mapping for tail: " + tail + ", head: " + head);
+
                                     int mappedTail = getInverseMappedIndex(tail, data.getMapping());
                                     int mappedHead = getInverseMappedIndex(head, data.getMapping());
 
@@ -405,7 +401,6 @@ public class CustomArcCostMatrix {
             }
         }
 
-        System.out.println("Converted " + countConverted + " costs out of " + customCosts.size());
         return mappedCosts;
     }
 

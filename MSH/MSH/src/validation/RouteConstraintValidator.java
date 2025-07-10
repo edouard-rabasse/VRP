@@ -565,5 +565,10 @@ public class RouteConstraintValidator {
                     totalWalkingDistance, Double.valueOf(parameters.get("ROUTE_WALKING_DISTANCE_LIMIT").toString()),
                     totalDuration, Double.valueOf(parameters.get("ROUTE_DURATION_LIMIT").toString()));
         }
+
+        public int getViolationCount() {
+            return violations.size();
+        }
     }
+
 }
