@@ -1,4 +1,6 @@
 # File: src/main.py
+import os
+from omegaconf import OmegaConf
 from src.pipeline.optimized_pipeline import OptimizedVRPPipeline
 from src.pipeline.config import override_java_param
 from time import time
@@ -19,14 +21,18 @@ DEFAULT_OVERRIDES = [
 def main():
     cli_overrides = sys.argv[1:]
 
+    OmegaConf.register_new_resolver("env", lambda var: os.environ.get(var, ""))
+
     with initialize(version_base=None, config_path="config"):
         # Combine CLI + default overrides
         full_overrides = DEFAULT_OVERRIDES + cli_overrides
         cfg = compose(config_name="config", overrides=full_overrides)
 
-        threshold = float(cfg.threshold)
-        walking = int(cfg.walking)
-        multiplier = int(cfg.multiplier)
+        # stop
+
+        threshold = float(cfg.solver.threshold)
+        walking = int(cfg.solver.walking)
+        multiplier = int(cfg.solver.multiplier)
 
         pipeline = OptimizedVRPPipeline(cfg)
         pipeline.run_optimized_pipeline(
