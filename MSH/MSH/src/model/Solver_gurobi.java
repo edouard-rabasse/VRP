@@ -27,6 +27,7 @@ import util.RouteFromFile;
 import util.RouteProcessor;
 import split.SplitWithEdgeConstraints;
 import heuristic.HeuristicConfiguration;
+import msh.MSHExecutor;
 
 /**
  * This class contains the main logic of the MSH.
@@ -81,7 +82,9 @@ public class Solver_gurobi {
 	 */
 	private void executeMSH(MSH msh, AssemblyFunction assembler, DataHandler data) {
 		// Sampling phase
-		executeMSHPhases(msh);
+		// executeMSHPhases(msh);
+		cpu_msh_sampling = MSHExecutor.executeSampling(msh);
+		cpu_msh_assembly = MSHExecutor.executeAssembly(msh);
 
 		// Print results
 		printSummary(msh, assembler, data);
@@ -159,13 +162,23 @@ public class Solver_gurobi {
 	 * Setup custom cost matrix
 	 */
 	private void setupCustomCosts(MSHContext context, String costFile, String arcPath, int suffix) {
+		CustomArcCostMatrix arcCost = loadCustomCostMatrix(costFile, arcPath, context);
+		applyCostMatrixToContext(context, arcCost, suffix);
+	}
+
+	/**
+	 * Load and prepare the custom cost matrix from files
+	 */
+	private CustomArcCostMatrix loadCustomCostMatrix(String costFile, String arcPath, MSHContext context) {
 		int depot = context.data.getNbCustomers() + 1;
 
 		CustomArcCostMatrix arcCost = new CustomArcCostMatrix();
 		arcCost.addDepot(depot);
+
 		try {
 			// Load custom costs from file
 			arcCost.loadFromFile(GlobalParameters.ARCS_MODIFIED_FOLDER + costFile);
+			printMessage("[Debug] Loaded custom costs from: " + costFile);
 		} catch (IOException e) {
 			System.out.println("Error loading custom costs: " + e.getMessage());
 			e.printStackTrace();
@@ -177,29 +190,43 @@ public class Solver_gurobi {
 			arcCost.updateFromFlaggedFile(GlobalParameters.RESULT_FOLDER + arcPath,
 					GlobalParameters.CUSTOM_COST_MULTIPLIER, context.distances,
 					GlobalParameters.DEFAULT_WALK_COST, context.data);
+			printMessage("[Debug] Updated costs from flagged file: " + arcPath);
 		} catch (IOException e) {
 			System.out.println("Error updating custom costs from flagged file: " + e.getMessage());
 			e.printStackTrace();
 			System.exit(0);
 		}
 
-		if (context.data.getMapping() != null && !context.data.getMapping().isEmpty()) {
+		return arcCost;
+	}
 
-			// Convertir global → local (false = mapping est global → local)
+	/**
+	 * Apply the cost matrix to the context, handling mapping if necessary
+	 */
+	private void applyCostMatrixToContext(MSHContext context, CustomArcCostMatrix arcCost, int suffix) {
+		if (context.data.getMapping() != null && !context.data.getMapping().isEmpty()) {
+			printMessage("[Debug] Applying mapping to convert global → local costs");
+
+			// Convert global → local (true = mapping is global → local)
 			CustomArcCostMatrix localArcCost = arcCost.applyMapping(context.data.getMapping(), true);
 
-			// Utiliser cette matrice locale pour le split
+			// Use local cost matrix for split
 			context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
 					context.walkingTimes, context.data, localArcCost);
+
+			printMessage("[Debug] Using local costs with mapping for split");
 		} else {
-			System.out.println("Using global costs directly for split");
-			// Utiliser les coûts globaux directement
+			printMessage("[Debug] Using global costs directly for split");
+
+			// Use global costs directly
 			context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
 					context.walkingTimes, context.data, arcCost);
 
-			// We only save the global arc costs if no mapping is present
-			arcCost.saveFile(
-					GlobalParameters.ARCS_MODIFIED_FOLDER + "Costs_" + instance_name + "_" + (suffix + 1) + ".txt");
+			// Save the global arc costs only if no mapping is present
+			String outputFile = GlobalParameters.ARCS_MODIFIED_FOLDER + "Costs_" + instance_name + "_" + (suffix + 1)
+					+ ".txt";
+			arcCost.saveFile(outputFile);
+			printMessage("[Debug] Saved global costs to: " + outputFile);
 		}
 	}
 
@@ -208,7 +235,8 @@ public class Solver_gurobi {
 	 */
 	private void executeMSHWithCustomAnalysis(MSHContext context, int suffix) {
 		// Run MSH phases
-		executeMSHPhases(context.msh);
+		cpu_msh_sampling = MSHExecutor.executeSampling(context.msh);
+		cpu_msh_assembly = MSHExecutor.executeAssembly(context.msh);
 		printMessage("End of the MSH phases...");
 	}
 
@@ -291,30 +319,13 @@ public class Solver_gurobi {
 		DataHandler baseData = new DataHandler(GlobalParameters.INSTANCE_FOLDER + instance_identifier);
 
 		for (int routeId = 0; routeId < numRoutes; routeId++) {
-			// Créer un contexte pour cette route (mini instance TSP)
+
 			MSHContext context = MSHContext.initializeMSH(instance_identifier, globalArcPath, routeId, baseData);
 
 			setupCustomCosts(context, costFile, arcPath, suffix);
-
-			HeuristicConfiguration.addStandardSamplingFunctions(context);
-
-			// Sampling sur cette route
-			context.msh.setPools(context.pools);
-			executeSampling(context.msh);
-
-			// Copier les routes dans le pool global
-			for (RoutePool pool : context.pools) {
-				Iterator<Route> iterator = pool.iterator();
-				while (iterator.hasNext()) {
-					Route r = iterator.next();
-
-					// System.out.println("[Debug] route " + r.toString());
-
-					Route r_copy = RouteProcessor.convertRouteToGlobalRoute(r, context.data, baseData);
-
-					combinedPool.add(r_copy);
-				}
-			}
+			cpu_msh_sampling += setPools(context, instance_identifier, costFile, arcPath, suffix, globalArcPath,
+					routeId,
+					baseData, combinedPool);
 		}
 
 		System.out.println(globalArcPath + " - Combined pool size: " + combinedPool.size());
@@ -333,39 +344,42 @@ public class Solver_gurobi {
 		globalContext.msh.setPools(new ArrayList<RoutePool>(List.of(combinedPool)));
 		setupCustomCosts(globalContext, costFile, arcPath, suffix);
 
-		executeAssembly(globalContext.msh);
+		cpu_msh_assembly = MSHExecutor.executeAssembly(globalContext.msh);
 		// printSummary(globalMSH, assembler, baseData);
 		// printSolution(globalMSH, assembler, baseData);
 		executeCostAnalysis(globalContext, suffix);
 	}
 
-	/**
-	 * Execute only MSH phases (sampling and assembly)
-	 */
-	private void executeMSHPhases(MSH msh) {
-		// Sampling phase
-		executeSampling(msh);
+	private double setPools(MSHContext context, String instance_identifier, String costFile, String arcPath, int suffix,
+			String globalArcPath, int routeId, DataHandler baseData, RoutePool combinedPool) throws IOException {
+		// Créer un contexte pour cette route (mini instance TSP)
 
-		// Assembly phase
-		executeAssembly(msh);
+		HeuristicConfiguration.addStandardSamplingFunctions(context);
+
+		// Sampling sur cette route
+		context.msh.setPools(context.pools);
+		cpu_msh_sampling = MSHExecutor.executeSampling(context.msh);
+
+		// Copier les routes dans le pool global
+		for (RoutePool pool : context.pools) {
+			addPools(pool, combinedPool, context, baseData);
+		}
+
+		return cpu_msh_sampling;
 	}
 
-	private void executeSampling(MSH msh) {
-		Double iniTime = (double) System.nanoTime();
-		printMessage("Start of the sampling step...");
-		msh.run_sampling();
-		printMessage("End of the sampling step...");
-		Double finTime = (double) System.nanoTime();
-		cpu_msh_sampling = (finTime - iniTime) / 1000000000;
-	}
+	private void addPools(RoutePool pool, RoutePool combinedPool, MSHContext context,
+			DataHandler baseData) {
+		Iterator<Route> iterator = pool.iterator();
+		while (iterator.hasNext()) {
+			Route r = iterator.next();
 
-	private void executeAssembly(MSH msh) {
-		Double iniTime = (double) System.nanoTime();
-		printMessage("Start of the assembly step...");
-		msh.run_assembly();
-		printMessage("End of the assembly step...");
-		Double finTime = (double) System.nanoTime();
-		cpu_msh_assembly = (finTime - iniTime) / 1000000000;
+			// System.out.println("[Debug] route " + r.toString());
+
+			Route r_copy = RouteProcessor.convertRouteToGlobalRoute(r, context.data, baseData);
+
+			combinedPool.add(r_copy);
+		}
 	}
 
 	/**
