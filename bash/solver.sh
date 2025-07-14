@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
-#SBATCH --time=00:30:00
+#SBATCH --time=24:00:00
 #SBATCH --output=logs/solver-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
 
@@ -14,9 +14,9 @@
 # b_idx = (task_id / nc) % nb
 # c_idx = task_id % nc
 
-list_thresholds = (0.0000002)
-list_walking = (0.1 0.5 1 5)
-list_multiplier = (0.1 0.5 1)
+list_thresholds=(0.0000002)
+list_walking=(0.1 0.5 1 5)
+list_multiplier=(0.1 0.5 1)
 
 
 GUROBI_VERSION="11.0.0"
@@ -58,9 +58,9 @@ for threshold in "${list_thresholds[@]}"; do
             
             python optimized_vrp_pipeline.py \
                 solver=host \
-                +threshold=$threshold \
-                +walking=$walking \
-                +multiplier=$multiplier
+                +solver.threshold=$threshold \
+                +solver.walking=$walking \
+                +solver.multiplier=$multiplier
             
             echo "=== Completed: threshold=$threshold walking=$walking multiplier=$multiplier ==="
         done
