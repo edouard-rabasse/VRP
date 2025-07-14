@@ -58,9 +58,9 @@ for threshold in "${list_thresholds[@]}"; do
             
             python optimized_vrp_pipeline.py \
                 solver=host \
-                +solver.threshold=$threshold \
-                +solver.walking=$walking \
-                +solver.multiplier=$multiplier
+                solver.threshold=$threshold \
+                solver.walking=$walking \
+                solver.multiplier=$multiplier
             
             echo "=== Completed: threshold=$threshold walking=$walking multiplier=$multiplier ==="
         done
