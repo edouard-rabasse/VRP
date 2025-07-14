@@ -113,7 +113,7 @@ public class DataHandler {
 	 * @param coord_path: path to the instance.dat file
 	 * @param arc_path:   path to the arcs.txt file
 	 * @param route_id:   id of the route
-	 * @param n:          number of nodes (including the depot)
+	 * @param n:          total number of nodes (including the depot)
 	 * @throws IOException
 	 */
 	public DataHandler(String coord_path, String arc_path, int route_id, int n) throws IOException {
@@ -232,6 +232,7 @@ public class DataHandler {
 				counter++;
 			}
 		}
+		nbCustomers = counter - 1;
 
 		// 3. Close the buffered reader:
 

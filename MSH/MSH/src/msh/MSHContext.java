@@ -76,7 +76,7 @@ public class MSHContext {
             throws IOException {
         // Chargement du sous-ensemble des données pour la route `routeId`
 
-        System.out.println("[Debug] " + instance_identifier);
+        System.out.println("[Debug] " + instance_identifier + "for route " + routeId);
 
         DataHandler data = new DataHandler(
                 GlobalParameters.INSTANCE_FOLDER + instance_identifier,

@@ -247,13 +247,15 @@ public class Solver_gurobi {
 
 		String easyPath = "./results/configuration7_easy/Arcs_" + this.instance_name + "_1.txt";
 		try {
+
+			printMessage("[Debug] Running cost analysis with validator");
 			Double totalCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, initialArcPath,
 					this.instance_identifier);
-			System.out.println("Total cost of the solution: " + totalCost);
+			printMessage("Total cost of the solution: " + totalCost);
 
 			// Print solution with cost analysis
 			RouteConstraintValidator validator = new RouteConstraintValidator(this.instance_identifier,
-					"./config/configuration7.xml");
+					GlobalParameters.CONFIG_FOR_CONSTRAINTS_FOLDER);
 
 			if (new File(easyPath).isFile()) {
 				Double easyCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, easyPath,
@@ -276,27 +278,70 @@ public class Solver_gurobi {
 	 * Run with upper right constraint
 	 */
 	public void runRefinedWithUpperRightConstraint(String instance_identifier) throws IOException {
-		MSHContext context = initialize(instance_identifier);
+		// MSHContext context = initialize(instance_identifier);
 		printMessage("Starting initialization with upper right constraint...");
 
+		this.instance_identifier = instance_identifier;
+
+		this.instance_name = instance_identifier.replace(".txt", "").replace("Coordinates_", "");
+
+		// TODO : change this
+
+		String arc_path = "Arcs_" + this.instance_name + "_1.txt";
+		int suffix = 1;
+
+		// Container for all refined routes
+		RoutePool combinedPool = new RoutePool();
+
+		// Base data to use for final assembly
+		DataHandler baseData = new DataHandler(GlobalParameters.INSTANCE_FOLDER + instance_identifier);
+
 		// Create constraint matrix
-		CustomArcCostMatrix constraintMatrix = CustomArcCostMatrix.createUpperRightConstraintMatrix(context.data);
 
 		// Update split algorithm with constraints
-		context.split = new SplitWithEdgeConstraints(context.distances, context.drivingTimes,
-				context.walkingTimes, context.data, constraintMatrix);
 
-		String originalArcPath = GlobalParameters.ARCS_MODIFIED_FOLDER + "Arcs_" + instance_name + "_1.txt";
-		if (!new File(originalArcPath).isFile()) {
-			printMessage("Arc file not found. Running standard MSH without fixing arcs.");
-			HeuristicConfiguration.addStandardSamplingFunctions(context);
-		} else {
-			printMessage("Arc file found. Adding route refiner sampling functions.");
-			HeuristicConfiguration.addRouteRefinerSamplingFunctions(context, originalArcPath, this.instance_name);
+		// String originalArcPath = GlobalParameters.ARCS_MODIFIED_FOLDER + "Arcs_" +
+		// instance_name + "_1.txt";
+		// TODO : change to RESULT_FOLDER
+		String globalArcPath = GlobalParameters.ARCS_MODIFIED_FOLDER + arc_path;
+		int numRoutes = RouteProcessor.countRoutesInFile(globalArcPath);
+
+		for (int routeId = 0; routeId < numRoutes; routeId++) {
+
+			MSHContext context = MSHContext.initializeMSH(instance_identifier, globalArcPath, routeId, baseData);
+
+			printMessage("[Debug] Processing route " + routeId + " for instance " + instance_identifier);
+
+			CustomArcCostMatrix arcCost = CustomArcCostMatrix.createUpperRightConstraintMatrix(context.data);
+
+			printMessage("[Debug] Applying upper right constraint matrix to context");
+			applyCostMatrixToContext(context, arcCost, 1);
+
+			cpu_msh_sampling += setPools(context, baseData, combinedPool);
 		}
 
-		context.msh.setPools(context.pools);
-		executeMSH(context.msh, context.assembler, context.data);
+		MSHContext globalContext = MSHContext.initializeMSH(instance_identifier);
+
+		// Assemblage final avec toutes les routes
+		AssemblyFunction assembler = new GurobiSetPartitioningSolver(baseData.getNbCustomers(), true, baseData);
+		MSH globalMSH = new MSH(assembler, GlobalParameters.THREADS);
+
+		// executeSampling(globalMSH);
+		globalContext.msh = globalMSH;
+		globalContext.assembler = assembler;
+		globalContext.pools = new ArrayList<RoutePool>(List.of(combinedPool));
+
+		CustomArcCostMatrix constraintMatrix = CustomArcCostMatrix.createUpperRightConstraintMatrix(baseData);
+		applyCostMatrixToContext(globalContext, constraintMatrix, suffix);
+
+		globalContext.msh.setPools(new ArrayList<RoutePool>(List.of(combinedPool)));
+
+		cpu_msh_assembly = MSHExecutor.executeAssembly(globalContext.msh);
+		// printSummary(globalMSH, assembler, baseData);
+		// printSolution(globalMSH, assembler, baseData);
+
+		// TODO:restore
+		executeCostAnalysis(globalContext, suffix - 1);
 	}
 
 	/**
@@ -323,9 +368,7 @@ public class Solver_gurobi {
 			MSHContext context = MSHContext.initializeMSH(instance_identifier, globalArcPath, routeId, baseData);
 
 			setupCustomCosts(context, costFile, arcPath, suffix);
-			cpu_msh_sampling += setPools(context, instance_identifier, costFile, arcPath, suffix, globalArcPath,
-					routeId,
-					baseData, combinedPool);
+			cpu_msh_sampling += setPools(context, baseData, combinedPool);
 		}
 
 		System.out.println(globalArcPath + " - Combined pool size: " + combinedPool.size());
@@ -350,8 +393,7 @@ public class Solver_gurobi {
 		executeCostAnalysis(globalContext, suffix);
 	}
 
-	private double setPools(MSHContext context, String instance_identifier, String costFile, String arcPath, int suffix,
-			String globalArcPath, int routeId, DataHandler baseData, RoutePool combinedPool) throws IOException {
+	private double setPools(MSHContext context, DataHandler baseData, RoutePool combinedPool) throws IOException {
 		// Créer un contexte pour cette route (mini instance TSP)
 
 		HeuristicConfiguration.addStandardSamplingFunctions(context);

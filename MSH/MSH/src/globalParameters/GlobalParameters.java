@@ -177,4 +177,7 @@ public class GlobalParameters {
 	public static final String COMPARISON_FOLDER = GlobalParametersReader.<String>get("COMPARISON_FOLDER", String.class,
 			"./results/configuration7/");
 
+	public static final String CONFIG_FOR_CONSTRAINTS_FOLDER = GlobalParametersReader
+			.<String>get("CONFIG_FOR_CONSTRAINTS_FOLDER", String.class, "./config/configuration7.xml");
+
 }

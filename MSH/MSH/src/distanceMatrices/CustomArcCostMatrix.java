@@ -333,7 +333,17 @@ public class CustomArcCostMatrix {
             if (xCoord > 5.0 && yCoord > 5.0) {
                 for (int j = 0; j < data.getNbCustomers(); j++) {
                     if (i != j) {
-                        constraintMatrix.addCustomCost(i, j, 2, GlobalParameters.FIXED_ARCS_DISTANCE * 1000);
+                        int iTrue = i;
+                        int jTrue = j;
+                        if (data.getMapping() != null && !data.getMapping().isEmpty()) {
+                            // If we have a mapping, use it to get the correct indices
+                            // print all the mapping
+
+                            iTrue = getMappedIndex(i % depot, data.getMapping());
+                            jTrue = getMappedIndex(j % depot, data.getMapping());
+                        }
+
+                        constraintMatrix.addCustomCost(iTrue, jTrue, 2, GlobalParameters.FIXED_ARCS_DISTANCE * 1000);
                     }
                 }
 
@@ -411,7 +421,7 @@ public class CustomArcCostMatrix {
      * @param mapping Mapping à utiliser
      * @return Indice converti ou null si non trouvé
      */
-    private Integer getMappedIndex(int index, Map<Integer, Integer> mapping) {
+    private static Integer getMappedIndex(int index, Map<Integer, Integer> mapping) {
         // Le dépôt reste le dépôt
         if (index == 0) {
             return 0;
