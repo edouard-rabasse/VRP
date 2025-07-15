@@ -4,7 +4,7 @@
 
 # basic values (can also be overridden at command line)
 name: UpperRightGraph
-cfg_number: "CustomCosts"
+cfg_number: "UpperRight"
 path: MSH/MSH
 loader: graph       # choose 'mask' or 'graph'
 
