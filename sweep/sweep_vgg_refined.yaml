@@ -37,6 +37,6 @@ parameters:
   model.freeze:
     values: [false]
   data:
-    values: ["config7_new"]
+    values: ["upper_right_graph"]
   data.cfg_number:
     values: [7]

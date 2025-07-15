@@ -1,6 +1,6 @@
 # sweep.yaml
 program: train.py
-name: sweep_vgg_finetune  # 👈 Nom explicite ici
+name: sweep_vgg_graph  # 👈 Nom explicite ici
 project: VRP
 
 command:
@@ -37,7 +37,7 @@ parameters:
   model.freeze:
     values: [true]
   data:
-    values: ["config7_new"]
+    values: ["graph"]
   data.cfg_number:
     values: [2]
   model.weight_path:
