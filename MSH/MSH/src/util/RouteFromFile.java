@@ -13,6 +13,7 @@ import distanceMatrices.DepotToCustomersDistanceMatrix;
 import distanceMatrices.DepotToCustomersDrivingTimesMatrix;
 import distanceMatrices.DepotToCustomersWalkingTimesMatrix;
 import globalParameters.GlobalParameters;
+import globalParameters.GlobalParametersReader;
 
 /**
  * Utility class to create Route objects from arc files
@@ -316,8 +317,10 @@ public class RouteFromFile {
     // Usage example
     public static void main(String[] args) {
         try {
-            String arcFile = "results/configurationCustomCosts/Arcs_1_2.txt";
-            String instance = "Coordinates_1.txt";
+            int instance_number = args[0] != null ? Integer.parseInt(args[0]) : 1;
+            String arcFile = "results/configuration1/Arcs_" + instance_number + "_1.txt";
+            String instance = "Coordinates_" + instance_number + ".txt";
+            GlobalParametersReader.initialize("config/configuration1.xml");
 
             ArrayList<Route> routes = createRoutesFromFile(arcFile, instance);
 

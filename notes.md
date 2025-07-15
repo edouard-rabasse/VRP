@@ -136,4 +136,13 @@ Essayer avec juste une arête. à quel point l'arc flaggé est problématique.
 - Nombre d'itération sans amélioration.
 - est-ce que ça fonctionne pour le rectangle ?
 
+Plusieurs critères d'arrêt. Générer toutes les données. Arbre de décision. Pour une même instance, qu'est-ce qui permet de la classifier comme valide.
+- durée en temps
+- nombre d'iterations,
+- valeur de classification,
+- entropie de la heatmap,
+- ajouter la score pour la valeur suivante. (pour itérer)
 
+Limiter la profondeur de l'arbre., y=valide ou non.
+
+Faire des courbes ROC/AUC pour les arcs flaggés.
