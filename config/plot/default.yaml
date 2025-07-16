@@ -1,7 +1,7 @@
 
 
-numbers: [1, 2, 3, 4, 5, 6, 7]
-valid_range: [1, 80]
+numbers: ["UpperRight"]
+valid_range: [1001, 3000]
 bounds: [-1, 11, -1, 11]
 arcs_folder: ${hydra:runtime.cwd}/MSH/MSH/results/
 coordinates_folder: ${hydra:runtime.cwd}/MSH/MSH/instances/

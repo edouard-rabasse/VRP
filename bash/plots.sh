@@ -17,6 +17,6 @@ pip install --no-index --upgrade pip
 pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
 
 
-python src/graph/graph_creator.py +variants=background
+python src/graph/graph_creator.py #+variants=background
 # python src/mask.py +variants=special_2
-python src/train_split.py +variants=background
+python src/train_split.py #+variants=background
