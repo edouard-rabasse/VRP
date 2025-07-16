@@ -4,7 +4,9 @@ from .resize_heatmap import resize_heatmap
 import torch
 
 
-def show_mask_on_image(input, heatmap, alpha=0.5, interpolation=cv2.INTER_NEAREST):
+def show_mask_on_image(
+    input: torch.Tensor, heatmap: np.ndarray, alpha=0.5, interpolation=cv2.INTER_NEAREST
+):
     """
     Overlay the heatmap on the input image.
     ## Args:

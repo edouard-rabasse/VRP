@@ -9,7 +9,7 @@ save: ${..save_model}  # save model to checkpoint
 
 # weight_path: ${hydra:runtime.cwd}/checkpoints/${..experiment_name}.pth
 weight_path: ${hydra:runtime.cwd}/checkpoints/vgg_32_50_7.pth
-save_path: ${hydra:runtime.cwd}/checkpoints/${..experiment_name}.pth
+save_path: ${hydra:runtime.cwd}/checkpoints/
 image_size: ${image_size}
 mask_shape: ${mask_shape}
 

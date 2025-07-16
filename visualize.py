@@ -3,62 +3,54 @@ visualize.py
 This script visualizes heatmaps and overlays for a given dataset using a pre-trained model.
 It loads a model specified in the configuration, processes each image in the test dataset,
 computes the loss, and saves the resulting heatmaps to the specified output directory.
-Functions:
-    main(cfg: DictConfig):
-        Hydra main function that:
-            - Loads configuration and model.
-            - Iterates over test images in the specified directory.
-            - Processes each image to compute and accumulate loss.
-            - Saves heatmaps to the output directory.
-            - Prints timing and loss statistics.
+
 Usage:
     Run this script as a standalone module. Configuration is handled via Hydra.
+
+    For image processing:
+        python visualize.py
+
+    For VRP text file processing:
+        python visualize.py processor_type=txt coords_dir=path/to/coords arcs_dir=path/to/arcs
 """
 
-import os
-import torch
-import cv2
-from PIL import Image
-import torchvision.transforms.functional as TF
-from torchvision import transforms
-
-from src.models import load_model
-from src.visualization import process_image, compute_bce_with_logits_mask
 import hydra
 from omegaconf import DictConfig
-import time
+
+from src.visualization.runner import VisualizationRunner
 
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
 def main(cfg: DictConfig):
-    # ── config ────────────────────────────────────────────────────────────────
-    # sys.path.append(os.path.dirname(cfg_path))
-    # cfg = __import__(os.path.basename(cfg_path).replace('.py',''))
+    """
+    Main function for visualization processing.
 
-    cfg.load_model = True
+    Args:
+        cfg: Hydra configuration object
+    """
+    print("[Viz] Starting visualization pipeline...")
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = load_model(cfg.model.name, device, cfg.model).eval()
-    print(f"[Viz] Model loaded: {cfg.model.name}")
+    try:
+        # Create runner
+        runner = VisualizationRunner(cfg)
 
-    output_dir = cfg.heatmap_dir
-    os.makedirs(output_dir, exist_ok=True)
+        # Determine processing type
+        processor_type = getattr(cfg, "processor_type", "image")
 
-    running_loss = 0.0
+        if processor_type == "image":
+            runner.run_image_processing()
+        elif processor_type == "txt":
+            runner.run_txt_processing()
+        else:
+            print(f"[Error] Unknown processor type: {processor_type}")
+            print("Valid options: 'image', 'txt'")
+            return
 
-    for fname in sorted(os.listdir(cfg.data.test_original_path)):
-        if not fname.endswith(".png"):
-            continue
-        start = time.perf_counter()
+        print("[Viz] Pipeline completed successfully!")
 
-        loss = process_image(cfg, model, fname, device)
-        running_loss += loss
-        print(f"[timer] {fname} took {time.perf_counter() - start:.2f}s")
-
-    loss = running_loss / len(os.listdir(cfg.data.test_original_path))
-    print(f"[Viz] Loss: {loss:.4f}")
-
-    # print(f"[Viz] Saved arcs to {arcs_out_p}")
+    except Exception as e:
+        print(f"[Error] Visualization pipeline failed: {e}")
+        raise
 
 
 if __name__ == "__main__":

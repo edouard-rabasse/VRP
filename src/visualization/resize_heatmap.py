@@ -2,7 +2,9 @@ import cv2
 import numpy as np
 
 
-def resize_heatmap(heatmap, target_size, interpolation=cv2.INTER_LINEAR):
+def resize_heatmap(
+    heatmap: np.ndarray, target_size: tuple, interpolation=cv2.INTER_LINEAR
+):
     """Resize the heatmap to match the target size."""
     heatmap_resized = cv2.resize(heatmap, target_size, interpolation=interpolation)
     heatmap_resized = (heatmap_resized - np.min(heatmap_resized)) / (

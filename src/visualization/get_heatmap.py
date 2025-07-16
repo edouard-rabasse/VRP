@@ -7,8 +7,13 @@ from src.models.vit_explain.grad_rollout import VITAttentionGradRollout
 
 
 def get_heatmap(
-    method, model, input_tensor, args, device="cpu", percentile_for_thresh=95
-):
+    method: str,
+    model: torch.nn.Module,
+    input_tensor: torch.Tensor,
+    args: dict,
+    device: str = "cpu",
+    percentile_for_thresh: int = 95,
+) -> np.ndarray:
     """
     Generate a heatmap using the specified method.
     ## Args:

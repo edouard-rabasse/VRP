@@ -46,16 +46,17 @@ def init_wandb(cfg, model):
     return run
 
 
-def save_model_if_needed(cfg, model):
+def save_model_if_needed(cfg, model, name):
     if cfg.save_model:
         from src.utils.utils import save_model
 
         os.makedirs(os.path.dirname(cfg.model.save_path), exist_ok=True)
-        save_model(model, cfg.model.save_path)
-        if os.path.exists(cfg.model.save_path):
-            print(f"[Train] ✅ Model saved at {cfg.model.save_path}")
+        save_path = f"{cfg.model.save_path}{name}.pth"
+        save_model(model, save_path)
+        if os.path.exists(save_path):
+            print(f"[Train] ✅ Model saved at {save_path}")
         else:
-            print(f"[Train] ❌ ERROR: Model was NOT saved at {cfg.model.save_path}")
+            print(f"[Train] ❌ ERROR: Model was NOT saved at {save_path}")
 
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
@@ -83,7 +84,7 @@ def main(cfg: DictConfig):
         wandb.log(epoch_metrics)
     wandb.finish()
 
-    save_model_if_needed(cfg, model)
+    save_model_if_needed(cfg, model, run.name)
 
     print(f"[Train] Total training time: {time.perf_counter() - start_total:.2f}s")
 

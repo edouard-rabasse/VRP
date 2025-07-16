@@ -1,0 +1,1 @@
+python .\visualize.py model=resnet data=config7 model.weight_path=checkpoints/resnet_8_30_7.pth +processor_type=txt +single_arcs_file="MSH\MSH\results\configuration1\Arcs_1001_1.txt" +single_coords_file="MSH\MSH\instances\Coordinates_1001.txt"

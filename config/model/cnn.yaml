@@ -8,7 +8,7 @@ load: ${..load_model}  # load model from checkpoint
 save: ${..save_model}  # save model to checkpoint
 
 weight_path: checkpoints/CNNModel_model.pth
-save_path: checkpoints/CNNModel_model.pth
+save_path: checkpoints/
 image_size: ${image_size}
 mask_shape: ${mask_shape}
 

@@ -3,7 +3,7 @@ from ..graph import get_arc_name, get_coordinates_name, read_arcs, read_coordina
 from ..graph.HeatmapAnalyzer import HeatmapAnalyzer
 
 
-def reverse_heatmap(cfg, fname: str, heatmap):
+def reverse_heatmap(cfg, fname: str, heatmap, suffix=1):
     """
     Reverse the heatmap to find arcs and coordinates that are in the zone defined by the heatmap. And then save them.
     Args:
@@ -14,7 +14,7 @@ def reverse_heatmap(cfg, fname: str, heatmap):
 
     number = int(fname.split(".")[0].split("_")[1])
     coordinates_p = os.path.join(cfg.arcs.coord_in_dir, get_coordinates_name(number))
-    arcs_p = os.path.join(cfg.arcs.arcs_in_dir, get_arc_name(number))
+    arcs_p = os.path.join(cfg.arcs.arcs_in_dir, get_arc_name(number, suffix))
 
     coordinates, _ = read_coordinates(coordinates_p, keep_service_time=True)
     arcs = read_arcs(arcs_p)
@@ -29,7 +29,7 @@ def reverse_heatmap(cfg, fname: str, heatmap):
     )
     arcs_with_zone, updated_coords = analyzer.reverse_heatmap()
 
-    arcs_out = os.path.join(cfg.arcs.arcs_out_dir, get_arc_name(number))
+    arcs_out = os.path.join(cfg.arcs.arcs_out_dir, get_arc_name(number, suffix))
     coords_out = os.path.join(cfg.arcs.coord_out_dir, get_coordinates_name(number))
     analyzer.write_arcs(arcs_with_zone, arcs_out)
     analyzer.write_coordinates(updated_coords, coords_out)

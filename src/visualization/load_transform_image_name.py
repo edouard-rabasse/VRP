@@ -1,80 +1,286 @@
-## This function loads an image and its corresponding mask, applies transformations,
+"""
+Image and mask loading utilities with transformations.
+Provides robust loading and transformation of images and masks for visualization.
+"""
 
 import os
+from pathlib import Path
+from typing import Tuple, Optional, Union
 from PIL import Image
+import torch
 from torchvision import transforms
-from ..transform import image_transform_test, mask_transform, denormalize
 from torchvision.transforms import functional as TF
+from omegaconf import DictConfig
+
+from ..transform import image_transform_test, mask_transform
 
 
-def load_and_transform_image_mask(cfg, image_path, mask_path, fname: str, device: str):
-    """Load and transform an original image and its corresponding mask.
+class ImageLoadError(Exception):
+    """Custom exception for image loading errors."""
+
+    pass
+
+
+class ImageMaskLoader:
+    """Handles loading and transformation of images and masks."""
+
+    def __init__(self, cfg: DictConfig, device: Union[str, torch.device]):
+        """
+        Initialize the loader with configuration and device.
+
+        Args:
+            cfg: Configuration object containing paths and settings
+            device: Device to move tensors to
+        """
+        self.cfg = cfg
+        self.device = torch.device(device) if isinstance(device, str) else device
+        self.image_size = cfg.image_size
+
+        # Pre-compute transforms for efficiency
+        self._image_transform = image_transform_test(self.image_size)
+        self._mask_transform = mask_transform(size=self.image_size)
+
+    def load_image_and_mask(
+        self, image_path: Union[str, Path], mask_path: Union[str, Path], filename: str
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Load and transform both image and mask.
+
+        Args:
+            image_path: Path to the image directory
+            mask_path: Path to the mask directory
+            filename: Name of the file to load
+
+        Returns:
+            Tuple of (transformed_image, transformed_mask)
+
+        Raises:
+            ImageLoadError: If files cannot be loaded or transformed
+        """
+        try:
+            image_tensor = self.load_image(image_path, filename)
+            mask_tensor = self.load_mask(mask_path, filename)
+            return image_tensor, mask_tensor
+
+        except Exception as e:
+            raise ImageLoadError(
+                f"Failed to load image and mask for {filename}: {str(e)}"
+            ) from e
+
+    def load_image(self, image_path: Union[str, Path], filename: str) -> torch.Tensor:
+        """
+        Load and transform a single image.
+
+        Args:
+            image_path: Path to the image directory
+            filename: Name of the image file
+
+        Returns:
+            Transformed image tensor with shape (1, C, H, W)
+
+        Raises:
+            ImageLoadError: If image cannot be loaded or transformed
+        """
+        file_path = Path(image_path) / filename
+
+        if not file_path.exists():
+            raise ImageLoadError(f"Image file not found: {file_path}")
+
+        try:
+            # Load and convert to RGB
+            image = Image.open(file_path).convert("RGB")
+
+            # Apply transforms and add batch dimension
+            transformed_image = (
+                self._image_transform(image).unsqueeze(0).to(self.device)
+            )
+
+            return transformed_image
+
+        except Exception as e:
+            raise ImageLoadError(
+                f"Failed to load/transform image {filename}: {str(e)}"
+            ) from e
+
+    def load_mask(self, mask_path: Union[str, Path], filename: str) -> torch.Tensor:
+        """
+        Load and transform a single mask.
+
+        Args:
+            mask_path: Path to the mask directory
+            filename: Name of the mask file
+
+        Returns:
+            Transformed mask tensor
+
+        Raises:
+            ImageLoadError: If mask cannot be loaded or transformed
+        """
+        file_path = Path(mask_path) / filename
+
+        if not file_path.exists():
+            raise ImageLoadError(f"Mask file not found: {file_path}")
+
+        try:
+            # Load and convert to grayscale
+            mask = Image.open(file_path).convert("L")
+
+            # Resize with nearest neighbor interpolation (important for masks)
+            mask = TF.resize(
+                mask,
+                self.image_size,
+                interpolation=transforms.InterpolationMode.NEAREST,
+            )
+
+            # Apply mask transform
+            transformed_mask = self._mask_transform(mask)
+
+            return transformed_mask
+
+        except Exception as e:
+            raise ImageLoadError(
+                f"Failed to load/transform mask {filename}: {str(e)}"
+            ) from e
+
+    def validate_paths(
+        self, image_path: Union[str, Path], mask_path: Union[str, Path]
+    ) -> Tuple[Path, Path]:
+        """
+        Validate that the provided paths exist.
+
+        Args:
+            image_path: Path to image directory
+            mask_path: Path to mask directory
+
+        Returns:
+            Tuple of validated Path objects
+
+        Raises:
+            ImageLoadError: If paths don't exist
+        """
+        img_path = Path(image_path)
+        msk_path = Path(mask_path)
+
+        if not img_path.exists():
+            raise ImageLoadError(f"Image directory not found: {img_path}")
+        if not msk_path.exists():
+            raise ImageLoadError(f"Mask directory not found: {msk_path}")
+
+        return img_path, msk_path
+
+    def check_file_exists(self, directory: Union[str, Path], filename: str) -> bool:
+        """
+        Check if a file exists in the given directory.
+
+        Args:
+            directory: Directory path
+            filename: Name of the file
+
+        Returns:
+            True if file exists, False otherwise
+        """
+        return (Path(directory) / filename).exists()
+
+
+# Convenience functions for backward compatibility
+def load_and_transform_image_mask(
+    cfg: DictConfig, image_path: str, mask_path: str, fname: str, device: str
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Legacy function for loading and transforming image and mask.
 
     Args:
-        cfg (DictConfig): Configuration object containing paths and settings.
-        fname (str): Filename of the image to load.
-        device (str): Device to which the tensors should be moved.
+        cfg: Configuration object
+        image_path: Path to image directory
+        mask_path: Path to mask directory
+        fname: Filename
+        device: Device string
 
     Returns:
-        Tuple[torch.Tensor, torch.Tensor]: Transformed image tensor and mask tensor.
+        Tuple of (image_tensor, mask_tensor)
     """
-    # img = Image.open(image_path).convert("RGB")
-    # mask = Image.open(mask_path).convert("L")
-
-    # img = Image.open(orig_p).convert("RGB")
-    # mask = Image.open(mask_p).convert("L")
-
-    # t_img = image_transform_test(cfg.image_size)(img).unsqueeze(0).to(device)
-    # # t_den = denormalize(t_img.squeeze(0).cpu())
-    # mask = TF.resize(
-    #     mask,
-    #     (t_img.shape[-2], t_img.shape[-1]),
-    #     interpolation=transforms.InterpolationMode.NEAREST,
-    # )
-    # mask = mask_transform(size=cfg.image_size)(mask)
-    # # mask = mask_transform(cfg.mask_shape)(mask)
-    t_img = load_transform_image(cfg, image_path, fname, device)
-    mask = load_transform_mask(cfg, mask_path, fname, device)
-
-    return t_img, mask
+    loader = ImageMaskLoader(cfg, device)
+    return loader.load_image_and_mask(image_path, mask_path, fname)
 
 
-def load_transform_image(cfg, image_path: str, fname: str, device: str):
-    """Load and transform an image.
+def load_transform_image(
+    cfg: DictConfig, image_path: str, fname: str, device: str
+) -> torch.Tensor:
+    """
+    Legacy function for loading and transforming an image.
 
     Args:
-        cfg (DictConfig): Configuration object containing paths and settings.
-        image_path (str): Path to the image file.
-        fname (str): Filename of the image to load.
-        device (str): Device to which the tensor should be moved.
+        cfg: Configuration object
+        image_path: Path to image file
+        fname: Filename
+        device: Device string
 
     Returns:
-        torch.Tensor: Transformed image tensor.
+        Transformed image tensor
     """
-    img = Image.open(os.path.join(image_path, fname)).convert("RGB")
-    t_img = image_transform_test(cfg.image_size)(img).unsqueeze(0).to(device)
-    return t_img
+    loader = ImageMaskLoader(cfg, device)
+    return loader.load_image(image_path, fname)
 
 
-def load_transform_mask(cfg, mask_path: str, fname: str, device: str):
-    """Load and transform a mask.
+def load_transform_mask(
+    cfg: DictConfig, mask_path: str, fname: str, device: str
+) -> torch.Tensor:
+    """
+    Legacy function for loading and transforming a mask.
 
     Args:
-        cfg (DictConfig): Configuration object containing paths and settings.
-        mask_path (str): Path to the mask file.
-        fname (str): Filename of the mask to load.
-        device (str): Device to which the tensor should be moved.
+        cfg: Configuration object
+        mask_path: Path to mask file
+        fname: Filename
+        device: Device string
 
     Returns:
-        torch.Tensor: Transformed mask tensor.
+        Transformed mask tensor
     """
-    mask = Image.open(os.path.join(mask_path, fname)).convert("L")
-    mask = TF.resize(
-        mask,
-        cfg.image_size,
-        interpolation=transforms.InterpolationMode.NEAREST,
-    )
-    mask = mask_transform(size=cfg.image_size)(mask)
-    # mask = mask_transform(cfg.mask_shape)(mask)
+    loader = ImageMaskLoader(cfg, device)
+    return loader.load_mask(mask_path, fname)
 
-    return mask
+
+# Context manager for batch processing
+class BatchImageLoader:
+    """Context manager for efficient batch loading of images."""
+
+    def __init__(self, cfg: DictConfig, device: Union[str, torch.device]):
+        self.loader = ImageMaskLoader(cfg, device)
+        self._cache = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._cache.clear()
+
+    def load_batch(
+        self, image_path: Union[str, Path], mask_path: Union[str, Path], filenames: list
+    ) -> Tuple[list, list]:
+        """
+        Load a batch of images and masks.
+
+        Args:
+            image_path: Path to image directory
+            mask_path: Path to mask directory
+            filenames: List of filenames to load
+
+        Returns:
+            Tuple of (image_list, mask_list)
+        """
+        images = []
+        masks = []
+
+        for filename in filenames:
+            try:
+                img, mask = self.loader.load_image_and_mask(
+                    image_path, mask_path, filename
+                )
+                images.append(img)
+                masks.append(mask)
+            except ImageLoadError as e:
+                print(f"Warning: Skipping {filename} due to error: {e}")
+                continue
+
+        return images, masks

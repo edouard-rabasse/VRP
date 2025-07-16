@@ -131,12 +131,14 @@ Ne pas l'arrêter. Seuil, s'il est valide.
 Essayer avec juste une arête. à quel point l'arc flaggé est problématique.
 
 ## 10/07
+
 - Si pas d'arc problématique, tous les arcs devraient avoir les mêmes moyennes. Regarder le top 5/10 des arcs. Regarder la variance de la heatmap, entropie. Cross-entropy, seuil.
 - 10%, 30% puis rise.
 - Nombre d'itération sans amélioration.
 - est-ce que ça fonctionne pour le rectangle ?
 
 Plusieurs critères d'arrêt. Générer toutes les données. Arbre de décision. Pour une même instance, qu'est-ce qui permet de la classifier comme valide.
+
 - durée en temps
 - nombre d'iterations,
 - valeur de classification,
