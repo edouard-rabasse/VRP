@@ -64,3 +64,12 @@ def compute_bce_with_logits_mask(
     # 4) Compute BCEWithLogitsLoss
     loss = criterion(hm, m_resized)
     return loss.item()
+
+
+if __name__ == "__main__":
+    # Example usage
+    heatmap_logits = torch.randn(1, 1, 64, 64)  # Example heatmap logits
+    mask = torch.randint(0, 2, (32, 32))  # Example binary mask
+
+    loss = compute_bce_with_logits_mask(heatmap_logits, mask)
+    print(f"BCE with logits loss: {loss:.4f}")

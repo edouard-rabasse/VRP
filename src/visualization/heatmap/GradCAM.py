@@ -4,7 +4,7 @@ import torch
 
 
 class GradCAM:
-    def __init__(self, model, target_layer):
+    def __init__(self, model: torch.nn.Module, target_layer: torch.nn.Module):
         self.model = model
         self.target_layer = target_layer
         self.gradients = None
@@ -23,7 +23,7 @@ class GradCAM:
         # print("backward hook called")
         self.gradients = grad_output[0].detach()
 
-    def __call__(self, input_tensor, class_index):
+    def __call__(self, input_tensor: torch.Tensor, class_index: int) -> np.ndarray:
         self.model.zero_grad()
         output = self.model(input_tensor)
 

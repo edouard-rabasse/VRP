@@ -13,6 +13,7 @@ from typing import Tuple
 import cv2
 from ..show_mask_on_image import show_mask_on_image
 from ..save_overlay import save_overlay
+from ...heatmap import compute_bce_with_logits_mask, penalized_heatmap_loss
 
 
 from .base_processor import BaseProcessor, BaseProcessingResults, ProcessingError
@@ -92,7 +93,8 @@ class ImageProcessor(BaseProcessor):
             heatmap = self._compute_heatmap(image_tensor)
 
             # Step 3: Prepare mask (resize if needed)
-            processed_mask = self._prepare_mask(mask_tensor, heatmap.shape)
+            # processed_mask = self._prepare_mask(mask_tensor, heatmap.shape)*
+            processed_mask = mask_tensor
 
             # Step 4: Create and save overlay
             overlay_saved = self._create_and_save_overlay(
@@ -140,26 +142,26 @@ class ImageProcessor(BaseProcessor):
         except Exception as e:
             raise ImageProcessingError(f"Failed to load image/mask: {e}") from e
 
-    def _prepare_mask(
-        self, mask_tensor: torch.Tensor, heatmap_shape: Tuple[int, ...]
-    ) -> torch.Tensor:
-        """Prepare mask by resizing if necessary."""
-        try:
-            if hasattr(self.cfg, "resize_mask") and self.cfg.resize_mask:
-                from src.transform import ProportionalThresholdResize
+    # def _prepare_mask(
+    #     self, mask_tensor: torch.Tensor, heatmap_shape: Tuple[int, ...]
+    # ) -> torch.Tensor:
+    #     """Prepare mask by resizing if necessary."""
+    #     try:
+    #         if hasattr(self.cfg, "resize_mask") and self.cfg.resize_mask:
+    #             from src.transform import ProportionalThresholdResize
 
-                resizer = ProportionalThresholdResize(size=heatmap_shape[-2:])
-                return resizer(mask_tensor)
-            else:
-                if mask_tensor.shape[-2:] != heatmap_shape[-2:]:
-                    return TF.resize(
-                        mask_tensor,
-                        size=heatmap_shape[-2:],
-                        interpolation=TF.InterpolationMode.NEAREST,
-                    )
-                return mask_tensor
-        except Exception as e:
-            raise ImageProcessingError(f"Failed to prepare mask: {e}") from e
+    #             resizer = ProportionalThresholdResize(size=heatmap_shape[-2:])
+    #             return resizer(mask_tensor)
+    #         else:
+    #             if mask_tensor.shape[-2:] != heatmap_shape[-2:]:
+    #                 return TF.resize(
+    #                     mask_tensor,
+    #                     size=heatmap_shape[-2:],
+    #                     interpolation=TF.InterpolationMode.NEAREST,
+    #                 )
+    #             return mask_tensor
+    #     except Exception as e:
+    #         raise ImageProcessingError(f"Failed to prepare mask: {e}") from e
 
     def _create_and_save_overlay(
         self, mask: torch.Tensor, heatmap: torch.Tensor, filename: str
@@ -185,7 +187,6 @@ class ImageProcessor(BaseProcessor):
     def _compute_loss(self, heatmap: torch.Tensor, mask: torch.Tensor) -> float:
         """Compute loss between heatmap and mask."""
         try:
-            from ...heatmap import compute_bce_with_logits_mask, penalized_heatmap_loss
 
             loss_method = getattr(self.cfg.heatmap, "loss_method", "bce")
 

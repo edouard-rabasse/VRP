@@ -35,6 +35,7 @@ class ImageMaskLoader:
         self.cfg = cfg
         self.device = torch.device(device) if isinstance(device, str) else device
         self.image_size = cfg.image_size
+        self.mask_shape = cfg.mask_shape
 
         # Pre-compute transforms for efficiency
         self._image_transform = image_transform_test(self.image_size)
