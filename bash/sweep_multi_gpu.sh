@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=def-martin4
 #SBATCH --job-name=vrp-sweep
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:4
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=64G
 #SBATCH --time=24:00:00
