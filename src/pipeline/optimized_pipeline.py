@@ -10,6 +10,7 @@ import torch
 from PIL import Image
 import matplotlib.pyplot as plt
 from omegaconf import DictConfig
+import numpy as np
 
 from src.pipeline.config import BASE_DIR, override_java_param
 from src.pipeline.model_loader import ModelLoader
@@ -18,6 +19,9 @@ from src.pipeline.solver_client import SolverClient
 from src.transform import image_transform_test
 from src.graph.graph_flagging import flag_graph_from_data
 from src.graph import generate_plot_from_dict, plot_routes
+
+from src.transform import image_transform_test
+from src.visualization import get_heatmap
 
 
 def current_time():
@@ -49,10 +53,26 @@ class OptimizedVRPPipeline:
         return_weighted_sum=False,
         top_n_arcs=1,
         threshold: float = 0.2,
-    ) -> tuple[list, list]:
+        heatmap: np.ndarray | None = None,
+    ) -> tuple[list, list, np.ndarray]:
         coords, depot = self.files.load_coordinates(instance)
         arcs = self.files.load_arcs(
             instance, config_number=config_number, suffix=suffix
+        )
+
+        image = generate_plot_from_dict(
+            arcs, coords, depot=depot, bounds=tuple(self.cfg.plot.bounds)
+        )
+        input_tensor = (
+            image_transform_test()(Image.fromarray(image)).unsqueeze(0).to(self.device)
+        )
+
+        heatmap = get_heatmap(
+            model=self.model,
+            method=self.cfg.heatmap.method,
+            input_tensor=input_tensor,
+            args=self.cfg.heatmap.args,
+            device=self.device,
         )
         flagged, flagged_coords = flag_graph_from_data(
             arcs,
@@ -64,8 +84,9 @@ class OptimizedVRPPipeline:
             return_weighted_sum=return_weighted_sum,
             top_n_arcs=top_n_arcs,
             threshold=threshold,
+            heatmap=heatmap,
         )
-        return flagged, flagged_coords
+        return flagged, flagged_coords, heatmap
 
     def score(self, coords: dict, arcs: list, depot) -> float:
         img = generate_plot_from_dict(
@@ -116,7 +137,7 @@ class OptimizedVRPPipeline:
             print(f"[Debug] Iteration {iteration} for instance {instance}")
             t0 = current_time()
 
-            flagged_arcs, flagged_coords = self.flag_arcs(
+            flagged_arcs, flagged_coords, heatmap = self.flag_arcs(
                 instance,
                 suffix=iteration,
                 config_number=self.cfg.solver.config,
@@ -146,56 +167,40 @@ class OptimizedVRPPipeline:
 
             # score = self.score(flagged_coords, flagged_arcs, depot)
             score = self.score(coords, arcs, depot)
+
+            heatmap_entropy = self._score_heatmap(heatmap)
+
             dt = current_time() - t0
 
             if score < results["best_score"]:
-                improvement = -(results["best_score"] - score) / results["best_score"]
                 results["best_score"] = score
 
-            if self.cfg.solver.plot:
-                plot_routes(
-                    flagged_arcs,
-                    flagged_coords,
-                    depot,
-                    output_file=f"{self.cfg.solver.plot_output_folder}/instance_{instance}_iter_{iteration}.png",
-                    bounds=tuple(self.cfg.plot.bounds),
-                    route_type="modified",
-                    show_labels=True,
-                )
+            self._generate_plot_if_needed(
+                flagged_arcs, flagged_coords, depot, instance, iteration
+            )
 
+            cost_analysis = None
             if iteration > 1:
                 cost_analysis = self.files.load_results(
                     instance, iteration, self.cfg.solver.config
                 )
-                valid = cost_analysis["Valid"]
-                config7_cost = cost_analysis["OldCost"]
-                solver_cost = cost_analysis["NewCost"]
-                easy_cost = cost_analysis["EasyCost"]
-                number_of_violations = cost_analysis["numberOfViolations"]
-            else:
-                valid = False
-                config7_cost = 0
-                solver_cost = 0
-                easy_cost = 0
-                number_of_violations = None
-            if score < thresh or valid and not (results["converged"]):
+            valid = cost_analysis["Valid"] if cost_analysis else False
+            if self._check_convergence(score, thresh, valid, results):
                 results["converged"] = True
                 results["number_iter"] = iteration
 
             results["iterations"].append(
-                {
-                    "iter": iteration,
-                    "score": score,
-                    "time": dt,
-                    "best_arc_value": best_arc_value,
-                    "valid": valid,
-                    "config7_cost": config7_cost,
-                    "solver_cost": solver_cost,
-                    "easy_cost": easy_cost,
-                    "number_of_violations": number_of_violations,
-                }
+                self._create_iteration_result(
+                    iteration,
+                    score,
+                    dt,
+                    best_arc_value,
+                    cost_analysis,
+                    score_heatmap=heatmap_entropy,
+                )
             )
 
+            # Run slver for next iteration
             self.run_vrp_solver(
                 instance, arc_suffix=iteration, config_name=self.cfg.solver.config_name
             )
@@ -203,10 +208,75 @@ class OptimizedVRPPipeline:
 
         results = self.check_final(results, instance, iteration)
         results["total_time"] = current_time() - start
+
+        # Cleanup
         self.files.delete_intermediate_files(
             instance, config_number=self.cfg.solver.config, iter=iteration
         )
         return results
+
+    def _generate_plot_if_needed(
+        self,
+        flagged_arcs: list,
+        flagged_coords: dict,
+        depot,
+        instance: int,
+        iteration: int,
+    ) -> None:
+        """Generate plot if plotting is enabled."""
+        if self.cfg.solver.plot:
+            plot_routes(
+                flagged_arcs,
+                flagged_coords,
+                depot,
+                output_file=f"{self.cfg.solver.plot_output_folder}/instance_{instance}_iter_{iteration}.png",
+                bounds=tuple(self.cfg.plot.bounds),
+                route_type="modified",
+                show_labels=True,
+            )
+
+    def _create_iteration_result(
+        self,
+        iteration: int,
+        score: float,
+        dt: float,
+        best_arc_value: float,
+        cost_analysis: dict = None,
+        score_heatmap: float = 0.0,
+    ) -> dict:
+        """Create a standardized iteration result dictionary."""
+        if cost_analysis and iteration > 1:
+            return {
+                "iter": iteration,
+                "score": score,
+                "time": dt,
+                "best_arc_value": best_arc_value,
+                "valid": cost_analysis["Valid"],
+                "config7_cost": cost_analysis["OldCost"],
+                "solver_cost": cost_analysis["NewCost"],
+                "easy_cost": cost_analysis["EasyCost"],
+                "number_of_violations": cost_analysis["numberOfViolations"],
+                "score_heatmap": score_heatmap,
+            }
+        else:
+            return {
+                "iter": iteration,
+                "score": score,
+                "time": dt,
+                "best_arc_value": best_arc_value,
+                "valid": False,
+                "config7_cost": 0,
+                "solver_cost": 0,
+                "easy_cost": 0,
+                "number_of_violations": None,
+                "score_heatmap": score_heatmap,
+            }
+
+    def _check_convergence(
+        self, score: float, thresh: float, valid: bool, results: dict
+    ) -> bool:
+        """Check if optimization should converge."""
+        return score < thresh or (valid and not results["converged"])
 
     def check_final(self, results: dict, instance: int, iteration: int) -> dict:
         """Check final results for convergence and cost analysis.
@@ -243,6 +313,19 @@ class OptimizedVRPPipeline:
         results["valid"] = cost_analysis["Valid"]
         results["equal"] = self.files.compare_arcs(arcs_init, arcs_final)
         return results
+
+    def _score_heatmap(
+        self,
+        heatmap: np.ndarray,
+    ) -> float:
+        """Compute the entropy of the heatmap as a score."""
+        if heatmap is None:
+            return 0.0
+        # Normalize the heatmap to avoid division by zero
+        heatmap = heatmap / np.sum(heatmap) if np.sum(heatmap) > 0 else heatmap
+        # Compute entropy as a score
+        score = -np.sum(heatmap * np.log(heatmap + 1e-10))
+        return score
 
     def run_optimized_pipeline(
         self,
