@@ -2,7 +2,13 @@ from pathlib import Path
 import csv
 from typing import List, Dict, Tuple, Optional
 
-from src.graph import read_coordinates, read_arcs, load_set_arc, binarize_arcs
+from src.graph import (
+    read_coordinates,
+    read_arcs,
+    load_set_arc,
+    binarize_arcs,
+    isolate_top_arcs,
+)
 
 
 class FileService:
@@ -94,25 +100,6 @@ class FileService:
             / f"CostAnalysis_{instance}_{suffix}.txt"
         )
 
-    # def get_solution_arcs_path(
-    #     self,
-    #     instance: int,
-    #     suffix: str = DEFAULT_SUFFIX,
-    #     config_number: str = CUSTOM_COSTS_CONFIG,
-    # ) -> Path:
-    #     """
-    #     Get the path to the solution arcs file.
-
-    #     Args:
-    #         instance: Instance number
-    #         suffix: File suffix
-    #         config: Configuration identifier
-
-    #     Returns:
-    #         Path to the solution arcs file
-    #     """
-    #     return self.get_arcs_path(instance, config_number, suffix)
-
     def load_coordinates(
         self,
         instance: int,
@@ -198,11 +185,15 @@ class FileService:
             for arc in arcs:
                 self._write_arc_line(file, arc)
 
-    def binarize_arcs(self, arcs: List[Tuple], threshold: float = 0, index: int = 4):
+    def binarize_arcs(
+        self, arcs: List[Tuple], threshold: float = 0, index: int = 4, number=1
+    ):
         """
         Binarize arcs based on a threshold value.
         """
-        arcs = binarize_arcs(arcs, threshold=threshold, index=index)
+        sorted_arcs = isolate_top_arcs(arcs, index=index, number=number)
+
+        arcs = binarize_arcs(sorted_arcs, threshold=threshold, index=index)
         return arcs
 
     def _ensure_directory_exists(self, directory: Path) -> None:

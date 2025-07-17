@@ -13,7 +13,7 @@ import sys
 DEFAULT_OVERRIDES = [
     "data=config7",
     "model=resnet",
-    "model.weight_path=checkpoints/stored/resnet_8_30_7.pth",
+    "model.weight_path=checkpoints/resnet_8_30_7.pth",
     "model.load=true",
 ]
 
@@ -39,8 +39,8 @@ def main():
             walking=walking,
             multiplier=multiplier,
             threshold=threshold,
-            numbers=range(1001, 1100),
-            max_iter=100,
+            numbers=range(1, 10),
+            max_iter=20,
             output_dir="output",
         )
 

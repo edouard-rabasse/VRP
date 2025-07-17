@@ -318,7 +318,10 @@ public class RouteFromFile {
     public static void main(String[] args) {
         try {
             int instance_number = args[0] != null ? Integer.parseInt(args[0]) : 1;
-            String arcFile = "results/configuration1/Arcs_" + instance_number + "_1.txt";
+            int suffix = args[1] != null ? Integer.parseInt(args[1]) : 1;
+            String configuration = args[2] != null ? args[2] : "1";
+            String arcFile = "results/configuration" + configuration + "/Arcs_" + instance_number + "_" + suffix
+                    + ".txt";
             String instance = "Coordinates_" + instance_number + ".txt";
             GlobalParametersReader.initialize("config/configuration1.xml");
 

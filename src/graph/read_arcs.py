@@ -53,6 +53,62 @@ def binarize_arcs(arcs, threshold=0, index=3):
     return binarized_arcs
 
 
+def isolate_top_arcs(flagged_arcs: list[tuple], index=4, number=3):
+    """
+    Met à 0 la valeur à l'index spécifié pour tous les arcs qui ne sont pas
+    parmi les 'number' arcs avec les plus grosses valeurs à cet index.
+
+    Args:
+        flagged_arcs (list): Liste des arcs marqués.
+        index (int): Index du champ à utiliser pour le tri (défaut: 4).
+        number (int): Nombre d'arcs top à conserver (défaut: 3).
+
+    Returns:
+        list: Liste des arcs avec les valeurs modifiées.
+    """
+    try:
+        if not flagged_arcs:
+            return []
+
+        if number <= 0:
+            # Si number <= 0, tous les arcs sont mis à 0
+            return [arc[:index] + (0,) + arc[index + 1 :] for arc in flagged_arcs]
+
+        if number >= len(flagged_arcs):
+            # Si on veut garder plus d'arcs qu'il n'y en a, on retourne tout
+            return flagged_arcs.copy()
+
+        # Trier les arcs par valeur décroissante à l'index spécifié
+        sorted_arcs = sorted(flagged_arcs, key=lambda x: x[index], reverse=True)
+
+        # Trouver la valeur seuil (valeur du number-ième arc)
+        threshold_value = sorted_arcs[number - 1][index]
+
+        # Créer la liste résultante
+        result_arcs = []
+        top_count = 0
+
+        for arc in flagged_arcs:
+            # Garder l'ordre original des arcs
+            if arc[index] > threshold_value:
+                # Arc clairement dans le top
+                result_arcs.append(arc)
+                top_count += 1
+            elif arc[index] == threshold_value and top_count < number:
+                # Arc avec valeur égale au seuil, garder si on n'a pas atteint le quota
+                result_arcs.append(arc)
+                top_count += 1
+            else:
+                # Arc pas dans le top, mettre la valeur à 0
+                new_arc = arc[:index] + (0,) + arc[index + 1 :]
+                result_arcs.append(new_arc)
+
+        return result_arcs
+
+    except Exception as e:
+        raise ValueError(f"Failed to isolate top arcs: {e}") from e
+
+
 def get_arc_name(index, suffix: int | str = 1) -> str:
     """Returns the arc name as a string."""
     return f"Arcs_{index}_{suffix}.txt"
