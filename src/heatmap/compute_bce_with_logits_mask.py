@@ -10,7 +10,7 @@ from src.transform import ProportionalThresholdResize
 def compute_bce_with_logits_mask(
     heatmap_logits: torch.Tensor,
     mask: torch.Tensor,
-    criterion: nn.Module = nn.BCEWithLogitsLoss(reduction="mean"),
+    criterion: nn.Module = nn.BCELoss(reduction="mean"),
 ) -> float:
     """
     Resize the binary `mask` to the spatial size of `heatmap_logits` and compute

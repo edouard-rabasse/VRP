@@ -32,6 +32,7 @@ def get_heatmap(
 
         gradcam = GradCAM(model, target_layer)
         heatmap = gradcam(input_tensor, class_index=args.class_index)
+        heatmap /= np.max(heatmap) + 1e-8
     elif method == "grad_rollout":
 
         grad_rollout = VITAttentionGradRollout(
@@ -39,6 +40,7 @@ def get_heatmap(
         )
 
         heatmap = grad_rollout(input_tensor, category_index=args.class_index)
+        heatmap /= np.max(heatmap) + 1e-8
         # print("Grad Rollout heatmap shape:", heatmap.shape)
 
     elif method == "multi_task":
@@ -49,7 +51,7 @@ def get_heatmap(
                 0, 0
             ]  # Assuming the first channel is the one of interest
             # apply softmax to the heatmap
-            heatmap = torch.nn.functional.softmax(heatmap, dim=0).cpu().numpy()
+            heatmap = torch.nn.functional.sigmoid(heatmap).cpu().numpy()
 
             # heatmap = cv2.resize(
             #     heatmap, (input_tensor.shape[2], input_tensor.shape[3])
@@ -64,14 +66,17 @@ def get_heatmap(
 
         gradcam = GradCAM(model, target_layer)
         heatmap = gradcam(input_tensor, class_index=args["class_index"])
+        heatmap /= np.max(heatmap) + 1e-8
     elif method == "seg":
         with torch.no_grad():
             model.eval()
             seg_logits = model(input_tensor)
+            # print shape
+            print(seg_logits.shape)
             heatmap = seg_logits[0, 0]
             # Assuming the first channel is the one of interest
             # apply softmax to the heatmap
-            heatmap = torch.nn.functional.softmax(heatmap, dim=0).cpu().numpy()
+            heatmap = torch.sigmoid(heatmap).cpu().numpy()
             # thresh = np.percentile(heatmap, percentile_for_thresh)
 
             # heatmap = np.clip(heatmap, thresh, 1)  # Clip values to [thresh,1]
@@ -79,9 +84,9 @@ def get_heatmap(
     else:
         raise ValueError("Unknown method: {}".format(method))
 
-    thresh = np.percentile(heatmap, percentile_for_thresh)  # Threshold for heatmap
+    # thresh = np.percentile(heatmap, percentile_for_thresh)  # Threshold for heatmap
     # print("Threshold for heatmap:", thresh)
-    heatmap = np.clip(heatmap, 0, 1)  # Clip values to [thresh,1]
+    # heatmap = np.clip(heatmap, 0, 1)  # Clip values to [thresh,1]
     # normalize the heatmap to [0, 1]
     # heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-8)
 

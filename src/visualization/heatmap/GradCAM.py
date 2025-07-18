@@ -42,7 +42,7 @@ class GradCAM:
             activations[i, :, :] *= pooled_gradients[i]
 
         heatmap = activations.sum(dim=0).cpu().numpy()
-        heatmap = np.maximum(heatmap, 0)
+        heatmap = np.maximum(heatmap, 0)  # ReLU
         heatmap /= np.max(heatmap) + 1e-8  # normalize
         # clear stored data to free CPU memory
         self.activations = None

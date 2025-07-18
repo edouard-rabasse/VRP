@@ -92,7 +92,7 @@ class BaseProcessor(ABC):
             overlay = show_mask_on_image(
                 image, heatmap, alpha=alpha, interpolation=interpolation
             )
-            save_overlay(overlay, self.output_dir, f"{name}_overlay.png")
+            save_overlay(overlay, self.output_dir, f"overlay_{name}")
         except Exception as e:
             raise ProcessingError(f"Failed to save heatmap overlay: {e}") from e
 
