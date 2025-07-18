@@ -125,17 +125,27 @@ class HeatmapMetric:
             threshold=threshold,
             n_samples=self.cfg.arcs.n_samples,
         )
-        arcs_with_zone, updated_coords = analyzer.reverse_heatmap()
+        arcs_with_zone, updated_coords = analyzer.reverse_heatmap(
+            return_weighted_sum=True
+        )
+
+        sorted_arcs_with_zone = sorted(arcs_with_zone, key=lambda x: x[3], reverse=True)
+        top_arc = sorted_arcs_with_zone[0] if sorted_arcs_with_zone else None
 
         ## only keep the first 3 fields
 
         number_arcs = len(arcs_with_zone)
 
-        arcs_with_zone = [arc[:3] for arc in arcs_with_zone if arc[3] > 0]
+        arcs_with_zone = [arc[:3] for arc in arcs_with_zone if arc[3] > threshold]
 
         ## Compare the arcs with the common arcs
         common_arcs = [arc[:3] for arc in self.common_arcs]
         arcs_diff = [arc[:3] for arc in self.arcs_diff]
+
+        if top_arc[:3] in arcs_diff:
+            correct_best = True
+        else:
+            correct_best = False
 
         number_common = len(common_arcs)
         number_diff = len(arcs_diff)
@@ -157,6 +167,7 @@ class HeatmapMetric:
             else 0
         )
         false_positive_rate = FP / (FP + TN) if (FP + TN) > 0 else 0
+        intersection_over_union = TP / (TP + FP + FN) if (TP + FP + FN) > 0 else 0
 
         return {
             "nb_diff": number_diff,
@@ -169,6 +180,8 @@ class HeatmapMetric:
             "recall": recall,
             "f1": f1,
             "false_positive_rate": false_positive_rate,
+            "intersection_over_union": intersection_over_union,
+            "correct_best": correct_best,
         }
 
     def process_image(self, fname: str, list_threshold) -> list:

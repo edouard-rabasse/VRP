@@ -50,7 +50,11 @@ def main(cfg: DictConfig):
             continue
         df = pd.DataFrame(all_results[th])
         print(f"\n[Summary] Threshold {th:.2f}")
-        print(df[["precision", "recall", "f1", "false_positive_rate"]].mean())
+        print(
+            df[
+                ["precision", "recall", "f1", "false_positive_rate", "correct_best"]
+            ].mean()
+        )
 
     # ── Optionnel : Sauvegarde CSV ─────────────────────────────────────────
     full_df = pd.concat(

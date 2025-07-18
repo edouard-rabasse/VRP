@@ -14,7 +14,13 @@ def plot_metrics_by_threshold(
     # Calculer la moyenne des métriques par seuil
     mean_df = (
         full_df.groupby("threshold")[
-            ["precision", "recall", "f1", "false_positive_rate"]
+            [
+                "precision",
+                "recall",
+                "f1",
+                "false_positive_rate",
+                "intersection_over_union",
+            ]
         ]
         .mean()
         .reset_index()
@@ -34,9 +40,9 @@ def plot_metrics_by_threshold(
         label="False Positive Rate",
     )
 
-    plt.xlabel("Seuil (threshold)")
+    plt.xlabel("Threshold")
     plt.ylabel("Score")
-    plt.title("Métriques en fonction du seuil")
+    plt.title("Heatmap Metrics")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
