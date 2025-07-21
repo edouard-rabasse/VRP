@@ -1,6 +1,6 @@
 # sweep.yaml
 program: train.py
-name: sweep_vgg_seg_${config}  # 👈 Nom explicite ici
+name: sweep_vgg_seg  # 👈 Nom explicite ici
 project: VRP
 
 config: 7
