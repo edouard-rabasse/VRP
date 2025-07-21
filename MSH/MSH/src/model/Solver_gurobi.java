@@ -341,7 +341,8 @@ public class Solver_gurobi {
 		// printSolution(globalMSH, assembler, baseData);
 
 		// TODO:restore
-		executeCostAnalysis(globalContext, suffix - 1);
+		// executeCostAnalysis(globalContext, suffix - 1);
+		printSolution(globalMSH, assembler, baseData);
 	}
 
 	/**
