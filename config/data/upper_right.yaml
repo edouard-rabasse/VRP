@@ -1,0 +1,22 @@
+# 1) Valeurs de base
+name: config_upper_right
+cfg_number: UpperRight
+mask: mask_removed
+path: data
+loader: mask  
+
+# 2) Tes chemins, **interpolés** depuis les valeurs ci-dessus
+train_original_path: "${path}/train/configuration1_2/"
+train_modified_path: "${path}/train/configuration${cfg_number}/"
+
+test_original_path:  "${path}/test/configuration1_2/"
+test_modified_path:  "${path}/test/configuration${cfg_number}/"
+
+train_mask_path:     "${path}/${mask}/train/mask${cfg_number}_2/"
+test_mask_path:      "${path}/${mask}/test/mask${cfg_number}/"
+
+selection: ## index selection
+  type: "range"
+  value: [1001,3000]
+
+augment: false

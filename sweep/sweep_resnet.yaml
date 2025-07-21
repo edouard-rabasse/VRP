@@ -30,6 +30,6 @@ parameters:
   model.freeze:
     values: [false]
   data:
-    values: ["upper_right_graph"]
+    values: ["upper_right"]
 
   # Optionnel : Hydra ignorera cette clé pour les modèles qui ne l'utilisent pas
