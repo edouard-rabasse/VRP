@@ -45,8 +45,9 @@ class Scoring:
         try:
             self.model.eval()
             with torch.no_grad():
-                out = self.model(input_tensor)
-                score = torch.sigmoid(out).squeeze().cpu()[1].item()
+                logits = self.model(input_tensor)
+                # score = torch.sigmoid(out).squeeze().cpu()[1].item()
+                score = torch.softmax(logits, dim=1)[0, 1].item()
             return score
         except Exception as e:
             print(f"Error occurred while scoring the input tensor: {e}")
