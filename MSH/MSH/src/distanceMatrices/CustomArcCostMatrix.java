@@ -326,7 +326,7 @@ public class CustomArcCostMatrix {
         int depot = data.getNbCustomers() + 1;
         constraintMatrix.addDepot(depot);
 
-        for (int i = 0; i < data.getNbCustomers(); i++) {
+        for (int i = 0; i < data.getNbCustomers() + 1; i++) {
             double xCoord = data.getX_coors().get(i);
             double yCoord = data.getY_coors().get(i);
 
