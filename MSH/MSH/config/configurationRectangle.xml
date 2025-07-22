@@ -9,7 +9,7 @@
 <entry key="COMPARISON_FOLDER">./results/configurationUpperRight/</entry>
 
 
-<entry key="PRINT_IN_CONSOLE">true</entry>
+<entry key="PRINT_IN_CONSOLE">false</entry>
 <entry key="PRINT_POOLS_TO_FILE">false</entry>
 
 <entry key="PRECISION">4</entry> 
