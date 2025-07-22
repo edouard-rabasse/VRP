@@ -21,4 +21,4 @@ java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi
 cd .. 
 cd ..
 
-python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_%NUMBER%.txt" -a "MSH\MSH\results\configurationUpperRight\Arcs_%NUMBER%_%NEXT_SUFFIX%.txt" 
+python src/test/plot_one.py -c "MSH\MSH\instances\Coordinates_%NUMBER%.txt" -a "MSH\MSH\results\configurationUpperRight\Arcs_%NUMBER%_%SUFFIX%.txt" 
