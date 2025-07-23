@@ -75,7 +75,7 @@ echo "✅ compilation done"
 
 
 
-for i in {1001..3000}; do
+for i in {300..400}; do
 java \
   -Djava.library.path="$GUROBI_TMP_LIB" \
   -cp "$BIN_DIR:$JAR" \

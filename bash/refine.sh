@@ -12,9 +12,9 @@
 GUROBI_VERSION="11.0.0"
 GUROBI_BASE="/cvmfs/restricted.computecanada.ca/easybuild/software/2020/Core/gurobi/${GUROBI_VERSION}/lib"
 GUROBI_TMP_LIB="$SLURM_TMPDIR/gurobi_lib"
-# MAIN_CLASS="main.Main_refineSolution_v2"
+MAIN_CLASS="main.Main_refineSolution_v2"
 # MAIN_CLASS="main.Main_gurobi"
-MAIN_CLASS="main.Main_refineSolution"
+# MAIN_CLASS="main.Main_refineSolution"
 BIN_DIR="bin"
 SRC_DIR="src"
 JAR="$GUROBI_TMP_LIB/gurobi.jar"
@@ -23,7 +23,7 @@ CP_RUN="$BIN_DIR:$GUROBI_JAR"
 
 # === Fichiers d'entrée ===
 EXPERIMENT_FILE="ExperimentsAllSets.txt"
-CONFIG_FILE="configuration2.xml"
+CONFIG_FILE="configuration7.xml"
 OTHER_ARGS="1 8"
 
 # === Créer le dossier temporaire ===
@@ -77,6 +77,13 @@ echo "✅ compilation done"
 
 
 for i in {1001..3000}; do
+java \
+  -Djava.library.path="$GUROBI_TMP_LIB" \
+  -cp "$BIN_DIR:$JAR" \
+  "$MAIN_CLASS" "$EXPERIMENT_FILE" $i  "$CONFIG_FILE" $OTHER_ARGS
+done
+
+for i in {300..400}; do
 java \
   -Djava.library.path="$GUROBI_TMP_LIB" \
   -cp "$BIN_DIR:$JAR" \
