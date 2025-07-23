@@ -148,3 +148,30 @@ Plusieurs critères d'arrêt. Générer toutes les données. Arbre de décision.
 Limiter la profondeur de l'arbre., y=valide ou non.
 
 Faire des courbes ROC/AUC pour les arcs flaggés.
+
+## 22/07
+
+- le comportement n'est pas celui du planner : on crée des nouveaux chemins à pied.
+- tracer l'évolution
+- critère d'arrêt, si valide ok, sinon relancer.
+- faire un random search sur les différents paramètres à utiliser (score, variation...) et leurs valeurs.
+- train,test,val
+- essayer d'indentifier quelles valeurs (à l'aide des courbes).
+- max \sum y+ - \sum y- , x>=0, y \in {9,1
+- score y <=x
+
+challenge amazon. Transportation science
+Papier de Jorge Mortes Alcaraz.
+
+Exploitation des éléments visuels.
+
+Contraintes managériales vs réalité du terrain. flow chart -> logiciel, planificateur.
+Zoom dans la boîte planifcateur
+
+Experimentations,
+Résultats.
+Expliquer sommairement l'algo de Nicolas
+Les modèles de ML
+La génération des données.
+
+Nettoyer le code.

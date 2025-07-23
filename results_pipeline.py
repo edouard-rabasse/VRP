@@ -1,7 +1,9 @@
 from src.solver_results.results_dataset import VRPTableDataset
 from src.solver_results.vrp_instance import VRPInstance
 from src.solver_results.pca_analysis import PCAAnalyzer
-from src.solver_results.classification_analysis import ClassificationAnalyzer
+from src.solver_results.easy_classifier import classify_vrp_instance
+from sklearn import tree
+import matplotlib.pyplot as plt
 
 import pandas as pd
 import numpy as np
@@ -9,36 +11,9 @@ import numpy as np
 
 def main():
     """Main pipeline function."""
-    path = "output/resnet_1_1_2e-07_version_cedar"
+    path = "output/resnet_1_1_2e-07_version2"
 
-    # Load data
-    VRPInstances = load_vrp_instances(path, range(1001, 1086))
-
-    # Define features
-    feature_cols = [
-        "entropy_score",
-        "classifier_score",
-        "iter",
-        "entropy_variation",
-        "classifier_score_variation",
-        "top_arc_value",
-        "top_3_arcs",
-        "top_arc_variation",
-        "top_3_arcs_variation",
-    ]
-
-    # Create dataset
-    dataset = VRPTableDataset(
-        vrp_instances=VRPInstances,
-        feature_cols=feature_cols,
-        target_col="first_time_valid",
-    )
-
-    X, Y = dataset.get_sklearn_inputs()
-
-    # Run analyses
-    run_pca_analysis(X, Y, feature_cols)
-    run_classification_analysis(X, Y, feature_cols)
+    test_enhanced_classifier(path)
 
 
 def load_vrp_instances(path, instance_range):
@@ -58,44 +33,87 @@ def load_vrp_instances(path, instance_range):
     return instances
 
 
-def run_pca_analysis(X, Y, feature_cols):
-    """Run PCA analysis."""
-    print("\n" + "=" * 50)
-    print("PCA ANALYSIS")
-    print("=" * 50)
-
-    pca_analyzer = PCAAnalyzer()
-    pca_analyzer.plot_analysis(X, Y, feature_cols)
-
-    # Find optimal components
-    optimal_components, results_df = pca_analyzer.find_optimal_components(X, Y)
-
-    return pca_analyzer
+# Example usage in your pipeline
+from src.solver_results.easy_classifier import (
+    EnhancedVRPClassifier,
+    ClassificationCriteria,
+    classify_vrp_instance,
+    classify_vrp_instance_multi,
+)
 
 
-def run_classification_analysis(X, Y, feature_cols):
-    """Run classification analysis."""
-    print("\n" + "=" * 50)
-    print("CLASSIFICATION ANALYSIS")
-    print("=" * 50)
+def test_enhanced_classifier(path):
+    # Load your instances
+    vrp_instances = load_vrp_instances(path, range(1001, 1076))
 
-    classifier_analyzer = ClassificationAnalyzer()
+    classifier = EnhancedVRPClassifier()
 
-    # Analyze with original features
-    results_original = classifier_analyzer.run_analysis(
-        X, Y, feature_cols, "Original Features"
+    # Test different approaches
+    approaches = {
+        "aggressive": "aggressive",
+    }
+
+    results = {}
+
+    for approach_name, preset in approaches.items():
+        print(f"\n=== {approach_name.upper()} APPROACH ===")
+
+        correct = 0
+        first_time = 0
+        total = 0
+
+        for instance in vrp_instances:
+            result = classifier.classify_with_preset(instance, preset)
+            total += 1
+
+            if result.valid:
+                correct += 1
+            if result.first_time_valid:
+                first_time += 1
+
+            # Print details for first few instances
+            if total <= 3:
+                print(f"Instance {instance.instance_number}:")
+                print(f"  Result: {result.reason}")
+                print(f"  Satisfied criteria: {result.satisfied_criteria}")
+
+        results[approach_name] = {
+            "total": total,
+            "correct": correct,
+            "first_time": first_time,
+            "success_rate": correct / total if total > 0 else 0,
+        }
+
+        print(f"Success rate: {results[approach_name]['success_rate']:.2%}")
+    return results
+
+
+# Custom criteria example
+def test_custom_criteria():
+    custom_criteria = ClassificationCriteria(
+        classifier_score_threshold=0.4,
+        entropy_score_threshold=0.25,
+        max_violations=3,
+        entropy_trend_threshold=-0.05,  # Entropy must be decreasing
+        require_valid=True,
+        combination_mode="WEIGHTED",
+        weights={
+            "classifier_score": 0.3,
+            "entropy_score": 0.3,
+            "valid": 0.2,
+            "entropy_trend": 0.2,
+        },
     )
 
-    # Analyze with PCA features
-    pca_analyzer = PCAAnalyzer()
-    X_pca, pca_reduced = pca_analyzer.get_pca_features(X, n_components=0.95)
-    pca_feature_names = [f"PC{i+1}" for i in range(X_pca.shape[1])]
+    classifier = EnhancedVRPClassifier(custom_criteria)
 
-    results_pca = classifier_analyzer.run_analysis(
-        X_pca, Y, pca_feature_names, f"PCA Features ({X_pca.shape[1]} components)"
-    )
-
-    return results_original, results_pca
+    # Test on instances
+    for instance in vrp_instances[:5]:
+        result = classifier.classify(instance)
+        print(f"Instance {instance.instance_number}: {result.reason}")
+        print(
+            f"  Score: {result.classification_score:.3f}, Confidence: {result.confidence:.3f}"
+        )
 
 
 if __name__ == "__main__":

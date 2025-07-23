@@ -108,16 +108,19 @@ class FirstValidDataset:
             print(
                 f"  Max iteration to first valid: {valid_df['first_valid_iter'].max()}"
             )
-            print(
-                f"  Average time to first valid: {valid_df['first_valid_time'].mean():.2f}s"
-            )
+            # print(
+            #     f"  Average time to first valid: {valid_df['first_valid_time'].mean():.2f}s"
+            # )
 
             # Cost statistics
             if "solver_cost" in valid_df.columns:
                 print(f"\nCost Statistics (first valid):")
-                print(f"  Average solver cost: {valid_df['solver_cost'].mean():.2f}")
-                print(f"  Min solver cost: {valid_df['solver_cost'].min():.2f}")
-                print(f"  Max solver cost: {valid_df['solver_cost'].max():.2f}")
+                print(
+                    f"  Average solver cost difference : {valid_df['difference_with_solver'].mean():.2f}"
+                )
+                print(
+                    f"  Average easy cost difference: {valid_df['difference_with_easy'].mean():.2f}"
+                )
 
     def save_to_csv(self, filepath: str):
         """Save the dataset to CSV."""

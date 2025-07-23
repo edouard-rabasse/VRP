@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 :: Définition des listes
 set thresholds=0.0000002
-set walkings=1 5
+set walkings=1.2 5
 set multipliers=1 2
 
 :: Boucles imbriquées
