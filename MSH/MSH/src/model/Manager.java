@@ -67,7 +67,7 @@ public class Manager {
 
 		// Runs the MSH:
 
-		solver.refineRoutes(instance_identifier);
+		solver.refineRoutes2(instance_identifier);
 
 		// Returns the solver instance:
 

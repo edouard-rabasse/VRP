@@ -133,6 +133,47 @@ public class Solver_gurobi {
 		executeMSH(context.msh, context.assembler, context.data);
 	}
 
+	public void refineRoutes2(String instance_identifier) throws IOException {
+		initialize(instance_identifier);
+
+		String path = "./results/configuration1/Arcs_" + this.instance_name + "_" + GlobalParameters.SEED + ".txt";
+
+		int numRoutes = RouteProcessor.countRoutesInFile(path);
+
+		// Container for all refined routes
+		RoutePool combinedPool = new RoutePool();
+
+		// Base data to use for final assembly
+		DataHandler baseData = new DataHandler(GlobalParameters.INSTANCE_FOLDER + instance_identifier);
+
+		for (int routeId = 0; routeId < numRoutes; routeId++) {
+
+			MSHContext context = MSHContext.initializeMSH(instance_identifier, path, routeId, baseData);
+
+			cpu_msh_sampling += setPools(context, baseData, combinedPool);
+		}
+
+		System.out.println(path + " - Combined pool size: " + combinedPool.size());
+
+		MSHContext globalContext = MSHContext.initializeMSH(instance_identifier);
+
+		// Assemblage final avec toutes les routes
+		AssemblyFunction assembler = new GurobiSetPartitioningSolver(baseData.getNbCustomers(), true, baseData);
+		MSH globalMSH = new MSH(assembler, GlobalParameters.THREADS);
+
+		// executeSampling(globalMSH);
+		globalContext.msh = globalMSH;
+		globalContext.assembler = assembler;
+		globalContext.pools = new ArrayList<RoutePool>(List.of(combinedPool));
+
+		globalContext.msh.setPools(new ArrayList<RoutePool>(List.of(combinedPool)));
+
+		cpu_msh_assembly = MSHExecutor.executeAssembly(globalContext.msh);
+		// printSummary(globalMSH, assembler, baseData);
+		printSolution(globalMSH, assembler, baseData);
+
+	}
+
 	/**
 	 * Run with custom costs method
 	 */
@@ -155,7 +196,7 @@ public class Solver_gurobi {
 		context.msh.setPools(context.pools);
 		printMessage("Starting MSH with custom costs...");
 		executeMSHWithCustomAnalysis(context, suffix);
-		executeCostAnalysis(context, suffix);
+		executeCostAnalysis(context, suffix + 1);
 	}
 
 	/**
@@ -261,11 +302,11 @@ public class Solver_gurobi {
 				Double easyCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, easyPath,
 						this.instance_identifier);
 				SolutionPrinter.printSolutionWithCostAnalysis(context.assembler, context.data, instance_name,
-						suffix + 1,
+						suffix,
 						context.distances, context.walkingTimes, validator, totalCost, easyCost);
 			} else {
 				SolutionPrinter.printSolutionWithCostAnalysis(context.assembler, context.data, instance_name,
-						suffix + 1,
+						suffix,
 						context.distances, context.walkingTimes, validator, totalCost);
 			}
 
@@ -391,7 +432,7 @@ public class Solver_gurobi {
 		cpu_msh_assembly = MSHExecutor.executeAssembly(globalContext.msh);
 		// printSummary(globalMSH, assembler, baseData);
 		// printSolution(globalMSH, assembler, baseData);
-		executeCostAnalysis(globalContext, suffix);
+		executeCostAnalysis(globalContext, suffix + 1);
 	}
 
 	private double setPools(MSHContext context, DataHandler baseData, RoutePool combinedPool) throws IOException {
