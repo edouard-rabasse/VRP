@@ -284,13 +284,13 @@ public class Solver_gurobi {
 	private void executeCostAnalysis(MSHContext context, int suffix) {
 
 		// Get original solution cost for comparison
-		String initialArcPath = GlobalParameters.COMPARISON_FOLDER + "Arcs_" + instance_name + "_1.txt";
+		String optimalArcPath = GlobalParameters.COMPARISON_FOLDER + "Arcs_" + instance_name + "_1.txt";
 
 		String easyPath = "./results/configuration7_easy/Arcs_" + this.instance_name + "_1.txt";
 		try {
 
 			printMessage("[Debug] Running cost analysis with validator");
-			Double totalCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, initialArcPath,
+			Double totalCost = RouteFromFile.getTotalAttribute(RouteAttribute.COST, optimalArcPath,
 					this.instance_identifier);
 			printMessage("Total cost of the solution: " + totalCost);
 

@@ -248,11 +248,20 @@ public class RouteConstraintValidator {
                 double walkingDistance = distances.getDistance(from, to);
                 double walkingTime = walkingTimes.getDistance(from, to);
 
+                double x_from = data.getX_coors().get(from);
+                double y_from = data.getY_coors().get(from);
+
                 // Vérifier MAX_WD_B2P pour chaque arc marché
                 if (walkingDistance > Double.valueOf(parameters.get("MAX_WD_B2P").toString())) {
                     result.violations.add(String.format(
                             "Distance de marche entre %d et %d (%.2f) dépasse MAX_WD_B2P (%.2f)",
                             from, to, walkingDistance, Double.valueOf(parameters.get("MAX_WD_B2P").toString())));
+                }
+
+                if (GlobalParameters.UPPER_RIGHT_CONSTRAINT && x_from > 5 && y_from > 5) {
+                    result.violations.add(String.format(
+                            "Arc marché de %d à %d interdit par contrainte supérieure droite (x=%.2f, y=%.2f)",
+                            from, to, x_from, y_from));
                 }
 
                 result.walkingDistance += walkingDistance;
@@ -298,6 +307,9 @@ public class RouteConstraintValidator {
                 double walkingDistance = distances.getDistance(from, to);
                 double walkingTime = walkingTimes.getDistance(from, to);
 
+                double x_from = data.getX_coors().get(from);
+                double y_from = data.getY_coors().get(from);
+
                 // Vérifier MAX_WD_B2P
                 if (walkingDistance > Double.valueOf(parameters.get("MAX_WD_B2P").toString())) {
                     result.violations.add(String.format(
@@ -307,6 +319,13 @@ public class RouteConstraintValidator {
 
                 result.walkingDistance += walkingDistance;
                 result.walkingTime += walkingTime;
+
+                if (GlobalParameters.UPPER_RIGHT_CONSTRAINT && x_from > 5 && y_from > 5) {
+                    result.violations.add(String.format(
+                            "Arc marché de %d à %d interdit par contrainte supérieure droite (x=%.2f, y=%.2f)",
+                            from, to, x_from, y_from));
+                    System.out.println("Arc interdit par contrainte supérieure droite: " + from + " -> " + to);
+                }
             }
 
             // Add service time only once per node

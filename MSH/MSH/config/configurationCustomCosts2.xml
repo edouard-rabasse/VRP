@@ -37,5 +37,6 @@
 <entry key="CUSTOM_COST_MULTIPLIER">2</entry>
 <entry key="DEFAULT_WALK_COST">1</entry>
 
+<entry key="CONFIG_FOR_CONSTRAINTS_FOLDER">./config/configuration7.xml</entry>
 
 </properties>

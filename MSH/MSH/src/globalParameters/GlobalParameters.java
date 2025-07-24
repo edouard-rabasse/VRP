@@ -178,6 +178,9 @@ public class GlobalParameters {
 			"./results/configuration7/");
 
 	public static final String CONFIG_FOR_CONSTRAINTS_FOLDER = GlobalParametersReader
-			.<String>get("CONFIG_FOR_CONSTRAINTS_FOLDER", String.class, "./config/configuration7.xml");
+			.<String>get("CONFIG_FOR_CONSTRAINTS_FOLDER", String.class, "./config/configuration1.xml");
+
+	public static boolean UPPER_RIGHT_CONSTRAINT = GlobalParametersReader
+			.<String>get("UPPER_RIGHT_CONSTRAINT", String.class, "false").equals("true");
 
 }
