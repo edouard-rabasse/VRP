@@ -12,7 +12,8 @@
 GUROBI_VERSION="11.0.0"
 GUROBI_BASE="/cvmfs/restricted.computecanada.ca/easybuild/software/2020/Core/gurobi/${GUROBI_VERSION}/lib"
 GUROBI_TMP_LIB="$SLURM_TMPDIR/gurobi_lib"
-MAIN_CLASS="main.Main_refineSolution_v2"
+# MAIN_CLASS="main.Main_refineSolution_v2
+MAIN_CLASS="main.Main_gurobi"
 BIN_DIR="bin"
 SRC_DIR="src"
 JAR="$GUROBI_TMP_LIB/gurobi.jar"
@@ -21,7 +22,7 @@ CP_RUN="$BIN_DIR:$GUROBI_JAR"
 
 # === Fichiers d'entrée ===
 EXPERIMENT_FILE="ExperimentsAllSets.txt"
-CONFIG_FILE="configuration7.xml"
+CONFIG_FILE="configuration1.xml"
 OTHER_ARGS="1 8"
 
 # === Créer le dossier temporaire ===
