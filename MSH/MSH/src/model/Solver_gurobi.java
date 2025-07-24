@@ -343,7 +343,6 @@ public class Solver_gurobi {
 
 		// String originalArcPath = GlobalParameters.ARCS_MODIFIED_FOLDER + "Arcs_" +
 		// instance_name + "_1.txt";
-		// TODO : change to RESULT_FOLDER
 		String globalArcPath = GlobalParameters.ARCS_MODIFIED_FOLDER + arc_path;
 		int numRoutes = RouteProcessor.countRoutesInFile(globalArcPath);
 
