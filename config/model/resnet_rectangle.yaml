@@ -8,7 +8,7 @@ load: ${..load_model}  # load model from checkpoint
 save: ${..save_model}  # save model to checkpoint
 kernel_size: 7
 
-weight_path: checkpoints/stored/resnet_16_40_7_config7_new_0q8kbs5d.pth
+weight_path: checkpoints/stored/resnet_16_20_UpperRight_config_upper_right_td2tpc71.pth
 save_path: checkpoints/
 image_size: ${image_size}
 mask_shape: ${mask_shape}
