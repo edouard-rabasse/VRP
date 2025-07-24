@@ -11,8 +11,6 @@ from hydra import compose
 import sys
 
 DEFAULT_OVERRIDES = [
-    "data=config7",
-    "model=resnet",
     "model.load=true",
 ]
 

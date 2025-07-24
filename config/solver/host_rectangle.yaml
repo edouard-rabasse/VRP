@@ -1,0 +1,33 @@
+
+java_parent: "${env:EBROOTGUROBI}"
+java_lib: "${solver.java_parent}/lib"
+java_bin: "${solver.java_parent}/bin"
+
+
+program_name: "main.Main_refineMSH"
+config_name: "configurationRectangle.xml"
+
+custom_args:
+  - "-Djava.library.path=${solver.java_lib}"
+  - "-cp"
+  - "bin:${solver.java_lib}/gurobi.jar"
+
+
+config: "UpperRight2" # suffix for the result folder
+org_config: "1"
+
+source_folder: "MSH/MSH"
+bin_folder: "bin"
+instance_folder: "instances/"
+result_folder: "results/"
+plot_output_folder: "output/test/"
+
+plot: false
+return_weighted_sum: true
+top_n_arcs: 3
+
+heatmap_threshold: 0.1  # threshold for heatmap generation
+
+threshold: 0.1
+walking: 1
+multiplier: 1

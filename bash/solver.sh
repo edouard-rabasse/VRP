@@ -13,6 +13,7 @@
 # a_idx = task_id / (nb * nc)
 # b_idx = (task_id / nc) % nb
 # c_idx = task_id % nc
+MODEL="resnet"
 
 list_thresholds=(0.0000002)
 list_walking=(1 5)
@@ -60,7 +61,8 @@ for threshold in "${list_thresholds[@]}"; do
                 solver=host \
                 solver.threshold=$threshold \
                 solver.walking=$walking \
-                solver.multiplier=$multiplier
+                solver.multiplier=$multiplier\
+                model=$MODEL \
             
             echo "=== Completed: threshold=$threshold walking=$walking multiplier=$multiplier ==="
         done

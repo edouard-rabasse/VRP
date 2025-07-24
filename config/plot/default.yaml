@@ -1,6 +1,6 @@
 
 
-numbers: ["UpperRight",7]
+numbers: [7]
 valid_range: [1001, 3000]
 bounds: [-1, 11, -1, 11]
 arcs_folder: ${hydra:runtime.cwd}/MSH/MSH/results/

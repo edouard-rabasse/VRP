@@ -7,7 +7,7 @@ name: MFCN
 load: ${..load_model}  # load model from checkpoint
 save: ${..save_model}  # save model to checkpoint
 
-save_path: checkpoints/${..experiment_name}.pth
+save_path: checkpoints/
 weight_path: checkpoints/MFCN_64_40_7.pth
 image_size: ${image_size}
 mask_shape: ${mask_shape}

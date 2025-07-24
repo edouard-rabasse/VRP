@@ -76,12 +76,7 @@ echo "✅ compilation done"
 #   main.CreateInstances2 10 10 20 1001 3000
 
 
-for i in {1001..3000}; do
-java \
-  -Djava.library.path="$GUROBI_TMP_LIB" \
-  -cp "$BIN_DIR:$JAR" \
-  "$MAIN_CLASS" "$EXPERIMENT_FILE" $i  "$CONFIG_FILE" $OTHER_ARGS
-done
+
 
 for i in {300..400}; do
 java \
