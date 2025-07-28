@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
-#SBATCH --time=16:00:00
+#SBATCH --time=32:00:00
 #SBATCH --output=logs/solver-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
 
@@ -16,8 +16,8 @@
 MODEL="resnet"
 
 list_thresholds=(0.0000002)
-list_walking=(1 5)
-list_multiplier=(1 2)
+list_walking=(5)
+list_multiplier=(1 2 0.5)
 
 
 GUROBI_VERSION="11.0.0"
