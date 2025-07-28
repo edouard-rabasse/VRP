@@ -31,23 +31,16 @@ class Scoring:
         except Exception as e:
             raise ValueError(f"Failed to compute all scores: {e}") from e
 
-    def _compute_score(self, flagged_arcs: list | None) -> float:
-        try:
-            if flagged_arcs is None:
-                return 0.0
-            # Compute the score based on the flagged arcs
-            return sum(arc[4] for arc in flagged_arcs) / len(flagged_arcs)
-        except Exception as e:
-            raise ValueError(f"Failed to compute score from flagged arcs: {e}") from e
-
     def _score(self, input_tensor: torch.Tensor) -> float:
 
         try:
             self.model.eval()
             with torch.no_grad():
                 logits = self.model(input_tensor)
+
                 # score = torch.sigmoid(out).squeeze().cpu()[1].item()
                 score = torch.softmax(logits, dim=1)[0, 1].item()
+                print(f"[Debug] Exact score: {score:.20f}")
             return score
         except Exception as e:
             print(f"Error occurred while scoring the input tensor: {e}")

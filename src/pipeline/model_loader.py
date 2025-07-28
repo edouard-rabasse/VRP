@@ -20,5 +20,6 @@ class ModelLoader:
         )
         # Warm-up
         dummy = torch.zeros(1, 3, 224, 224, device=self.device)
+        model.eval()
         model(dummy)
         return model

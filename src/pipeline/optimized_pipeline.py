@@ -64,8 +64,13 @@ class OptimizedVRPPipeline:
         image = generate_plot_from_dict(
             arcs, coords, depot=depot, bounds=tuple(self.cfg.plot.bounds)
         )
+
+        # save image
+
         input_tensor = (
-            image_transform_test()(Image.fromarray(image)).unsqueeze(0).to(self.device)
+            image_transform_test()(Image.fromarray(image).convert("RGB"))
+            .unsqueeze(0)
+            .to(self.device)
         )
 
         heatmap = get_heatmap(
@@ -170,6 +175,7 @@ class OptimizedVRPPipeline:
                 heatmap=heatmap,
                 input_tensor=input_tensor,
             )
+
             dt = current_time() - t0
 
             results["iterations"].append(
