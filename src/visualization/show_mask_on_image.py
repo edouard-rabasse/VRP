@@ -44,7 +44,9 @@ def show_mask_on_image(
 
     # Overlay on input (grayscale to RGB)
     input_image = input.transpose(1, 2, 0)
+    print("min/max input before scaling:", input.min(), input.max())
     input_image = (input_image * 255).astype(np.uint8)  # Convert to uint8 for OpenCV
+
     # print("maximum over the whle input:", np.max(input_image))
 
     # print("Input Image shape:", input_image.shape)

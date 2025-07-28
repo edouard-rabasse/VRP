@@ -12,7 +12,11 @@ from torchvision import transforms
 from torchvision.transforms import functional as TF
 from omegaconf import DictConfig
 
-from ..transform import image_transform_test, mask_transform
+from ..transform import (
+    image_transform_test,
+    mask_transform,
+    image_transform_no_normalize,
+)
 
 
 class ImageLoadError(Exception):
@@ -34,12 +38,15 @@ class ImageMaskLoader:
         """
         self.cfg = cfg
         self.device = torch.device(device) if isinstance(device, str) else device
-        self.image_size = cfg.image_size
-        self.mask_shape = cfg.mask_shape
+        self.image_size = tuple(cfg.image_size)
+        self.mask_shape = tuple(cfg.mask_shape)
 
         # Pre-compute transforms for efficiency
         self._image_transform = image_transform_test(self.image_size)
         self._mask_transform = mask_transform(size=self.image_size)
+        self._image_transform_no_normalize = image_transform_no_normalize(
+            size=self.image_size
+        )
 
     def load_image_and_mask(
         self, image_path: Union[str, Path], mask_path: Union[str, Path], filename: str
@@ -82,14 +89,8 @@ class ImageMaskLoader:
         Raises:
             ImageLoadError: If image cannot be loaded or transformed
         """
-        file_path = Path(image_path) / filename
-
-        if not file_path.exists():
-            raise ImageLoadError(f"Image file not found: {file_path}")
-
         try:
-            # Load and convert to RGB
-            image = Image.open(file_path).convert("RGB")
+            image = Image.open(Path(image_path) / filename).convert("RGB")
 
             # Apply transforms and add batch dimension
             transformed_image = (
@@ -98,6 +99,20 @@ class ImageMaskLoader:
 
             return transformed_image
 
+        except Exception as e:
+            raise ImageLoadError(
+                f"Failed to load/transform image {filename}: {str(e)}"
+            ) from e
+
+    def load_untransformed_image(self, image_path: Union[str, Path], filename: str):
+        file_path = Path(image_path) / filename
+        if not file_path.exists():
+            raise ImageLoadError(f"Image file not found: {file_path}")
+        try:
+            # Load and convert to RGB
+            image = Image.open(file_path).convert("RGB")
+            image_tensor = self._image_transform_no_normalize(image)
+            return image_tensor
         except Exception as e:
             raise ImageLoadError(
                 f"Failed to load/transform image {filename}: {str(e)}"
@@ -120,7 +135,11 @@ class ImageMaskLoader:
         file_path = Path(mask_path) / filename
 
         if not file_path.exists():
-            raise ImageLoadError(f"Mask file not found: {file_path}")
+            # raise ImageLoadError(f"Mask file not found: {file_path}")
+            print(f"Warning: Mask file not found: {file_path}, returning empty tensor")
+            return torch.zeros(
+                tuple(self.mask_shape), dtype=torch.float32, device=self.device
+            )
 
         try:
             # Load and convert to grayscale

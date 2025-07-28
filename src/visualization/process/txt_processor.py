@@ -47,13 +47,13 @@ class TxtProcessingResults(BaseProcessingResults):
             heatmap_shape=heatmap_shape,
             processing_time=processing_time,
             heatmap_computed=heatmap_computed,
+            score=score,
         )
         # Initialize own fields
         self.coords_file = coords_file
         self.arcs_file = arcs_file
         self.plot_generated = plot_generated
         self.arcs_saved = arcs_saved
-        self.score = score
 
 
 class TxtProcessor(BaseProcessor):

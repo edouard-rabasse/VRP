@@ -1,20 +1,14 @@
-import hydra
-from omegaconf import DictConfig
-from hydra import compose
+import numpy as np
+from PIL import Image
 
-DEFAULT_OVERRIDES = [
-    "data=config7",
-    "model=resnet",
-    "model.weight_path=checkpoints/resnet_8_30_7.pth",
-    "model.load=true",
-]
+# Crée une image noire (3 canaux, RGB)
+img = np.ones((224, 224, 3), dtype=np.uint8) * 255
 
+# Ajoute un carré vert (G = 255) dans le coin supérieur droit
+# Par exemple : 40x40 pixels dans le coin haut-droit
+img[10:50, 170:210] = [0, 255, 0]
 
-@hydra.main(version_base=None, config_path="config", config_name="config")
-def main(cfg: DictConfig):
-    cfg = compose(config_name="config", overrides=DEFAULT_OVERRIDES)
-    print(cfg.model)
-
-
-if __name__ == "__main__":
-    main()
+# Sauvegarde ou affiche l'image
+image = Image.fromarray(img)
+image.save("test_vert_haut_droite.png")
+image.show()

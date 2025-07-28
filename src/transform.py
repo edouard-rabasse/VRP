@@ -51,6 +51,25 @@ def image_transform_train(size=(224, 224), mean=mean, std=std):
     )
 
 
+def image_transform_no_normalize(size=(224, 224)):
+    """
+    Transform for images without normalization.
+    Args:
+        image (PIL Image): Input image.
+    Returns:
+
+        torch.Tensor: Transformed image tensor.
+    """
+    return transforms.Compose(
+        [
+            transforms.Resize(
+                size, interpolation=transforms.InterpolationMode.NEAREST_EXACT
+            ),
+            transforms.ToTensor(),
+        ]
+    )
+
+
 def image_transform_test(size=(224, 224), mean=mean, std=std):
     """
     Transform for testing images.

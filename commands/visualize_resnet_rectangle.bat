@@ -1,0 +1,1 @@
+python .\visualize.py model=resnet data=config7 model.weight_path=checkpoints/stored/resnet_16_20_UpperRight_config_upper_right_e2zqhple.pth data.test_original_path=data/delete/

@@ -237,6 +237,7 @@ class VisualizationRunner:
                     f"[{i}/{len(image_files)}] {filename}: "
                     f"Loss={result.loss:.4f}, Time={processing_time:.2f}s"
                 )
+                print("score:", result.score)
 
             except Exception as e:
                 processing_time = time.perf_counter() - start_time

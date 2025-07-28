@@ -8,9 +8,12 @@ from .iteration_result import IterationResult
 class VRPInstance:
     """Represents a single VRP instance with its optimization results."""
 
-    def __init__(self, instance_number: int, df: pd.DataFrame):
+    def __init__(
+        self, instance_number: int, df: pd.DataFrame, until_first_valid: bool = False
+    ):
         self.instance_number = instance_number
         self.df = df
+        self.until_first_valid = until_first_valid
         self.iterations = self._parse_iterations()
         self.df = pd.DataFrame(self.iterations)
 
@@ -44,7 +47,7 @@ class VRPInstance:
                 row["top_3_arcs_previous"] = None
             iterations.append(IterationResult.from_pandas_series(row))
 
-            if first_time_valid:
+            if self.until_first_valid and first_time_valid:
                 break
 
         return iterations

@@ -31,6 +31,7 @@ class BaseProcessingResults:
     heatmap_shape: Tuple[int, ...]
     processing_time: float
     heatmap_computed: bool
+    score: float
 
 
 class BaseProcessor(ABC):
@@ -87,11 +88,9 @@ class BaseProcessor(ABC):
         try:
 
             alpha = getattr(self.cfg.heatmap, "overlay_alpha", 0.5)
-            interpolation = getattr(self.cfg.heatmap, "interpolation", cv2.INTER_LINEAR)
+            # interpolation = getattr(self.cfg.heatmap, "interpolation", cv2.INTER_LINEAR)
 
-            overlay = show_mask_on_image(
-                image, heatmap, alpha=alpha, interpolation=interpolation
-            )
+            overlay = show_mask_on_image(image, heatmap, alpha=alpha)
             save_overlay(overlay, self.output_dir, f"overlay_{name}")
         except Exception as e:
             raise ProcessingError(f"Failed to save heatmap overlay: {e}") from e
@@ -114,7 +113,9 @@ class BaseProcessor(ABC):
             self.model.eval()
             with torch.no_grad():
                 out = self.model(tensor)
-                score = torch.sigmoid(out).squeeze().cpu()[1].item()
+                score = torch.softmax(out, dim=1)[
+                    0, 1
+                ].item()  # Assuming class 1 is the target class
             return score
         except Exception as e:
             raise ProcessingError(f"Failed to compute score: {e}") from e
