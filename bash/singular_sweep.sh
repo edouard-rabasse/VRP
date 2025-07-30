@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=32G
-#SBATCH --time=12:00:00
+#SBATCH --time=32:00:00
 #SBATCH --output=logs/sweep-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
 

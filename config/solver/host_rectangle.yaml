@@ -5,7 +5,7 @@ java_bin: "${solver.java_parent}/bin"
 
 
 program_name: "main.Main_refineMSH"
-config_name: "configurationRectangle.xml"
+config_name: "configurationRectangle2.xml"
 
 custom_args:
   - "-Djava.library.path=${solver.java_lib}"

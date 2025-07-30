@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=def-martin4
-#SBATCH --job-name=refineUpperRight
+#SBATCH --job-name=refineEasy
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
@@ -77,7 +77,7 @@ echo "✅ compilation done"
 #   main.CreateInstances2 10 10 20 1001 3000
 
 
-for i in {1001..3000}; do
+for i in {300..400}; do
 
 echo "=== Lancement de l'itération $i ==="
 java \

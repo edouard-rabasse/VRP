@@ -5,7 +5,7 @@
 <entry key="RESULT_FOLDER">./results/configurationUpperRight2/</entry> 
 
 <entry key="COORDINATES_FOLDER">./instances/</entry>
-<entry key="ARCS_MODIFIED_FOLDER">./results/configuration1/</entry> <!-- Folder where the original arcs are stored -->
+<entry key="ARCS_MODIFIED_FOLDER">./results/configurationUpperRight2/</entry> <!-- Folder where the original arcs are stored -->
 <entry key="COMPARISON_FOLDER">./results/configurationUpperRight/</entry>
 
 
