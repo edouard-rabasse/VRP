@@ -35,7 +35,7 @@
 
 <entry key="FIXED_ARCS_DISTANCE">-100</entry>
 <entry key="CUSTOM_COST_MULTIPLIER">0</entry>
-<entry key="DEFAULT_WALK_COST">5</entry>
+<entry key="DEFAULT_WALK_COST">1</entry>
 
 <entry key="CONFIG_FOR_CONSTRAINTS_FOLDER">./config/configuration7.xml</entry>
 

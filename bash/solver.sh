@@ -16,8 +16,8 @@
 MODEL="resnet"
 
 list_thresholds=(0.0000002)
-list_walking=(5)
-list_multiplier=(1 2 0.5)
+list_walking=(1)
+list_multiplier=(1 0.5)
 
 
 GUROBI_VERSION="11.0.0"
