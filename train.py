@@ -1,3 +1,10 @@
+"""
+Training script for VRP neural network models.
+
+Handles model training with configurable architectures, data loading,
+and experiment tracking via Weights & Biases.
+"""
+
 import os
 import time
 import hydra
@@ -11,13 +18,24 @@ from src.train_functions import train
 from src.utils.config_utils import load_selection_config
 
 
-def initialize_device():
+def initialize_device() -> torch.device:
+    """Initialize and return the best available computing device."""
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"[Train] device={device}, CUDA={torch.cuda.is_available()}")
     return device
 
 
-def load_model_and_data(cfg, device):
+def load_model_and_data(cfg: DictConfig, device: torch.device) -> tuple:
+    """
+    Load model and data loaders based on configuration.
+
+    Args:
+        cfg: Training configuration
+        device: PyTorch device for computation
+
+    Returns:
+        Tuple of (model, train_loader, test_loader)
+    """
     start = time.perf_counter()
     model = load_model(cfg.model.name, device, cfg.model)
     print(
@@ -32,7 +50,17 @@ def load_model_and_data(cfg, device):
     return model, train_loader, test_loader
 
 
-def init_wandb(cfg, model):
+def init_wandb(cfg: DictConfig, model: torch.nn.Module) -> wandb.sdk.wandb_run.Run:
+    """
+    Initialize Weights & Biases experiment tracking.
+
+    Args:
+        cfg: Training configuration
+        model: PyTorch model to track
+
+    Returns:
+        W&B run object for logging metrics
+    """
     start = time.perf_counter()
     run = wandb.init(
         project="VRP",
@@ -46,7 +74,15 @@ def init_wandb(cfg, model):
     return run
 
 
-def save_model_if_needed(cfg, model, name):
+def save_model_if_needed(cfg: DictConfig, model: torch.nn.Module, name: str) -> None:
+    """
+    Save model checkpoint if specified in configuration.
+
+    Args:
+        cfg: Configuration with save settings
+        model: Trained model to save
+        name: Model name for checkpoint file
+    """
     if cfg.save_model:
         from src.utils.utils import save_model
 

@@ -6,15 +6,18 @@ import torch
 
 def show_mask_on_image(
     input: torch.Tensor, heatmap: np.ndarray, alpha=0.5, interpolation=cv2.INTER_NEAREST
-):
+) -> np.ndarray:
     """
-    Overlay the heatmap on the input image.
-    ## Args:
-    - input_tensor (torch.Tensor): The input tensor to the model, dimension (N, C, H, W) or (C, H, W), in RGB format.
-    - heatmap (numpy.ndarray): The heatmap to overlay.
-    - alpha (float): The transparency level for the overlay. Higher values mean more of the input image is visible.
-    ## Returns:
-    - overlay (numpy.ndarray): The overlayed image.
+    Overlay heatmap on input image with transparency.
+
+    Args:
+        input: Input tensor (N,C,H,W) or (C,H,W) in RGB format
+        heatmap: Heatmap array to overlay
+        alpha: Transparency level (higher = more input visible)
+        interpolation: OpenCV interpolation method
+
+    Returns:
+        Overlayed image as numpy array
     """
     # Resize to match input
     if len(input.shape) == 4:

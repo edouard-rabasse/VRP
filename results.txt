@@ -1,5 +1,0 @@
-Total instances: 79
-Valid instances: 29
-Equal instances: 2
-Average cost difference: 0.01
-Total time taken: 626.47 seconds

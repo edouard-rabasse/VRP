@@ -1,14 +1,14 @@
-def read_arcs(file_path, type="original", number_of_fields=None):
+def read_arcs(file_path: str, type: str = "original", number_of_fields: int = None) -> list:
     """
-    Reads arcs from a file and returns them as a list of tuples.
-    Automatically deduces the type based on the number of fields in each line.
-
+    Read VRP arcs from semicolon-separated file.
+    
     Args:
-        file_path (str): Path to the file containing arc data.
-        type (str, optional): Type of arcs to read. Obsolete
-
+        file_path: Path to arc data file  
+        type: Arc type (obsolete parameter)
+        number_of_fields: Number of fields to read per arc
+        
     Returns:
-        list: A list of tuples representing the arcs.
+        List of arc tuples
     """
     arcs = []
     with open(file_path, "r") as file:
@@ -33,17 +33,17 @@ def read_arcs(file_path, type="original", number_of_fields=None):
     return arcs
 
 
-def binarize_arcs(arcs, threshold=0, index=3):
+def binarize_arcs(arcs: list, threshold: float = 0, index: int = 3) -> list:
     """
-    Binarizes the arcs based on a threshold value.
-
+    Convert arc values to binary based on threshold.
+    
     Args:
-        arcs (list): List of arcs, where each arc is a tuple.
-        threshold (float): Threshold value for binarization.
-        index (int): Index of the field to apply the threshold.
-
+        arcs: List of arc tuples
+        threshold: Threshold for binarization  
+        index: Field index to apply threshold on
+        
     Returns:
-        list: List of arcs with binarized values.
+        List of arcs with binarized values
     """
     binarized_arcs = []
     for arc in arcs:
@@ -109,8 +109,17 @@ def isolate_top_arcs(flagged_arcs: list[tuple], index=4, number=3):
         raise ValueError(f"Failed to isolate top arcs: {e}") from e
 
 
-def get_arc_name(index, suffix: int | str = 1) -> str:
-    """Returns the arc name as a string."""
+def get_arc_name(index: int, suffix: int | str = 1) -> str:
+    """
+    Generate standardized arc filename.
+    
+    Args:
+        index: Instance index number
+        suffix: Configuration suffix
+        
+    Returns:
+        Formatted arc filename string
+    """
     return f"Arcs_{index}_{suffix}.txt"
 
 

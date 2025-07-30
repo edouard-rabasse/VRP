@@ -1,7 +1,12 @@
-# File: src/pipeline/optimized_pipeline.py
+"""
+Optimized VRP pipeline for route prediction and visualization.
 
-## TODO: retrieve costs with java and all
-
+This module provides the main pipeline for:
+- Loading VRP instances and models
+- Running optimization algorithms
+- Generating heatmaps and visualizations
+- Computing route quality scores
+"""
 
 import time
 from pathlib import Path
@@ -19,17 +24,29 @@ from src.pipeline.scoring import Scoring
 from src.transform import image_transform_test
 from src.graph.graph_flagging import flag_graph_from_data
 from src.graph import generate_plot_from_dict, plot_routes
-
-from src.transform import image_transform_test
 from src.visualization import get_heatmap
 
 
-def current_time():
+def current_time() -> float:
+    """Get current high-resolution time for performance measurements."""
     return time.perf_counter()
 
 
 class OptimizedVRPPipeline:
-    def __init__(self, cfg: DictConfig | None = None):
+    """
+    Main pipeline for VRP optimization and analysis.
+
+    Integrates model inference, solver execution, and visualization
+    to provide end-to-end VRP route analysis capabilities.
+    """
+
+    def __init__(self, cfg: DictConfig | None = None) -> None:
+        """
+        Initialize pipeline with configuration.
+
+        Args:
+            cfg: Configuration object with model, solver, and file settings
+        """
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.cfg = cfg
 
@@ -56,6 +73,21 @@ class OptimizedVRPPipeline:
         threshold: float = 0.2,
         heatmap: np.ndarray | None = None,
     ) -> tuple[list, list, np.ndarray]:
+        """
+        Flag arcs likely to be modified based on model heatmap analysis.
+
+        Args:
+            instance: VRP instance identifier
+            suffix: File suffix for arc data
+            config_number: Configuration identifier
+            return_weighted_sum: Whether to return weighted arc scores
+            top_n_arcs: Limit to top N arcs (if specified)
+            threshold: Minimum threshold for arc flagging
+            heatmap: Pre-computed heatmap (optional)
+
+        Returns:
+            Tuple of (flagged_arcs, coordinates, heatmap)
+        """
         coords, depot = self.files.load_coordinates(instance)
         arcs = self.files.load_arcs(
             instance, config_number=config_number, suffix=suffix

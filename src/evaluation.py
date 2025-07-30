@@ -1,27 +1,30 @@
-# evaluation.py : code for evaluating models and generating confusion matrices
+"""
+Model evaluation utilities for VRP classification tasks.
+
+Provides functions for computing confusion matrices and other
+evaluation metrics for trained neural network models.
+"""
 
 import torch
 from sklearn.metrics import confusion_matrix
 import numpy as np
 
 
-def get_confusion_matrix(model, test_loader, device="cuda"):
+def get_confusion_matrix(
+    model: torch.nn.Module, 
+    test_loader: torch.utils.data.DataLoader, 
+    device: str = "cuda"
+) -> np.ndarray:
     """
-    Calcule la matrice de confusion pour `model` sur `test_loader`.
+    Compute confusion matrix for model predictions on test data.
 
-    Parameters
-    ----------
-    model : torch.nn.Module
-        Réseau déjà chargé et, si besoin, envoyé sur `device`.
-    test_loader : torch.utils.data.DataLoader
-        DataLoader de validation / test (batch, label, _).
-    device : str, optional
-        "cuda" ou "cpu" (par défaut "cuda").
+    Args:
+        model: Trained PyTorch model for evaluation
+        test_loader: DataLoader containing test data batches
+        device: Computation device ("cuda" or "cpu")
 
-    Returns
-    -------
-    numpy.ndarray
-        Matrice de confusion (shape : [n_classes, n_classes]).
+    Returns:
+        Confusion matrix as numpy array of shape [n_classes, n_classes]
     """
     model.eval()
     all_preds, all_targets = [], []

@@ -1,25 +1,38 @@
-# utils.py : utility functions for loading and saving models, and loading configurations
+"""
+Utility functions for model and configuration management.
+
+Provides common operations like saving/loading models and
+parsing configuration files.
+"""
 
 import yaml
 from types import SimpleNamespace
 from omegaconf import DictConfig, OmegaConf
-
 import torch
 
 
-def save_model(model, path):
-    """Saves the model to the specified path.
-    Only for pyTorch models.
+def save_model(model: torch.nn.Module, path: str) -> None:
+    """
+    Save PyTorch model state dictionary to file.
+
     Args:
-        model (torch.nn.Module): The model to save.
-        path (str): The path to save the model to.
+        model: PyTorch model to save
+        path: Output file path for model weights
     """
     torch.save(model.state_dict(), path)
     print(f"Model saved to {path}")
 
 
-def load_cfg_yaml(path: str):
-    """Load a YAML file and return a dot-accessible namespace."""
+def load_cfg_yaml(path: str) -> SimpleNamespace:
+    """
+    Load YAML configuration file as dot-accessible namespace.
+
+    Args:
+        path: Path to YAML configuration file
+
+    Returns:
+        Configuration object with dot notation access
+    """
     with open(path, "r") as f:
         raw = yaml.safe_load(f)
 
@@ -34,7 +47,15 @@ def load_cfg_yaml(path: str):
 
 
 def load_cfg(path: str) -> SimpleNamespace:
-    """Lit un YAML OmegaConf et renvoie un objet dot-accessible."""
+    """
+    Load OmegaConf YAML configuration as namespace object.
+
+    Args:
+        path: Path to YAML configuration file
+
+    Returns:
+        Configuration object with dot notation access
+    """
     cfg: DictConfig = OmegaConf.load(path)
 
     # # ─ Optionnel : conversion en SimpleNamespace (utile pour ton code existant)

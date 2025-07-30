@@ -2,23 +2,16 @@
 
 This repository contains an optimized iterative pipeline that combines PyTorch-based arc flagging with Vehicle Routing Problem (VRP) solving. The main improvement is that the PyTorch model is loaded once and reused across iterations, significantly improving performance.
 
-## Key Features
-
-- **Model Reuse**: Load PyTorch model once and reuse across iterations (significant speedup)
-- **Custom Arc Costs**: Integration with CustomArcCostMatrix for modifying arc costs based on flagged arcs
-- **Iterative Optimization**: Automatic loop combining arc flagging with VRP solving
-- **Performance Monitoring**: Built-in timing and convergence tracking
-- **Flexible Configuration**: Configurable parameters for walking/driving cost multipliers
-
 ## Files Overview
 
 ### Core Pipeline Files
+
 - `iterative_optimization.py` - Main optimized pipeline class
 - `custom_cost_integration.py` - Helper functions for custom cost file creation
-- `test_iterative_optimization.py` - Test scripts and benchmarks
-- `run_vrp_solver.sh` - Shell script to run Java VRP solver
+- `run_vrp_solver.sh` - Shell script to run iteratvie VRP solver
 
 ### Java VRP Solver Integration
+
 - `MSH/MSH/src/split/SplitWithEdgeConstraints.java` - Modified with custom cost calculation
 - `MSH/MSH/src/distanceMatrices/CustomArcCostMatrix.java` - Custom cost storage
 - `MSH/MSH/src/pulseStructures/PulseHandlerCC.java` - Pulse algorithm with custom costs
@@ -66,29 +59,7 @@ cost_file = create_custom_cost_file_from_flagged_arcs(
 )
 ```
 
-## Performance Improvements
 
-The optimized pipeline provides significant performance improvements:
-
-### Before (Original Pipeline)
-- Model loaded every iteration
-- ~15-30 seconds per iteration (depending on model size)
-- High memory usage due to repeated loading
-
-### After (Optimized Pipeline)
-- Model loaded once at initialization
-- ~2-5 seconds per iteration (flagging only)
-- Lower memory usage and better GPU utilization
-- **3-6x speedup** for the arc flagging component
-
-### Benchmark Results (Example)
-```
-=== BENCHMARK RESULTS ===
-Average time with model loading: 18.42s
-Average time with model reuse: 3.15s
-Speedup factor: 5.85x
-Time saved per iteration: 15.27s
-```
 
 ## Bug Fixes Applied
 
@@ -131,6 +102,7 @@ python test_java_command.py
 ```
 
 This will validate:
+
 - All required files exist
 - Gurobi installation paths are correct
 - Java command executes properly
@@ -139,11 +111,13 @@ This will validate:
 ## Testing
 
 ### Run All Tests
+
 ```bash
 python test_iterative_optimization.py --test all
 ```
 
 ### Run Specific Tests
+
 ```bash
 # Test single instance processing
 python test_iterative_optimization.py --test single
