@@ -175,3 +175,10 @@ Les modèles de ML
 La génération des données.
 
 Nettoyer le code.
+
+# 29/07
+augmenter dataset
+combiner segmentation et class pour le rectangle ?
+
+Proposer 3, 6 ou 9
+Prendre la meilleure et la pire parmi ces 3, 6 ou 9.

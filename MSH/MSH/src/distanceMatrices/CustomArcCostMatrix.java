@@ -58,10 +58,6 @@ import globalParameters.GlobalParameters;
  * </ul>
  * </p>
  * 
- * <p>
- * Thread safety: This class is not thread-safe.
- * </p>
- * 
  * @author edouard-rabasse
  * @version 1.0
  */
@@ -158,6 +154,7 @@ public class CustomArcCostMatrix {
                 double cost = Double.parseDouble(parts[3]);
 
                 addCustomCost(tail, head, mode, cost);
+                // addCustomCost(head, tail, mode, cost); // TODO
             }
         }
 
@@ -297,7 +294,9 @@ public class CustomArcCostMatrix {
 
                             // Apply the lambda factor immediately since it's flagged
                             double newCost = defaultCost * (1.0 + lambda);
-                            customCosts.put(key, newCost);
+                            // customCosts.put(key, newCost);
+                            addCustomCost(tail, head, mode, newCost);
+                            addCustomCost(head, tail, mode, newCost);
 
                         }
                     }
