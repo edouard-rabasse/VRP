@@ -6,7 +6,8 @@ This repository contains an optimized iterative pipeline that combines PyTorch-b
 
 ### Core Pipeline Files
 
-- `iterative_solver.py` - Main optimized pipeline class
+- `iterative_solver.py` - Main optimized pipeline class.
+ - This files will run the iterative solver and return the csv files with the results of the iterations. In order for ir to work, you need to have the configuration1 arc files and the coordinates files existing. The .pth file referred in the config.model.weight_path must also exist.
 - `train.py` - Function to train your computer vision model
 - `visualize.py` - Function to see the output of your matrix.
 
@@ -107,6 +108,21 @@ This part is based on the work of Nicolas Cabrera. It is where we implemnted the
 
 ## Quick Start
 
+### Downloading the model
+
+You can either train your own model, or reuse the one provided in this repo.
+To download the pre-trained_model, run:
+
+```bash
+pip install huggingface-hub
+python download_model.py
+```
+
+## Data
+Although you could generate your own instances
+You can unzip the Coordinates files from instances.zip in the MSH/MSH/instances folder. 
+You can unzip the arcs files from results.zip in the MSH/MSH/results folder.
+
 ### Examples
 
 Training
@@ -162,21 +178,6 @@ cost_file = create_custom_cost_file_from_flagged_arcs(
 )
 ```
 
-**Problem**: The original pipeline used a simple JAR execution command, but the VRP solver requires proper Gurobi integration.
-
-**Solution**: Updated the `run_vrp_solver` method to use the correct Java command format:
-
-```bash
-java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi1201\win64\lib\gurobi.jar" main.Main_customCosts Coordinates_X.txt Arcs_X_1.txt configurationCustomCosts.xml
-```
-
-**Key Changes**:
-
-- Proper Gurobi classpath and library path configuration
-- Enhanced error reporting with stdout/stderr capture
-- File validation checks for required inputs
-- Support for different arc file suffixes
-
 ### Prerequisites
 
 1. **Java 8+** with proper PATH configuration
@@ -184,25 +185,9 @@ java -Xmx14000m "-Djava.library.path=C:\gurobi1201\win64\bin" -cp "bin;C:\gurobi
 3. **Python 3.8+** with required packages:
 
    ```bash
-   pip install torch torchvision matplotlib hydra-core
+   pip install -r requirements.txt
    ```
 
-### Testing Java Integration
-
-Before running the full pipeline, test the Java command integration:
-
-```bash
-python test_java_command.py
-```
-
-This will validate:
-
-- All required files exist
-- Gurobi installation paths are correct
-- Java command executes properly
-- Result parsing works correctly
-
-## Testing
 
 ### Run All Tests
 
@@ -244,7 +229,21 @@ Then you can run
 ```bash
 python iterative_solver.py [+overrides]
 ```
+This will save in the output folder a folder containing csv files with the results of the iterations.
 
 ### MSH folder
 
-
+The MSH folder contains the Java code for the PLRP solver. There are different main classes:
+- CreateInstances.java: Creates the coordinates files in the instances/ folder
+  - java main.CreateInstances maxX maxY numClients initialInstanceID finalInstanceID
+  - This command will create the coordinates file from instance initialInstanceID to finalInstanceID with maxX and maxY as the maximum coordinates.
+- Main_customCosts.java (NOT USED ANYMORE): This class refines a solution but with custom costs associated with the arcs. If no arc file is provided, it will only use the cost provided. Otherwise, it can also refine the solution based on the flagged arcs.
+  - java main.CustomCosts coordinatesFile costFile config_file(.xml) arcsFile(can be None)
+  - This command will create the custom costs files from instance initialInstanceID to finalInstanceID.
+- Main_refineMSH.java: New version of Main_CustomCosts : it reruns a Sampling and Splitting for each route
+- Main_Gurobi.java: This class creates a solution given a config file and a Coordinates file. It is the class used to create the configuration1.
+  - java main.Main_Gurobi ExperimentsAllSets.txt instanceNumber config_file(.xml)
+  - The ExperimentsAllSets.txt file simply contains for each row i the name "Coordinates_i.txt. I didn't modify the API.
+- Main_refineEasy.java: Used to create configurationEasy. It simply stops walking loops before it gets too long.
+- Main_refineUpperRightConstraint.java: Used to create configurationUpperRightConstraint. This is a version of the refiner that doesn't allow the walking route to go in the Upper Right corner of the map.
+  - java main.Main_refineUpperRightConstraint coordinatesFile costFile config_file(.xml) arcsFile(can be None)

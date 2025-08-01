@@ -7,22 +7,10 @@ import globalParameters.GlobalParametersReader;
 import model.Manager;
 
 /**
- * This class is used when we want to impose a tighter constraint
- * to see how the solution will change. For example, instead of having a
- * maximum walking distance of 2km let's use 1km, or so on..
+ * This class is used to refine the solution of the MSH algorithm but prohibits
+ * any walking segment in the upper right quadrant
  * 
- * We will keep the order in which the customers are visited, but for the
- * rest..we will let the algorithm decide. (The split from villegas).
- * 
- * This class relies on the fact that the MSH was already used to solve all
- * instances,
- * and that the solutions are available. To avoid errors, if the solution is not
- * available
- * it immediately stops the algorithm.
- * 
- * MAIN DIFFERENCE: WE CHANGE EACH ROUTE !!!
- * 
- * @author nicolas.cabrera-malik
+ * @author Edouard Rabasse
  *
  */
 public class Main_refineUpperRightConstraint {
