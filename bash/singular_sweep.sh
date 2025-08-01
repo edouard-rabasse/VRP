@@ -14,7 +14,7 @@ module load python/3.11 scipy-stack/2023b opencv/4.10.0
 virtualenv --no-download "$SLURM_TMPDIR/env"
 source "$SLURM_TMPDIR/env/bin/activate"
 pip install --no-index --upgrade pip
-pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
+pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements.txt"
 
 
 ### comment the second line and uncomment the first to use the local wandb ###

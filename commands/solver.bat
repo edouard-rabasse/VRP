@@ -12,7 +12,7 @@ for %%t in (%thresholds%) do (
         for %%m in (%multipliers%) do (
             echo === Running: threshold=%%t walking=%%w multiplier=%%m ===
 
-            python optimized_vrp_pipeline.py ^
+            python iterative_solver.py ^
                 solver.threshold=%%t ^
                 solver.walking=%%w ^
                 solver.multiplier=%%m

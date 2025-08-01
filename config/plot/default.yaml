@@ -12,7 +12,7 @@ mask_output_folder: ${hydra:runtime.cwd}/data/MSH/
 special: ""
 
 ## for test_train
-mask_split_output_folder: ${hydra:runtime.cwd}/data/
+split_output_folder: ${hydra:runtime.cwd}/data/
 train_ratio: 0.75
 random_state: 123
 

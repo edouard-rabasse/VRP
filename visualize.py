@@ -9,6 +9,7 @@ Usage:
 
     For image processing:
         python visualize.py
+        It will select the images in the path specified in the config file : data.test_origin
 
     For VRP text file processing:
         python visualize.py processor_type=txt coords_dir=path/to/coords arcs_dir=path/to/arcs

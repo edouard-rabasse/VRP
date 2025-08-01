@@ -30,7 +30,7 @@ dans le terminal.
 
 ## pour obtenir la liste des requirements clean
 
-    pip list --format=freeze --exclude-editable > requirements-clean.txt
+    pip list --format=freeze --exclude-editable > requirements.txt
 Pas de paquet d'une build locale
 
 ## Pour modifier un élément de config hydra

@@ -1,1 +1,1 @@
-pip list --format=freeze --exclude-editable > requirements-clean2.txt
+pip list --format=freeze --exclude-editable > requirements2.txt

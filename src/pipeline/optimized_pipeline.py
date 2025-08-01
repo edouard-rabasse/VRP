@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from omegaconf import DictConfig
 import numpy as np
 
-from src.pipeline.config import BASE_DIR, override_java_param
+from src.pipeline.config import override_java_param
 from src.pipeline.model_loader import ModelLoader
 from src.pipeline.file_service import FileService
 from src.pipeline.solver_client import SolverClient
@@ -53,10 +53,12 @@ class OptimizedVRPPipeline:
         # Services
         self.model = ModelLoader(self.cfg.model, self.device).load()
         self.files = FileService(
-            BASE_DIR, self.cfg.solver.instance_folder, self.cfg.solver.result_folder
+            self.cfg.base_dir,
+            self.cfg.solver.instance_folder,
+            self.cfg.solver.result_folder,
         )
         self.solver = SolverClient(
-            msh_dir=BASE_DIR,
+            msh_dir=self.cfg.base_dir,
             java_lib=Path(self.cfg.solver.java_lib),
             program_name=self.cfg.solver.program_name,
             custom_args=self.cfg.solver.custom_args,

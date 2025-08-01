@@ -1,12 +1,12 @@
 
-
+base_dir_msh: "MSH/MSH"
 
 java_parent: C:/gurobi1201/win64
 java_lib: ${solver.java_parent}/lib
 java_bin: ${solver.java_parent}/bin
 config_name: "configurationCustomCosts2.xml" #Located in the MSH/MSH/folder, for the Java run
 
-program_name: "main.Main_refineMSH"
+program_name: "main.Main_refineMSH" # Java main class to run
 
 custom_args:
 - "-Xmx2000m"
@@ -15,7 +15,7 @@ custom_args:
 - "bin;${solver.java_lib}/gurobi.jar"
 
 
-config: "CustomCosts" # suffix for the result folder
+config: "CustomCosts" # suffix for the result folder, where
 org_config: "1"
 
 plot: false
