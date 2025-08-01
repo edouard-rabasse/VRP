@@ -1,3 +1,4 @@
+base_dir_msh: "MSH/MSH"
 
 java_parent: "${env:EBROOTGUROBI}"
 java_lib: "${solver.java_parent}/lib"

@@ -14,7 +14,7 @@ matplotlib.use("Agg")  # Backend non interactif
 import matplotlib.pyplot as plt
 
 from src.graph import read_arcs, read_coordinates, plot_routes
-from src.mask import get_mask, get_mask_pixelised, get_removed_lines
+from src.graph.mask import get_mask, get_mask_pixelised, get_removed_lines
 
 
 class VRPGraphDataset(Dataset):

@@ -1,28 +1,27 @@
-# This module provides functions to read node coordinates from a file and to generate coordinate file names.
-# Functions:
-#     read_coordinates(file_path, type="original", keep_service_time=True) -> tuple[dict, int]:
-#         Reads coordinates from a file and returns them as a dictionary along with the last node ID (depot).
-#         Supports two types of coordinate formats: "original" and "modified".
-#         Optionally includes service time and coordinate type information.
-#     get_coordinates_name(index):
-#         Returns the coordinates file name as a string based on the given index.
+"""
+VRP coordinate file reading utilities.
+
+Functions for reading node coordinates from VRP instance files
+and generating standardized coordinate filenames.
+"""
+
+
 def read_coordinates(
-    file_path, type="original", keep_service_time=True
+    file_path: str, type: str = "original", keep_service_time: bool = True
 ) -> tuple[dict, int]:
-    """Reads coordinates from a file and returns them as a dictionary.
+    """
+    Read VRP node coordinates from comma-separated file.
 
     Args:
-        file_path (str): Path to the coordinates file.
-        type (str, optional): Type of coordinates to read. Defaults to "original".
-        keep_service_time (bool, optional): Whether to keep service time information. Defaults to False.
-
-    Raises:
-        ValueError: If an invalid type is specified.
+        file_path: Path to coordinates file
+        type: Coordinate format type ("original" or "modified")
+        keep_service_time: Whether to include service time data
 
     Returns:
-        tuple: A tuple containing:
-            - coordinates (dict): dict: {node_id: (x, y, [service_time], [co_type])}
-            - last_node (int): The last node ID (depot)
+        Tuple of (coordinates_dict, depot_node_id)
+
+    Raises:
+        ValueError: If invalid type specified
     """
 
     coordinates = {}
@@ -59,6 +58,14 @@ def read_coordinates(
     return coordinates, last_node
 
 
-def get_coordinates_name(index):
-    """Returns the coordinates name as a string."""
+def get_coordinates_name(index: int) -> str:
+    """
+    Generate standardized coordinates filename.
+
+    Args:
+        index: Instance index number
+
+    Returns:
+        Formatted coordinates filename string
+    """
     return f"Coordinates_{index}.txt"

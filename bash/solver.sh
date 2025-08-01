@@ -49,7 +49,7 @@ echo "➡️ Lancement Java avec classe $MAIN_CLASS"
 virtualenv --no-download "$SLURM_TMPDIR/env"
 source "$SLURM_TMPDIR/env/bin/activate"
 pip install --no-index --upgrade pip
-pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
+pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements.txt"
 
 
 for threshold in "${list_thresholds[@]}"; do
@@ -57,7 +57,7 @@ for threshold in "${list_thresholds[@]}"; do
         for multiplier in "${list_multiplier[@]}"; do
             echo "=== Running: threshold=$threshold walking=$walking multiplier=$multiplier ==="
             
-            python optimized_vrp_pipeline.py \
+            python iterative_solver.py \
                 solver=host \
                 solver.threshold=$threshold \
                 solver.walking=$walking \

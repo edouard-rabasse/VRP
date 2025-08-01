@@ -56,7 +56,7 @@ def main(cfg: DictConfig) -> None:
     # will be split into "./splits/train/..." and "./splits/test/..."
     src_dirs = ["mask_removed_color", "mask_removed", "mask_classic"]
     input_dir = cfg.mask_output_folder
-    output_dir = cfg.mask_split_output_folder
+    output_dir = cfg.split_output_folder
 
     for src_dir in src_dirs:
 

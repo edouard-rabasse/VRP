@@ -1,4 +1,9 @@
-# transform.py : No longer in use.
+"""
+Image transformation utilities for VRP neural networks.
+
+Provides preprocessing transforms for training and inference,
+including normalization, resizing, and augmentation.
+"""
 
 import torch
 from torchvision import transforms
@@ -9,16 +14,19 @@ mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
 
 
-def denormalize(tensor, mean=mean, std=std):
+def denormalize(
+    tensor: torch.Tensor, mean: list = mean, std: list = std
+) -> torch.Tensor:
     """
-    Denormalize a tensor image using mean and std lists.
+    Denormalize tensor using ImageNet statistics.
 
     Args:
-        tensor (torch.Tensor): Normalized image tensor of shape (C, H, W) or (N, C, H, W).
-        mean (list or tuple): Sequence of means for each channel.
-        std (list or tuple): Sequence of standard deviations for each channel.
+        tensor: Normalized image tensor (C,H,W) or (N,C,H,W)
+        mean: Per-channel means for denormalization
+        std: Per-channel standard deviations for denormalization
+
     Returns:
-        torch.Tensor: Denormalized image tensor.
+        Denormalized image tensor
     """
     # If tensor has batch dimension (N, C, H, W)
     if tensor.ndim == 4:
@@ -32,14 +40,19 @@ def denormalize(tensor, mean=mean, std=std):
     return tensor
 
 
-def image_transform_train(size=(224, 224), mean=mean, std=std):
+def image_transform_train(size: tuple = (224, 224), mean: list = mean, std: list = std):
     """
-    Transform for training images.
+    Create training image transformation pipeline.
+
     Args:
-        image (PIL Image): Input image.
+        size: Target image dimensions (height, width)
+        mean: Normalization means per channel
+        std: Normalization standard deviations per channel
+
     Returns:
-        torch.Tensor: Transformed image tensor.
+        Composed torchvision transform for training
     """
+
     return transforms.Compose(
         [
             transforms.Resize(

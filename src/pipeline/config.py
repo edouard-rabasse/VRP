@@ -11,15 +11,15 @@ BASE_DIR = Path(__file__).parent.parent.parent / "MSH" / "MSH"
 # Default Hydra overrides
 
 
-def get_cfg(overrides: list[str] | None = None):
-    """
-    Charge la configuration Hydra.
-    """
-    OmegaConf.register_new_resolver(
-        "env", lambda var_name: os.environ.get(var_name, "")
-    )
-    with initialize(version_base=None, config_path="../../config"):
-        return compose(config_name="config", overrides=overrides or DEFAULT_OVERRIDES)
+# def get_cfg(overrides: list[str] | None = None):
+#     """
+#     Charge la configuration Hydra.
+#     """
+#     OmegaConf.register_new_resolver(
+#         "env", lambda var_name: os.environ.get(var_name, "")
+#     )
+#     with initialize(version_base=None, config_path="../../config"):
+#         return compose(config_name="config", overrides=overrides or DEFAULT_OVERRIDES)
 
 
 def override_java_param(config_path: str, overrides: dict):

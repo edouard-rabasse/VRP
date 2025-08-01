@@ -1,40 +1,13 @@
 """
-This module provides a registry and loader functions for various neural network models used in visual scoring and segmentation tasks.
-Available Models:
-    - VisualScoringModel (CNN-based)
-    - MultiTaskVisualScoringModel (multi-task learning)
-    - VGG-based models (classification and segmentation)
-    - MultiTaskVGG (multi-task VGG)
-    - ResNetScoringModel (ResNet-based)
-    - DeiT-tiny (Vision Transformer)
-    - SegmentVGG (VGG-based segmentation)
-Functions:
-    - load_model(model_name: str, device: torch.device, cfgm) -> nn.Module:
-        Builds and returns a model specified by `model_name`, moves it to the given device, and optionally loads pretrained weights if specified in `cfgm`.
-Model Loader Functions (internal use):
-    - _load_cnn(cfgm, device): Loads a VisualScoringModel.
-    - _load_deit_tiny(cfgm, device): Loads a DeiT-tiny model.
-    - _load_multi_task(cfgm, device): Loads a MultiTaskVisualScoringModel.
-    - _load_vgg(cfgm, device): Loads a VGG model.
-    - _load_MFCN(cfgm, device): Loads a MultiTaskVGG model.
-    - _load_resnet(cfgm, device): Loads a ResNetScoringModel.
-    - _load_vgg_segment(cfgm, device): Loads a SegmentVGG model.
-Model Registry:
-    Maps string model names to their corresponding loader functions for easy instantiation.
-Arguments:
-    model_name (str): Name of the model to load. Must be one of the keys in the registry.
-    device (torch.device): The device to which the model will be moved.
-    cfgm: Configuration object containing model parameters and options, including:
-        - image_size
-        - kernel_size
-        - mask_shape
-        - freeze
-        - grad_layer
-        - load (bool): Whether to load pretrained weights.
-        - weight_path (str): Path to the pretrained weights file.
-Raises:
-    ValueError: If an unknown model name is provided.
-    FileNotFoundError: If pretrained weights are requested but the file does not exist.
+Model registry and loader for VRP neural networks.
+
+Provides a unified interface to load various models including:
+- CNN-based models (VGG, ResNet, DeiT)
+- Multi-task models for classification and segmentation
+- Segmentation-specific models
+
+Main function:
+    load_model(model_name, device, config) -> torch.nn.Module
 """
 
 import os
@@ -116,8 +89,18 @@ _MODEL_REGISTRY = {
 
 def load_model(model_name: str, device: torch.device, cfgm) -> nn.Module:
     """
-    Dispatch to the correct model‐builder, move it to device, then optionally load weights.
-    cfgm : cfg.model
+    Load and configure a neural network model.
+
+    Args:
+        model_name: Model type identifier (e.g., 'vgg', 'resnet', 'deit_tiny')
+        device: PyTorch device for computation
+        cfgm: Model configuration object with params and weight paths
+
+    Returns:
+        Configured PyTorch model moved to specified device
+
+    Raises:
+        ValueError: If model_name is not recognized
     """
     if model_name not in _MODEL_REGISTRY:
         raise ValueError(f"Unknown model name: {model_name!r}")

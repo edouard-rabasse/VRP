@@ -1,5 +1,6 @@
 """
 heatmap_ROC.py
+This script processes heatmap metrics for VRP route analysis, generating ROC curves and other performance metrics.
 """
 
 import os

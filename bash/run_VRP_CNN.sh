@@ -29,7 +29,7 @@ pip install --no-index --upgrade pip
 # -----------------------------------------------------------------------------
 # 3. Installation des dépendances
 # -----------------------------------------------------------------------------
-pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements-clean.txt"
+pip install --no-index -r "$SLURM_SUBMIT_DIR/requirements.txt"
 
 # -----------------------------------------------------------------------------
 # 3.1. WandB non-interactif

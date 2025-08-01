@@ -25,11 +25,20 @@ from omegaconf import DictConfig
 
 class HeatmapMetric:
     """
-    Class to handle heatmap metrics, including loading the model, processing images,
-    and computing losses.
+    Generates heatmaps and computes metrics for VRP route visualization.
+
+    Compares model attention with actual route modifications to evaluate
+    explainability performance.
     """
 
-    def __init__(self, cfg: DictConfig, model: torch.nn.Module):
+    def __init__(self, cfg: DictConfig, model: torch.nn.Module) -> None:
+        """
+        Initialize with configuration and model.
+
+        Args:
+            cfg: Configuration with model and processing parameters
+            model: Pre-trained PyTorch model for heatmap generation
+        """
         self.cfg = cfg
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = model.to(self.device).eval()
@@ -37,8 +46,13 @@ class HeatmapMetric:
 
     def _init_file(self, fname: str) -> tuple:
         """
-        Helper function to initialize the file by loading the image and mask.
-        Returns the tensor of the image and the mask.
+        Initialize processing for a VRP instance file.
+
+        Args:
+            fname: VRP instance filename
+
+        Returns:
+            Tuple of processed image tensor and mask
         """
 
         self.coordinates, self.arcs_in, self.number = self._get_in_arcs_and_coords(
@@ -54,9 +68,15 @@ class HeatmapMetric:
 
         self.heatmap = self._get_heatmap(self.tensor_img)
 
-    def _get_image_tensor(self, fname: str) -> tuple:
+    def _get_image_tensor(self, fname: str) -> torch.Tensor:
         """
-        Helper function to get the the tensor of the image and the mask from the filename.
+        Convert VRP instance to image tensor for model input.
+
+        Args:
+            fname: VRP instance filename
+
+        Returns:
+            PyTorch tensor of shape (1, C, H, W) representing the image
         """
 
         img = generate_plot_from_dict(self.arcs_in, self.coordinates, self.number)
@@ -67,7 +87,18 @@ class HeatmapMetric:
 
     def _get_heatmap(self, t_img: torch.Tensor) -> np.ndarray:
         """
-        Helper function to compute the heatmap from the tensor of the image.
+        Generate heatmap from input image tensor using configured method.
+
+        Uses the specified heatmap generation method (e.g., GradCAM, Grad Rollout)
+        to create an attention/saliency map showing which parts of the VRP instance
+        the model focuses on for its predictions.
+
+        Args:
+            t_img: Input image tensor of shape (1, C, H, W) representing the VRP instance
+
+        Returns:
+            2D numpy array representing the heatmap with values normalized to [0, 1],
+            where higher values indicate regions of higher model attention
         """
         heatmap = get_heatmap(
             self.cfg.heatmap.method,

@@ -1,5 +1,8 @@
 """
-Unified data loader that chooses between mask-based and graph-based datasets.
+Unified data loader for VRP datasets.
+
+Supports both mask-based and graph-based data loading strategies
+based on configuration settings.
 """
 
 from src.data_loader_mask import load_data_train_test
@@ -10,11 +13,19 @@ from src.utils.config_utils import load_selection_config
 from src.transform import image_transform_train, image_transform_test, mask_transform
 
 
-def load_data(cfg):
+def load_data(cfg) -> tuple[DataLoader, DataLoader]:
     """
-    Return (train_loader, test_loader) based on cfg.data.loader:
-      - 'mask': uses load_data_train_test
-      - 'graph': uses get_graph_dataloader for train and test
+    Load train and test data loaders based on configuration.
+    
+    Args:
+        cfg: Configuration object specifying loader type and parameters
+        
+    Returns:
+        Tuple of (train_loader, test_loader)
+        
+    Supported loader types:
+        - 'mask': Image-mask pairs for segmentation tasks
+        - 'graph': Graph-based VRP instances for classification
     """
     loader_type = cfg.data.loader
     if loader_type == "mask":
