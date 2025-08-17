@@ -178,6 +178,11 @@ class HeatmapMetric:
         else:
             correct_best = False
 
+        if top_arc[:3] in arcs_diff and top_arc[2] == 2:
+            correct_best_walk = True
+        else:
+            correct_best_walk = False
+
         number_common = len(common_arcs)
         number_diff = len(arcs_diff)
 
@@ -213,6 +218,7 @@ class HeatmapMetric:
             "false_positive_rate": false_positive_rate,
             "intersection_over_union": intersection_over_union,
             "correct_best": correct_best,
+            "correct_best_walk": correct_best_walk,
         }
 
     def process_image(self, fname: str, list_threshold) -> list:
@@ -233,6 +239,9 @@ class HeatmapMetric:
             - recall: Recall of the heatmap
             - f1: F1 score of the heatmap
             - false_positive_rate: False Positive Rate of the heatmap
+            - intersection_over_union: Intersection over Union of the heatmap
+            - correct_best: Whether the best arc is correctly identified
+            - correct_best_walk: Whether the best arc is correctly identified for walk
         """
         self._init_file(fname)
 

@@ -13,6 +13,7 @@ def process_image_pairs(
     pixel_size=10,
     method="default",
     colored=False,
+    delete_unchanged=False,
 ):
     """
     Process pairs of images from two directories and save masks to a third directory.
@@ -25,6 +26,7 @@ def process_image_pairs(
         pixel_size: Size of the pixel for pixelised mask computation
         method: Method to compute the mask ('default' or 'removed_lines')
         colored: Boolean to indicate if colored mask should be generated
+        delete_unchanged: If True, delete unchanged images from input directory
     """
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
@@ -71,6 +73,10 @@ def process_image_pairs(
                 )
 
             # Save mask preserving original filename
+            if delete_unchanged and cv2.countNonZero(mask) == 0:
+                os.remove(original_path)
+                os.remove(modified_path)
+                print(f"Deleted unchanged image: {filename}")
             output_path = os.path.join(output_dir, filename)
             cv2.imwrite(output_path, mask)
 
@@ -188,7 +194,7 @@ def get_removed_lines(original_image, modified_image, colored=True):
         return diff_mask_clean
 
 
-@hydra.main(config_path="../config/plot/", config_name="default", version_base=None)
+@hydra.main(config_path="../../config/plot/", config_name="default", version_base=None)
 def main(cfg: DictConfig):
     numeros = cfg.numbers
     output_dir = cfg.mask_output_folder
@@ -225,6 +231,7 @@ def main(cfg: DictConfig):
             pixel_size=1,
             method="default",
             colored=True,
+            delete_unchanged=True,  # Delete unchanged images
         )
 
 

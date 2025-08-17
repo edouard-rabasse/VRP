@@ -49,7 +49,7 @@ def split_dataset(
                 shutil.copy2(src_path, dst_path)
 
 
-@hydra.main(config_path="../config/plot/", config_name="default", version_base=None)
+@hydra.main(config_path="../../config/plot/", config_name="default", version_base=None)
 def main(cfg: DictConfig) -> None:
     # Example usage:
     # your original data in "./data/" with subfolders label0/, label1/, etc.
