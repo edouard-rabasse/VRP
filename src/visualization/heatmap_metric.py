@@ -173,6 +173,9 @@ class HeatmapMetric:
         common_arcs = [arc[:3] for arc in self.common_arcs]
         arcs_diff = [arc[:3] for arc in self.arcs_diff]
 
+        if arcs_diff == []:
+            raise Exception(f"No arcs in the difference for {self.number}")
+
         if top_arc[:3] in arcs_diff:
             correct_best = True
         else:
@@ -247,7 +250,9 @@ class HeatmapMetric:
 
         results = []
         for threshold in list_threshold:
+
             metrics = self._process_one(threshold)
+
             metrics["filename"] = fname
             metrics["threshold"] = threshold
             results.append(metrics)
