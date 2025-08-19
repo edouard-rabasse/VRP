@@ -1,1 +1,1 @@
-python .\visualize.py model=resnet data=config7 model.weight_path=checkpoints/resnet_8_30_7.pth
+python .\visualize.py model=resnet data=config7 data.test_original_path=data/plots/configuration1/

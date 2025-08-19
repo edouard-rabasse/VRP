@@ -53,12 +53,12 @@ class OptimizedVRPPipeline:
         # Services
         self.model = ModelLoader(self.cfg.model, self.device).load()
         self.files = FileService(
-            self.cfg.base_dir,
+            self.cfg.solver.base_dir_msh,
             self.cfg.solver.instance_folder,
             self.cfg.solver.result_folder,
         )
         self.solver = SolverClient(
-            msh_dir=self.cfg.base_dir,
+            msh_dir=self.cfg.solver.base_dir_msh,
             java_lib=Path(self.cfg.solver.java_lib),
             program_name=self.cfg.solver.program_name,
             custom_args=self.cfg.solver.custom_args,
