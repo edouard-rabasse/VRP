@@ -1,6 +1,6 @@
 # sweep.yaml
 program: train.py
-name: sweep_vgg_background  # 👈 Nom explicite ici
+name: sweep_vgg  # 👈 Nom explicite ici
 project: VRP
 
 command:
@@ -23,8 +23,6 @@ parameters:
   model.params.epochs:
     values: [30, 40,50]
   save_model:
-    values: [false]
-  load_model:
     values: [true]
 
   batch_size:
@@ -37,6 +35,6 @@ parameters:
   model.freeze:
     values: [false]
   data:
-    values: ["upper_right_graph"]
+    values: ["config7_new"]
   data.cfg_number:
     values: [7]

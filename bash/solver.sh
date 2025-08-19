@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --account=def-martin4
-#SBATCH --job-name=solver
+#SBATCH --job-name=solver_vgg
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
-#SBATCH --time=32:00:00
-#SBATCH --output=logs/solver-%A_%a.log
+#SBATCH --time=16:00:00
+#SBATCH --output=logs/solver_vgg-%A_%a.log
 #SBATCH --export=ALL,WANDB_API_KEY
 
 
@@ -13,11 +13,11 @@
 # a_idx = task_id / (nb * nc)
 # b_idx = (task_id / nc) % nb
 # c_idx = task_id % nc
-MODEL="resnet"
+MODEL="vgg"
 
 list_thresholds=(0.0000002)
 list_walking=(1)
-list_multiplier=(1 0.5)
+list_multiplier=(1)
 
 
 GUROBI_VERSION="11.0.0"
