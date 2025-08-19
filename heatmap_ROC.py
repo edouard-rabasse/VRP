@@ -27,8 +27,8 @@ def main(cfg: DictConfig):
     heatmap_metric = HeatmapMetric(cfg, model)
 
     # ── Paramètres ─────────────────────────────────────────────────────────
-    # thresholds = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    thresholds = [0.1]
+    thresholds = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
+    # thresholds = [0.1]
     input_dir = cfg.arcs.coord_in_dir  # dossier contenant les fichiers à traiter
     filenames = ["Coordinates_" + str(i) + ".txt" for i in range(1, 80)]
     print(f"[Viz] Found {len(filenames)} files to process.")

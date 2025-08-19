@@ -25,6 +25,7 @@ import util.SolutionPrinter;
 import validation.RouteConstraintValidator;
 import util.RouteFromFile;
 import util.RouteProcessor;
+import util.DuplicateFile;
 import split.SplitWithEdgeConstraints;
 import heuristic.HeuristicConfiguration;
 import msh.MSHExecutor;
@@ -138,6 +139,20 @@ public class Solver_gurobi {
 
 		String path = "./results/configuration1/Arcs_" + this.instance_name + "_" + GlobalParameters.SEED + ".txt";
 
+		RouteConstraintValidator validator = new RouteConstraintValidator(instance_identifier,
+				GlobalParameters.CONFIG_FOR_CONSTRAINTS_FOLDER);
+		ArrayList<Route> routes = RouteFromFile.createRoutesFromFile(path, instance_identifier);
+
+		if (validator.validateGlobalConstraints(routes)) {
+			// Copy the txt in path to the result folder
+			String outputPath = GlobalParameters.RESULT_FOLDER + "Arcs_" + this.instance_name + "_1.txt";
+			DuplicateFile.DuplicateFile(path, outputPath);
+
+			// exit the function
+			System.out.println("Routes are valid, exiting without further processing.");
+			return;
+
+		}
 		int numRoutes = RouteProcessor.countRoutesInFile(path);
 
 		// Container for all refined routes

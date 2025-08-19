@@ -176,12 +176,12 @@ class HeatmapMetric:
         if arcs_diff == []:
             raise Exception(f"No arcs in the difference for {self.number}")
 
-        if top_arc[:3] in arcs_diff:
+        if top_arc[:3] in arcs_diff and top_arc[2] == 2:
             correct_best = True
         else:
             correct_best = False
 
-        if top_arc[:3] in arcs_diff and top_arc[2] == 2:
+        if top_arc[2] == 2:
             correct_best_walk = True
         else:
             correct_best_walk = False

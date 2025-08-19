@@ -3,8 +3,8 @@ setlocal enabledelayedexpansion
 
 :: Définition des listes
 set thresholds=0.0000002
-set walkings=1.2 5
-set multipliers=1 2
+set walkings=1.2
+set multipliers=1
 
 :: Boucles imbriquées
 for %%t in (%thresholds%) do (
@@ -15,7 +15,8 @@ for %%t in (%thresholds%) do (
             python iterative_solver.py ^
                 solver.threshold=%%t ^
                 solver.walking=%%w ^
-                solver.multiplier=%%m
+                solver.multiplier=%%m^
+                model=resnet
 
             echo === Completed: threshold=%%t walking=%%w multiplier=%%m ===
         )
