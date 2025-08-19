@@ -210,6 +210,16 @@ def main(cfg: DictConfig):
         process_image_pairs(
             original_dir=plot_folder + f"configuration1{special}",
             modified_dir=plot_folder + f"configuration{numero}{special}",
+            output_dir=output_dir + f"mask_classic/mask{numero}{special}",
+            pixel_size=1,
+            method="default",
+            colored=True,
+            delete_unchanged=True,  # Delete unchanged images
+        )
+
+        process_image_pairs(
+            original_dir=plot_folder + f"configuration1{special}",
+            modified_dir=plot_folder + f"configuration{numero}{special}",
             output_dir=output_dir + f"mask_removed_color/mask{numero}{special}",
             pixel_size=1,
             method="removed_lines",
@@ -224,15 +234,7 @@ def main(cfg: DictConfig):
             colored=False,
         )
 
-        process_image_pairs(
-            original_dir=plot_folder + f"configuration1{special}",
-            modified_dir=plot_folder + f"configuration{numero}{special}",
-            output_dir=output_dir + f"mask_classic/mask{numero}{special}",
-            pixel_size=1,
-            method="default",
-            colored=True,
-            delete_unchanged=True,  # Delete unchanged images
-        )
+        
 
 
 if __name__ == "__main__":

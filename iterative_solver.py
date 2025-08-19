@@ -37,7 +37,7 @@ def main():
             multiplier=multiplier,
             threshold=threshold,
             numbers=range(301, 400),
-            max_iter=50,
+            max_iter=20,
             output_dir="output",
         )
 
