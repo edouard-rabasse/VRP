@@ -108,6 +108,8 @@ This part is based on the work of Nicolas Cabrera. It is where we implemnted the
 
 ## Quick Start
 
+The instances and arcs files are in the corresponding zip files. You can unzip them in the MSH/MSH/instances and MSH/MSH/results folders.
+
 ### Downloading the model
 
 You can either train your own model, or reuse the one provided in this repo.
