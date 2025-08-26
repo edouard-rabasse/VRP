@@ -74,6 +74,7 @@ class FirstValidDataset:
 
     def get_valid_instances_df(self) -> pd.DataFrame:
         """Get DataFrame containing only instances with first valid iterations."""
+        print(self.dataset_df.columns)
         return self.dataset_df[self.dataset_df["has_first_valid"] == True].copy()
 
     def get_invalid_instances_df(self) -> pd.DataFrame:
@@ -121,6 +122,7 @@ class FirstValidDataset:
                 print(
                     f"  Average easy cost difference: {valid_df['difference_with_easy'].mean():.2f}"
                 )
+                print(f"Number of rows in valid DataFrame: {len(valid_df)}")
 
     def save_to_csv(self, filepath: str):
         """Save the dataset to CSV."""
@@ -139,6 +141,11 @@ class FirstValidDataset:
                 )
                 self.dataset_df["difference_with_easy"] = (
                     self.dataset_df["easy_cost"] - self.dataset_df["solver_cost"]
+                )
+                print(
+                    self.dataset_df[self.dataset_df["difference_with_easy"] < 0][
+                        "instance_number"
+                    ]
                 )
                 print("Cost difference computed and added to dataset.")
         except Exception as e:

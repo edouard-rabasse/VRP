@@ -26,7 +26,8 @@ def fetch_checkpoint(
 if __name__ == "__main__":
     checkpoint_path = fetch_checkpoint(
         repo_id="Eddedc/resnet50_VRP",
-        filename="resnet_16_40_7_config7_new_0q8kbs5d.pth",
+        # filename="resnet_64_40_7_config7_new_r7f3tthy.pth",
+        filename="vgg_32_50_7_config7_new_e8rnnn1b.pth",
         cache_dir="checkpoints",
         revision="main",
         token=None,

@@ -36,7 +36,7 @@ def main():
             walking=walking,
             multiplier=multiplier,
             threshold=threshold,
-            numbers=range(301, 400),
+            numbers=range(304, 305),
             max_iter=20,
             output_dir="output",
         )

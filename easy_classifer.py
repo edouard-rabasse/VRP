@@ -10,15 +10,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-path = "output/resnet_1_1_2e-07_CustomCosts_29_07"
-instance = 330
+path = "output\iterative_vgg_1_1_20_08"
+# instance = 330
 
-filename = f"instance_{instance}.csv"
+# filename = f"instance_{instance}.csv"
 
-df = pd.read_csv(f"{path}/{filename}")
+# df = pd.read_csv(f"{path}/{filename}")
 
 
-vrp_instance = VRPInstance(instance, df)
+# vrp_instance = VRPInstance(instance, df)
 
 
 def classify(
@@ -70,29 +70,30 @@ def load_vrp_instances(path, instance_range):
     return instances
 
 
-instances = load_vrp_instances(path, range(301, 380))
+instances = load_vrp_instances(path, range(380, 399))
 
-threshold_range = np.arange(0, 1, 0.1)
-for threshold_class in np.arange(0, 0.6, 0.1):
+# threshold_range = np.arange(0, 1, 0.1)
+threshold_range = [1]
+for threshold_class in np.arange(0.3, 0.6, 0.05):
     results = test_classify(threshold_range, instances, threshold_class)
     print("Threshold, Valid Count", threshold_class)
     for threshold, count in results:
         print(f"{threshold:.2f}, {count}")
 
 
-# def plot_results(results):
-#     thresholds, valid_counts = zip(*results)
+def plot_results(results):
+    thresholds, valid_counts = zip(*results)
 
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(thresholds, valid_counts, marker="o")
-#     plt.title("Valid Count vs Threshold (80 instances)")
-#     plt.xlabel("Threshold")
-#     plt.ylabel("Valid Count")
-#     plt.grid()
-#     plt.xticks(threshold_range)
-#     plt.yticks(np.arange(0, max(valid_counts) + 1, 5))
-#     plt.show()
-#     plt.savefig("valid_count_vs_threshold.png", bbox_inches="tight")
+    plt.figure(figsize=(10, 6))
+    plt.plot(thresholds, valid_counts, marker="o")
+    plt.title("Valid Count vs Threshold (80 instances)")
+    plt.xlabel("Threshold")
+    plt.ylabel("Valid Count")
+    plt.grid()
+    plt.xticks(threshold_range)
+    plt.yticks(np.arange(0, max(valid_counts) + 1, 5))
+    plt.show()
+    plt.savefig("valid_count_vs_threshold.png", bbox_inches="tight")
 
 
-# plot_results(results)
+plot_results(results)

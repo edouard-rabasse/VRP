@@ -18,7 +18,7 @@ custom_args:
 config: "CustomCosts" # suffix for the result folder, where
 org_config: "1"
 
-plot: false
+plot: true
 
 plot_output_folder: "output/test/"
 instance_folder: "instances/"

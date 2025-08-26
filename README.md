@@ -1,6 +1,6 @@
 # Optimized VRP Iterative Pipeline
 
-This repository contains an optimized iterative pipeline that combines PyTorch-based arc flagging with Vehicle Routing Problem (VRP) solving. The main improvement is that the PyTorch model is loaded once and reused across iterations, signntly improving performance.
+This repository contains an optimized iterative pipeline that combines PyTorch-based arc flagging with Vehicle Routing Problem (VRP) solving. 
 
 ## Files Overview
 

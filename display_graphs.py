@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-path = "output/resnet_1_1_2e-07_CustomCosts_29_07"
+path = "output\iterative_vgg_1_1_20_08"
 
 
 def load_vrp_instances(path, instance_range):
@@ -172,7 +172,7 @@ def plot_multiple_y(df, columns, x_col="iter", title="Multiple Y-Axis Plot"):
     plt.show()
 
     # save the plot
-    # fig.savefig(f"plot_mean.png", bbox_inches="tight")
+    fig.savefig(f"plot_mean2.png", bbox_inches="tight")
 
 
 plot_multiple_y(mean_df, columns, x_col="iter", title="mean")
