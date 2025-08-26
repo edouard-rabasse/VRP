@@ -2,7 +2,6 @@
 **/__pycache__/
 MSH.zip
 .vscode/
-output/
 checkpoints/
 results/
 results_modified/
@@ -19,3 +18,4 @@ sweep_id*
 costs/
 arcsCustom/
 graphs/
+.pytest_cache/
